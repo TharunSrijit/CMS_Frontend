@@ -1,123 +1,232 @@
-// Prescription Details
+// ==========================================
+// PHARMACY JAVASCRIPT
+// ==========================================
+
+
+// ------------------------------------------
+// PRESCRIPTION QUEUE
+// ------------------------------------------
+
 function viewPrescription(id) {
+
     window.location.href =
         "prescription-details.html?id=" + id;
+
 }
 
 
-// Dispense Medicine
+// ------------------------------------------
+// DISPENSE MEDICINE
+// ------------------------------------------
+
 function dispenseMedicine() {
 
-    let prescription =
+    const prescriptionId =
         document.getElementById("prescriptionId").value;
 
-    let medicine =
+    const medicine =
         document.getElementById("medicine").value;
 
-    let quantity =
+    const quantity =
         document.getElementById("quantity").value;
 
-    if (!prescription || !medicine || !quantity) {
-        alert("Please enter all details");
+    if (!prescriptionId || !medicine || !quantity) {
+
+        alert("Please enter all details.");
+
         return;
     }
 
-    document.getElementById("message").innerHTML =
-        "Medicine dispensed successfully!";
+    document.getElementById("dispenseMessage").innerHTML =
+        '<span class="badge badge-success">' +
+        'Medicine dispensed successfully!' +
+        '</span>';
+
 }
 
 
-// Add Medicine
+// ------------------------------------------
+// ADD MEDICINE
+// ------------------------------------------
+
 function addMedicine() {
 
-    let name =
+    const name =
         document.getElementById("medicineName").value;
 
-    let price =
+    const price =
         document.getElementById("medicinePrice").value;
 
-    let stock =
+    const stock =
         document.getElementById("medicineStock").value;
 
+
     if (!name || !price || !stock) {
-        alert("Please enter all medicine details");
+
+        alert("Please enter all medicine details.");
+
         return;
     }
 
-    let table =
+
+    const table =
         document.getElementById("inventoryTable");
 
-    let row = table.insertRow();
+
+    const row =
+        table.insertRow();
+
 
     row.innerHTML = `
-        <td>${table.rows.length}</td>
-        <td>${name}</td>
-        <td>₹${price}</td>
-        <td>${stock}</td>
-        <td>${stock <= 10 ? "Low Stock" : "Available"}</td>
+
+        <td class="td-mono">
+            ${table.rows.length}
+        </td>
+
+        <td class="td-primary">
+            ${name}
+        </td>
+
+        <td>
+            ₹${price}
+        </td>
+
+        <td>
+            ${stock}
+        </td>
+
+        <td>
+
+            <span class="badge ${
+                stock <= 10
+                ? "badge-warning"
+                : "badge-success"
+            }">
+
+                ${
+                    stock <= 10
+                    ? "Low Stock"
+                    : "Available"
+                }
+
+            </span>
+
+        </td>
+
     `;
 
-    alert("Medicine added successfully");
 
     document.getElementById("medicineName").value = "";
+
     document.getElementById("medicinePrice").value = "";
+
     document.getElementById("medicineStock").value = "";
+
+
+    alert("Medicine added successfully.");
+
 }
 
 
-// Add Stock
+// ------------------------------------------
+// ADD STOCK
+// ------------------------------------------
+
 function addStock(medicine) {
 
-    let quantity =
-        prompt("Enter quantity to add for " + medicine);
-
-    if (quantity && quantity > 0) {
-        alert(
-            quantity +
-            " units added to " +
-            medicine +
-            " stock."
+    const quantity =
+        prompt(
+            "Enter quantity to add for " +
+            medicine + ":"
         );
+
+
+    if (!quantity || quantity <= 0) {
+
+        return;
     }
+
+
+    alert(
+        quantity +
+        " units added to " +
+        medicine +
+        " stock."
+    );
+
 }
 
 
-// Calculate Bill
+// ------------------------------------------
+// CALCULATE BILL
+// ------------------------------------------
+
 function calculateBill() {
 
-    let price =
+    const price =
         Number(
             document.getElementById("billMedicine").value
         );
 
-    let quantity =
+
+    const quantity =
         Number(
             document.getElementById("billQuantity").value
         );
 
-    let total = price * quantity;
+
+    const total =
+        price * quantity;
+
 
     document.getElementById("total").innerText =
         total;
+
 }
 
 
-// Generate Bill
+// ------------------------------------------
+// GENERATE BILL
+// ------------------------------------------
+
 function generateBill() {
 
-    let patient =
+    const patient =
         document.getElementById("patientName").value;
 
-    let total =
+
+    const total =
         document.getElementById("total").innerText;
 
-    if (!patient || total == 0) {
-        alert("Please enter patient and medicine details");
+
+    if (!patient || total === "0") {
+
+        alert(
+            "Please enter patient and medicine details."
+        );
+
         return;
     }
 
-    document.getElementById("billMessage").innerHTML =
-        "<b>Bill generated successfully!</b><br>" +
-        "Patient: " + patient + "<br>" +
-        "Total Amount: ₹" + total;
+
+    document.getElementById("billMessage").innerHTML = `
+
+        <br>
+
+        <span class="badge badge-success">
+            Bill generated successfully!
+        </span>
+
+        <br><br>
+
+        Patient:
+        <strong>${patient}</strong>
+
+        <br>
+
+        Total Amount:
+        <strong>₹${total}</strong>
+
+    `;
+
 }

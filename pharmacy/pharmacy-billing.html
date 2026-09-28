@@ -1,81 +1,300 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Pharmacy Billing</title>
+
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/forms.css">
+
 </head>
 
 <body>
 
-<header>
-    <h1>Pharmacy Management System</h1>
-    <p>Pharmacy Billing</p>
-</header>
+<div class="app-wrapper">
 
-<nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="prescription-queue.html">Prescription Queue</a>
-    <a href="prescription-details.html">Prescription Details</a>
-    <a href="dispense-medicine.html">Dispense Medicine</a>
-    <a href="medicine-inventory.html">Medicine Inventory</a>
-    <a href="stock.html">Stock</a>
-    <a href="pharmacy-billing.html">Billing</a>
-</nav>
+    <aside class="sidebar">
 
-<main>
+        <a href="dashboard.html" class="sidebar-brand">
 
-    <h2>Pharmacy Billing</h2>
+            <div class="sidebar-brand-icon">
+                💊
+            </div>
 
-    <div class="box">
+            <div class="sidebar-brand-text">
 
-        <label>Patient Name</label>
+                <span class="sidebar-brand-name">
+                    Clinic Management
+                </span>
 
-        <input type="text"
-               id="patientName"
-               placeholder="Enter patient name">
+                <span class="sidebar-brand-sub">
+                    Pharmacy
+                </span>
 
-        <br><br>
+            </div>
 
-        <label>Medicine</label>
+        </a>
 
-        <select id="billMedicine"
-                onchange="calculateBill()">
 
-            <option value="">Select Medicine</option>
-            <option value="20">Paracetamol - ₹20</option>
-            <option value="80">Amoxicillin - ₹80</option>
-            <option value="30">Cetirizine - ₹30</option>
-            <option value="60">Azithromycin - ₹60</option>
+        <nav class="sidebar-nav">
 
-        </select>
+            <div class="nav-section-label">
+                PHARMACY
+            </div>
 
-        <br><br>
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-item-icon">📊</span>
+                <span class="nav-item-label">Dashboard</span>
+            </a>
 
-        <label>Quantity</label>
+            <a href="prescription-queue.html" class="nav-item">
+                <span class="nav-item-icon">📋</span>
+                <span class="nav-item-label">
+                    Prescription Queue
+                </span>
+            </a>
 
-        <input type="number"
-               id="billQuantity"
-               value="1"
-               min="1"
-               oninput="calculateBill()">
+            <a href="prescription-details.html" class="nav-item">
+                <span class="nav-item-icon">📄</span>
+                <span class="nav-item-label">
+                    Prescription Details
+                </span>
+            </a>
 
-        <h3>
-            Total: ₹<span id="total">0</span>
-        </h3>
+            <a href="dispense-medicine.html" class="nav-item">
+                <span class="nav-item-icon">💊</span>
+                <span class="nav-item-label">
+                    Dispense Medicine
+                </span>
+            </a>
 
-        <button onclick="generateBill()">
-            Generate Bill
-        </button>
+            <a href="medicine-inventory.html" class="nav-item">
+                <span class="nav-item-icon">📦</span>
+                <span class="nav-item-label">
+                    Medicine Inventory
+                </span>
+            </a>
 
-        <p id="billMessage"></p>
+            <a href="stock.html" class="nav-item">
+                <span class="nav-item-icon">📈</span>
+                <span class="nav-item-label">
+                    Stock
+                </span>
+            </a>
 
-    </div>
+            <a href="pharmacy-billing.html"
+               class="nav-item active">
 
-</main>
+                <span class="nav-item-icon">💰</span>
 
-<script src="pharmacy.js"></script>
+                <span class="nav-item-label">
+                    Billing
+                </span>
+
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <div>
+
+                    <div class="topbar-page-title">
+                        Pharmacy Billing
+                    </div>
+
+                    <div class="topbar-breadcrumb">
+
+                        Pharmacy
+
+                        <span class="topbar-breadcrumb-sep">
+                            /
+                        </span>
+
+                        <span>
+                            Billing
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="page-content">
+
+            <div class="page-header">
+
+                <div class="page-header-left">
+
+                    <h1 class="page-title">
+                        Pharmacy Billing
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Generate medicine bills
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="form-section-icon">
+                        ₹
+                    </div>
+
+                    <div>
+
+                        <div class="form-section-title">
+                            Create Bill
+                        </div>
+
+                        <div class="form-section-subtitle">
+                            Enter patient and medicine details
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-section-body">
+
+                    <div class="form-grid form-grid-2">
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Patient Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="patientName"
+                                class="form-control"
+                                placeholder="Enter patient name">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Medicine
+                            </label>
+
+                            <select
+                                id="billMedicine"
+                                class="form-control"
+                                onchange="calculateBill()">
+
+                                <option value="">
+                                    Select Medicine
+                                </option>
+
+                                <option value="20">
+                                    Paracetamol - ₹20
+                                </option>
+
+                                <option value="80">
+                                    Amoxicillin - ₹80
+                                </option>
+
+                                <option value="30">
+                                    Cetirizine - ₹30
+                                </option>
+
+                                <option value="60">
+                                    Azithromycin - ₹60
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                id="billQuantity"
+                                class="form-control"
+                                value="1"
+                                min="1"
+                                oninput="calculateBill()">
+
+                        </div>
+
+                    </div>
+
+
+                    <br>
+
+
+                    <div class="card">
+
+                        <div class="card-body">
+
+                            <h3>
+                                Total:
+                                ₹<span id="total">0</span>
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <br>
+
+
+                    <button
+                        class="btn btn-success"
+                        onclick="generateBill()">
+
+                        Generate Bill
+
+                    </button>
+
+
+                    <p id="billMessage"></p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="../js/pharmacy.js"></script>
 
 </body>
 </html>
