@@ -9,7 +9,6 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-```
 // Load dashboard
 loadDashboard();
 
@@ -21,7 +20,6 @@ loadStaff();
 
 // Load users
 loadUsers();
-```
 
 });
 
@@ -31,7 +29,6 @@ loadUsers();
 
 function loadDashboard() {
 
-```
 const doctors = getDoctors();
 
 const staff = getStaff();
@@ -92,7 +89,6 @@ if (activeUsers) {
         active.length;
 
 }
-```
 
 }
 
@@ -102,28 +98,22 @@ if (activeUsers) {
 
 function goToDoctors() {
 
-```
 window.location.href =
     "doctor-management.html";
-```
 
 }
 
 function goToStaff() {
 
-```
 window.location.href =
     "staff-management.html";
-```
 
 }
 
 function goToUsers() {
 
-```
 window.location.href =
     "user-management.html";
-```
 
 }
 
@@ -135,7 +125,6 @@ window.location.href =
 
 function addDoctor() {
 
-```
 const name =
     document.getElementById("doctorName")
         .value
@@ -246,7 +235,6 @@ document.getElementById("doctorForm")
 // Refresh table
 
 loadDoctors();
-```
 
 }
 
@@ -254,7 +242,6 @@ loadDoctors();
 
 function loadDoctors() {
 
-```
 const tableBody =
     document.getElementById(
         "doctorTableBody"
@@ -348,7 +335,6 @@ doctors.forEach(function (doctor) {
     tableBody.appendChild(row);
 
 });
-```
 
 }
 
@@ -356,7 +342,6 @@ doctors.forEach(function (doctor) {
 
 function editDoctor(id) {
 
-```
 const doctors = getDoctors();
 
 
@@ -455,7 +440,6 @@ alert(
 
 
 loadDoctors();
-```
 
 }
 
@@ -463,7 +447,6 @@ loadDoctors();
 
 function deleteDoctor(id) {
 
-```
 const confirmDelete =
     confirm(
         "Are you sure you want to delete this doctor?"
@@ -489,7 +472,6 @@ alert(
 
 
 loadDoctors();
-```
 
 }
 
@@ -497,7 +479,6 @@ loadDoctors();
 
 function toggleDoctorStatus(id) {
 
-```
 const doctors = getDoctors();
 
 
@@ -531,7 +512,6 @@ saveDoctors(doctors);
 
 
 loadDoctors();
-```
 
 }
 
@@ -539,7 +519,6 @@ loadDoctors();
 
 function searchDoctors() {
 
-```
 const search =
     document.getElementById(
         "doctorSearch"
@@ -580,7 +559,6 @@ const filteredDoctors =
 displayDoctors(
     filteredDoctors
 );
-```
 
 }
 
@@ -588,7 +566,6 @@ displayDoctors(
 
 function displayDoctors(doctors) {
 
-```
 const tableBody =
     document.getElementById(
         "doctorTableBody"
@@ -673,7 +650,6 @@ doctors.forEach(function (doctor) {
     tableBody.appendChild(row);
 
 });
-```
 
 }
 
@@ -685,7 +661,6 @@ doctors.forEach(function (doctor) {
 
 function addStaff() {
 
-```
 const name =
     document.getElementById("staffName")
         .value
@@ -785,7 +760,6 @@ document.getElementById("staffForm")
 
 
 loadStaff();
-```
 
 }
 
@@ -793,7 +767,6 @@ loadStaff();
 
 function loadStaff() {
 
-```
 const tableBody =
     document.getElementById(
         "staffTableBody"
@@ -881,7 +854,6 @@ staff.forEach(function (person) {
     tableBody.appendChild(row);
 
 });
-```
 
 }
 
@@ -889,7 +861,6 @@ staff.forEach(function (person) {
 
 function editStaff(id) {
 
-```
 const staff = getStaff();
 
 
@@ -972,7 +943,6 @@ alert(
 
 
 loadStaff();
-```
 
 }
 
@@ -980,7 +950,6 @@ loadStaff();
 
 function deleteStaff(id) {
 
-```
 const confirmDelete =
     confirm(
         "Are you sure you want to delete this staff member?"
@@ -1006,7 +975,6 @@ alert(
 
 
 loadStaff();
-```
 
 }
 
@@ -1014,7 +982,6 @@ loadStaff();
 
 function toggleStaffStatus(id) {
 
-```
 const staff = getStaff();
 
 
@@ -1043,7 +1010,6 @@ saveStaff(staff);
 
 
 loadStaff();
-```
 
 }
 
@@ -1051,7 +1017,6 @@ loadStaff();
 
 function searchStaff() {
 
-```
 const search =
     document.getElementById(
         "staffSearch"
@@ -1092,7 +1057,6 @@ const filteredStaff =
 displayStaff(
     filteredStaff
 );
-```
 
 }
 
@@ -1100,7 +1064,6 @@ displayStaff(
 
 function displayStaff(staff) {
 
-```
 const tableBody =
     document.getElementById(
         "staffTableBody"
@@ -1181,7 +1144,6 @@ staff.forEach(function (person) {
     tableBody.appendChild(row);
 
 });
-```
 
 }
 
@@ -1193,7 +1155,6 @@ staff.forEach(function (person) {
 
 function addUser() {
 
-```
 const name =
     document.getElementById("userName")
         .value
@@ -1285,7 +1246,6 @@ document.getElementById("userForm")
 
 
 loadUsers();
-```
 
 }
 
@@ -1293,7 +1253,6 @@ loadUsers();
 
 function loadUsers() {
 
-```
 const tableBody =
     document.getElementById(
         "userTableBody"
@@ -1379,7 +1338,6 @@ users.forEach(function (user) {
     tableBody.appendChild(row);
 
 });
-```
 
 }
 
@@ -1387,7 +1345,6 @@ users.forEach(function (user) {
 
 function editUser(id) {
 
-```
 const users = getUsers();
 
 
@@ -1457,7 +1414,6 @@ alert(
 
 
 loadUsers();
-```
 
 }
 
@@ -1465,7 +1421,6 @@ loadUsers();
 
 function deleteUser(id) {
 
-```
 const confirmDelete =
     confirm(
         "Are you sure you want to delete this user?"
@@ -1491,7 +1446,6 @@ alert(
 
 
 loadUsers();
-```
 
 }
 
@@ -1499,7 +1453,6 @@ loadUsers();
 
 function toggleUserStatus(id) {
 
-```
 const users = getUsers();
 
 
@@ -1528,7 +1481,6 @@ saveUsers(users);
 
 
 loadUsers();
-```
 
 }
 
@@ -1536,7 +1488,6 @@ loadUsers();
 
 function searchUsers() {
 
-```
 const search =
     document.getElementById(
         "userSearch"
@@ -1577,7 +1528,6 @@ const filteredUsers =
 displayUsers(
     filteredUsers
 );
-```
 
 }
 
@@ -1585,7 +1535,6 @@ displayUsers(
 
 function displayUsers(users) {
 
-```
 const tableBody =
     document.getElementById(
         "userTableBody"
@@ -1664,6 +1613,5 @@ users.forEach(function (user) {
     tableBody.appendChild(row);
 
 });
-```
 
 }
