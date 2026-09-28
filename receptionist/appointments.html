@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today's appointments – Front Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/receptionist.css">
+</head>
+<body data-page="today">
+<div id="login">
+  <form class="card" id="loginForm">
+    <h1>Front desk</h1>
+    <p class="sub">Sign in with your receptionist account.</p>
+    <div style="margin-bottom:12px"><label for="lu">Username</label><input id="lu" autocomplete="username" required></div>
+    <div style="margin-bottom:12px"><label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password" required></div>
+    <button class="btn" style="width:100%">Sign in</button>
+    <div class="err-txt" id="loginErr"></div>
+  </form>
+</div>
+<div id="app" class="hide">
+  <nav id="nav">
+    <div class="brand">Front desk</div>
+    <a data-p="dashboard" href="dashboard.html">Dashboard</a>
+    <a data-p="register" href="register-patient.html">Register patient</a>
+    <a data-p="search" href="search-patient.html">Search patient</a>
+    <a data-p="book" href="book-appointment.html">Book appointment</a>
+    <a data-p="today" href="appointments.html">Today's appointments</a>
+    <a data-p="queue" href="token-queue.html">Token queue</a>
+    <a data-p="billing" href="billing.html">Billing</a>
+    <div class="who"><div id="whoName"></div><button id="logout" style="padding:6px 0;color:#9fb3c6">Sign out</button></div>
+  </nav>
+  <main id="view"></main>
+</div>
+<div id="modal" class="hide"></div>
+<div id="toast"></div>
+<script src="../js/receptionist.js"></script>
+</body>
+</html>
