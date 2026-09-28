@@ -1,73 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Dispense Medicine</title>
+
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/forms.css">
+
 </head>
 
 <body>
 
-<header>
-    <h1>Pharmacy Management System</h1>
-    <p>Dispense Medicine</p>
-</header>
+<div class="app-wrapper">
 
-<nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="prescription-queue.html">Prescription Queue</a>
-    <a href="prescription-details.html">Prescription Details</a>
-    <a href="dispense-medicine.html">Dispense Medicine</a>
-    <a href="medicine-inventory.html">Medicine Inventory</a>
-    <a href="stock.html">Stock</a>
-    <a href="pharmacy-billing.html">Billing</a>
-</nav>
+    <aside class="sidebar">
 
-<main>
+        <a href="dashboard.html" class="sidebar-brand">
 
-    <h2>Dispense Medicine</h2>
+            <div class="sidebar-brand-icon">
+                💊
+            </div>
 
-    <div class="box">
+            <div class="sidebar-brand-text">
 
-        <label>Prescription ID</label>
-        <input type="text" id="prescriptionId"
-               placeholder="Enter prescription ID">
+                <span class="sidebar-brand-name">
+                    Clinic Management
+                </span>
 
-        <br><br>
+                <span class="sidebar-brand-sub">
+                    Pharmacy
+                </span>
 
-        <label>Medicine</label>
+            </div>
 
-        <select id="medicine">
+        </a>
 
-            <option value="">Select Medicine</option>
-            <option value="Paracetamol">Paracetamol</option>
-            <option value="Amoxicillin">Amoxicillin</option>
-            <option value="Cetirizine">Cetirizine</option>
-            <option value="Azithromycin">Azithromycin</option>
 
-        </select>
+        <nav class="sidebar-nav">
 
-        <br><br>
+            <div class="nav-section-label">
+                PHARMACY
+            </div>
 
-        <label>Quantity</label>
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-item-icon">📊</span>
+                <span class="nav-item-label">Dashboard</span>
+            </a>
 
-        <input type="number" id="quantity"
-               min="1" value="1">
+            <a href="prescription-queue.html" class="nav-item">
+                <span class="nav-item-icon">📋</span>
+                <span class="nav-item-label">Prescription Queue</span>
+            </a>
 
-        <br><br>
+            <a href="prescription-details.html" class="nav-item">
+                <span class="nav-item-icon">📄</span>
+                <span class="nav-item-label">Prescription Details</span>
+            </a>
 
-        <button onclick="dispenseMedicine()">
-            Dispense Medicine
-        </button>
+            <a href="dispense-medicine.html"
+               class="nav-item active">
 
-        <p id="message"></p>
+                <span class="nav-item-icon">💊</span>
 
-    </div>
+                <span class="nav-item-label">
+                    Dispense Medicine
+                </span>
 
-</main>
+            </a>
 
-<script src="pharmacy.js"></script>
+            <a href="medicine-inventory.html" class="nav-item">
+                <span class="nav-item-icon">📦</span>
+                <span class="nav-item-label">
+                    Medicine Inventory
+                </span>
+            </a>
+
+            <a href="stock.html" class="nav-item">
+                <span class="nav-item-icon">📈</span>
+                <span class="nav-item-label">Stock</span>
+            </a>
+
+            <a href="pharmacy-billing.html" class="nav-item">
+                <span class="nav-item-icon">💰</span>
+                <span class="nav-item-label">Billing</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <div>
+
+                    <div class="topbar-page-title">
+                        Dispense Medicine
+                    </div>
+
+                    <div class="topbar-breadcrumb">
+                        Pharmacy
+                        <span class="topbar-breadcrumb-sep">
+                            /
+                        </span>
+                        <span>
+                            Dispense Medicine
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="page-content">
+
+            <div class="page-header">
+
+                <div class="page-header-left">
+
+                    <h1 class="page-title">
+                        Dispense Medicine
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Dispense medicines according to prescription
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="form-section-icon">
+                        💊
+                    </div>
+
+                    <div>
+
+                        <div class="form-section-title">
+                            Medicine Dispensing
+                        </div>
+
+                        <div class="form-section-subtitle">
+                            Enter prescription and medicine details
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-section-body">
+
+                    <div class="form-grid form-grid-2">
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Prescription ID
+                            </label>
+
+                            <input
+                                type="text"
+                                id="prescriptionId"
+                                class="form-control"
+                                placeholder="Enter prescription ID">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Medicine
+                            </label>
+
+                            <select id="medicine"
+                                    class="form-control">
+
+                                <option value="">
+                                    Select Medicine
+                                </option>
+
+                                <option value="Paracetamol">
+                                    Paracetamol
+                                </option>
+
+                                <option value="Amoxicillin">
+                                    Amoxicillin
+                                </option>
+
+                                <option value="Cetirizine">
+                                    Cetirizine
+                                </option>
+
+                                <option value="Azithromycin">
+                                    Azithromycin
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                id="quantity"
+                                class="form-control"
+                                min="1"
+                                value="1">
+
+                        </div>
+
+                    </div>
+
+
+                    <br>
+
+                    <button
+                        class="btn btn-success"
+                        onclick="dispenseMedicine()">
+
+                        Dispense Medicine
+
+                    </button>
+
+                    <p id="dispenseMessage"></p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="../js/pharmacy.js"></script>
 
 </body>
 </html>

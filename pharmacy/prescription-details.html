@@ -1,77 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Prescription Details</title>
+
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/tables.css">
+
 </head>
 
 <body>
 
-<header>
-    <h1>Pharmacy Management System</h1>
-    <p>Prescription Details</p>
-</header>
+<div class="app-wrapper">
 
-<nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="prescription-queue.html">Prescription Queue</a>
-    <a href="prescription-details.html">Prescription Details</a>
-    <a href="dispense-medicine.html">Dispense Medicine</a>
-    <a href="medicine-inventory.html">Medicine Inventory</a>
-    <a href="stock.html">Stock</a>
-    <a href="pharmacy-billing.html">Billing</a>
-</nav>
+    <aside class="sidebar">
 
-<main>
+        <a href="dashboard.html" class="sidebar-brand">
 
-    <h2>Prescription Details</h2>
+            <div class="sidebar-brand-icon">
+                💊
+            </div>
 
-    <div class="box">
+            <div class="sidebar-brand-text">
 
-        <h3>Prescription ID: P001</h3>
+                <span class="sidebar-brand-name">
+                    Clinic Management
+                </span>
 
-        <p><b>Patient:</b> Rahul</p>
-        <p><b>Doctor:</b> Dr. Arun</p>
-        <p><b>Date:</b> 28-09-2026</p>
-        <p><b>Status:</b> Pending</p>
+                <span class="sidebar-brand-sub">
+                    Pharmacy
+                </span>
 
-        <h3>Prescribed Medicines</h3>
+            </div>
 
-        <table>
-
-            <tr>
-                <th>Medicine</th>
-                <th>Dosage</th>
-                <th>Duration</th>
-            </tr>
-
-            <tr>
-                <td>Paracetamol</td>
-                <td>500 mg - 1 tablet</td>
-                <td>5 Days</td>
-            </tr>
-
-            <tr>
-                <td>Amoxicillin</td>
-                <td>500 mg - 1 tablet</td>
-                <td>7 Days</td>
-            </tr>
-
-        </table>
-
-        <br>
-
-        <a href="dispense-medicine.html">
-            <button>Proceed to Dispense</button>
         </a>
 
-    </div>
 
-</main>
+        <nav class="sidebar-nav">
 
-<script src="pharmacy.js"></script>
+            <div class="nav-section-label">
+                PHARMACY
+            </div>
+
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-item-icon">📊</span>
+                <span class="nav-item-label">Dashboard</span>
+            </a>
+
+            <a href="prescription-queue.html" class="nav-item">
+                <span class="nav-item-icon">📋</span>
+                <span class="nav-item-label">Prescription Queue</span>
+            </a>
+
+            <a href="prescription-details.html"
+               class="nav-item active">
+
+                <span class="nav-item-icon">📄</span>
+                <span class="nav-item-label">
+                    Prescription Details
+                </span>
+
+            </a>
+
+            <a href="dispense-medicine.html" class="nav-item">
+                <span class="nav-item-icon">💊</span>
+                <span class="nav-item-label">
+                    Dispense Medicine
+                </span>
+            </a>
+
+            <a href="medicine-inventory.html" class="nav-item">
+                <span class="nav-item-icon">📦</span>
+                <span class="nav-item-label">
+                    Medicine Inventory
+                </span>
+            </a>
+
+            <a href="stock.html" class="nav-item">
+                <span class="nav-item-icon">📈</span>
+                <span class="nav-item-label">Stock</span>
+            </a>
+
+            <a href="pharmacy-billing.html" class="nav-item">
+                <span class="nav-item-icon">💰</span>
+                <span class="nav-item-label">Billing</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <div>
+
+                    <div class="topbar-page-title">
+                        Prescription Details
+                    </div>
+
+                    <div class="topbar-breadcrumb">
+
+                        Pharmacy
+
+                        <span class="topbar-breadcrumb-sep">
+                            /
+                        </span>
+
+                        <span>
+                            Prescription Details
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="page-content">
+
+            <div class="page-header">
+
+                <div class="page-header-left">
+
+                    <h1 class="page-title">
+                        Prescription Details
+                    </h1>
+
+                    <p class="page-subtitle">
+                        View prescription and prescribed medicines
+                    </p>
+
+                </div>
+
+                <div class="page-actions">
+
+                    <a href="prescription-queue.html"
+                       class="btn btn-outline">
+
+                        Back to Queue
+
+                    </a>
+
+                    <a href="dispense-medicine.html"
+                       class="btn btn-primary">
+
+                        Dispense Medicine
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <div class="card-title">
+                            Prescription P001
+                        </div>
+
+                        <div class="card-subtitle">
+                            Prescription information
+                        </div>
+
+                    </div>
+
+                    <span class="badge badge-warning">
+                        Pending
+                    </span>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <div class="form-grid form-grid-2">
+
+                        <div>
+
+                            <strong>Patient</strong>
+
+                            <p>
+                                Rahul
+                            </p>
+
+                        </div>
+
+                        <div>
+
+                            <strong>Doctor</strong>
+
+                            <p>
+                                Dr. Arun
+                            </p>
+
+                        </div>
+
+                        <div>
+
+                            <strong>Date</strong>
+
+                            <p>
+                                28-09-2026
+                            </p>
+
+                        </div>
+
+                        <div>
+
+                            <strong>Prescription ID</strong>
+
+                            <p>
+                                P001
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="table-container">
+
+                <div class="table-header">
+
+                    <div class="table-title">
+                        Prescribed Medicines
+                    </div>
+
+                </div>
+
+                <div class="table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Medicine</th>
+                                <th>Dosage</th>
+                                <th>Duration</th>
+                                <th>Quantity</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+
+                                <td class="td-primary">
+                                    Paracetamol
+                                </td>
+
+                                <td>
+                                    500 mg - 1 tablet
+                                </td>
+
+                                <td>
+                                    5 Days
+                                </td>
+
+                                <td>
+                                    5
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td class="td-primary">
+                                    Amoxicillin
+                                </td>
+
+                                <td>
+                                    500 mg - 1 tablet
+                                </td>
+
+                                <td>
+                                    7 Days
+                                </td>
+
+                                <td>
+                                    7
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="../js/pharmacy.js"></script>
 
 </body>
 </html>

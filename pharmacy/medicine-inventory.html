@@ -1,104 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Medicine Inventory</title>
+
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+
 </head>
 
 <body>
 
-<header>
-    <h1>Pharmacy Management System</h1>
-    <p>Medicine Inventory</p>
-</header>
+<div class="app-wrapper">
 
-<nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="prescription-queue.html">Prescription Queue</a>
-    <a href="prescription-details.html">Prescription Details</a>
-    <a href="dispense-medicine.html">Dispense Medicine</a>
-    <a href="medicine-inventory.html">Medicine Inventory</a>
-    <a href="stock.html">Stock</a>
-    <a href="pharmacy-billing.html">Billing</a>
-</nav>
+    <aside class="sidebar">
 
-<main>
+        <a href="dashboard.html" class="sidebar-brand">
 
-    <h2>Medicine Inventory</h2>
+            <div class="sidebar-brand-icon">
+                💊
+            </div>
 
-    <div class="box">
+            <div class="sidebar-brand-text">
 
-        <h3>Add Medicine</h3>
+                <span class="sidebar-brand-name">
+                    Clinic Management
+                </span>
 
-        <input type="text"
-               id="medicineName"
-               placeholder="Medicine Name">
+                <span class="sidebar-brand-sub">
+                    Pharmacy
+                </span>
 
-        <input type="number"
-               id="medicinePrice"
-               placeholder="Price">
+            </div>
 
-        <input type="number"
-               id="medicineStock"
-               placeholder="Stock">
+        </a>
 
-        <button onclick="addMedicine()">
-            Add Medicine
-        </button>
 
-    </div>
+        <nav class="sidebar-nav">
 
-    <div class="box">
+            <div class="nav-section-label">
+                PHARMACY
+            </div>
 
-        <h3>Available Medicines</h3>
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-item-icon">📊</span>
+                <span class="nav-item-label">Dashboard</span>
+            </a>
 
-        <table>
+            <a href="prescription-queue.html" class="nav-item">
+                <span class="nav-item-icon">📋</span>
+                <span class="nav-item-label">Prescription Queue</span>
+            </a>
 
-            <tr>
-                <th>ID</th>
-                <th>Medicine</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-            </tr>
+            <a href="prescription-details.html" class="nav-item">
+                <span class="nav-item-icon">📄</span>
+                <span class="nav-item-label">Prescription Details</span>
+            </a>
 
-            <tbody id="inventoryTable">
+            <a href="dispense-medicine.html" class="nav-item">
+                <span class="nav-item-icon">💊</span>
+                <span class="nav-item-label">Dispense Medicine</span>
+            </a>
 
-                <tr>
-                    <td>1</td>
-                    <td>Paracetamol</td>
-                    <td>₹20</td>
-                    <td>50</td>
-                    <td>Available</td>
-                </tr>
+            <a href="medicine-inventory.html"
+               class="nav-item active">
 
-                <tr>
-                    <td>2</td>
-                    <td>Amoxicillin</td>
-                    <td>₹80</td>
-                    <td>8</td>
-                    <td>Low Stock</td>
-                </tr>
+                <span class="nav-item-icon">📦</span>
 
-                <tr>
-                    <td>3</td>
-                    <td>Cetirizine</td>
-                    <td>₹30</td>
-                    <td>25</td>
-                    <td>Available</td>
-                </tr>
+                <span class="nav-item-label">
+                    Medicine Inventory
+                </span>
 
-            </tbody>
+            </a>
 
-        </table>
+            <a href="stock.html" class="nav-item">
+                <span class="nav-item-icon">📈</span>
+                <span class="nav-item-label">Stock</span>
+            </a>
 
-    </div>
+            <a href="pharmacy-billing.html" class="nav-item">
+                <span class="nav-item-icon">💰</span>
+                <span class="nav-item-label">Billing</span>
+            </a>
 
-</main>
+        </nav>
 
-<script src="pharmacy.js"></script>
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <div>
+
+                    <div class="topbar-page-title">
+                        Medicine Inventory
+                    </div>
+
+                    <div class="topbar-breadcrumb">
+
+                        Pharmacy
+
+                        <span class="topbar-breadcrumb-sep">
+                            /
+                        </span>
+
+                        <span>
+                            Medicine Inventory
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="page-content">
+
+            <div class="page-header">
+
+                <div class="page-header-left">
+
+                    <h1 class="page-title">
+                        Medicine Inventory
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Manage medicines and available quantities
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <div class="form-section-icon">
+                        +
+                    </div>
+
+                    <div class="form-section-title">
+                        Add Medicine
+                    </div>
+
+                </div>
+
+
+                <div class="form-section-body">
+
+                    <div class="form-grid form-grid-3">
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Medicine Name
+                            </label>
+
+                            <input
+                                id="medicineName"
+                                class="form-control"
+                                type="text"
+                                placeholder="Medicine name">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Price
+                            </label>
+
+                            <input
+                                id="medicinePrice"
+                                class="form-control"
+                                type="number"
+                                placeholder="Price">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label class="form-label">
+                                Stock
+                            </label>
+
+                            <input
+                                id="medicineStock"
+                                class="form-control"
+                                type="number"
+                                placeholder="Quantity">
+
+                        </div>
+
+                    </div>
+
+                    <br>
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="addMedicine()">
+
+                        Add Medicine
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <div class="table-header">
+
+                    <div class="table-header-left">
+
+                        <div class="table-title">
+                            Medicine Inventory
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>Medicine</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="inventoryTable">
+
+                            <tr>
+
+                                <td class="td-mono">
+                                    001
+                                </td>
+
+                                <td class="td-primary">
+                                    Paracetamol
+                                </td>
+
+                                <td>
+                                    ₹20
+                                </td>
+
+                                <td>
+                                    50
+                                </td>
+
+                                <td>
+                                    <span class="badge badge-success">
+                                        Available
+                                    </span>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td class="td-mono">
+                                    002
+                                </td>
+
+                                <td class="td-primary">
+                                    Amoxicillin
+                                </td>
+
+                                <td>
+                                    ₹80
+                                </td>
+
+                                <td>
+                                    8
+                                </td>
+
+                                <td>
+                                    <span class="badge badge-warning">
+                                        Low Stock
+                                    </span>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td class="td-mono">
+                                    003
+                                </td>
+
+                                <td class="td-primary">
+                                    Cetirizine
+                                </td>
+
+                                <td>
+                                    ₹30
+                                </td>
+
+                                <td>
+                                    25
+                                </td>
+
+                                <td>
+                                    <span class="badge badge-success">
+                                        Available
+                                    </span>
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="../js/pharmacy.js"></script>
 
 </body>
 </html>
