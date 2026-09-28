@@ -1,92 +1,370 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Prescription Queue</title>
+
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/tables.css">
+
 </head>
 
 <body>
 
-<header>
-    <h1>Pharmacy Management System</h1>
-    <p>Prescription Queue</p>
-</header>
+<div class="app-wrapper">
 
-<nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="prescription-queue.html">Prescription Queue</a>
-    <a href="prescription-details.html">Prescription Details</a>
-    <a href="dispense-medicine.html">Dispense Medicine</a>
-    <a href="medicine-inventory.html">Medicine Inventory</a>
-    <a href="stock.html">Stock</a>
-    <a href="pharmacy-billing.html">Billing</a>
-</nav>
+    <!-- SIDEBAR -->
 
-<main>
+    <aside class="sidebar">
 
-    <h2>Prescription Queue</h2>
+        <a href="dashboard.html" class="sidebar-brand">
 
-    <div class="box">
+            <div class="sidebar-brand-icon">
+                💊
+            </div>
 
-        <table>
+            <div class="sidebar-brand-text">
 
-            <tr>
-                <th>Prescription ID</th>
-                <th>Patient</th>
-                <th>Doctor</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
+                <span class="sidebar-brand-name">
+                    Clinic Management
+                </span>
 
-            <tr>
-                <td>P001</td>
-                <td>Rahul</td>
-                <td>Dr. Arun</td>
-                <td>28-09-2026</td>
-                <td>Pending</td>
-                <td>
-                    <button onclick="viewPrescription('P001')">
-                        View
-                    </button>
-                </td>
-            </tr>
+                <span class="sidebar-brand-sub">
+                    Pharmacy
+                </span>
 
-            <tr>
-                <td>P002</td>
-                <td>Anu</td>
-                <td>Dr. Meera</td>
-                <td>28-09-2026</td>
-                <td>Pending</td>
-                <td>
-                    <button onclick="viewPrescription('P002')">
-                        View
-                    </button>
-                </td>
-            </tr>
+            </div>
 
-            <tr>
-                <td>P003</td>
-                <td>Vishnu</td>
-                <td>Dr. Raj</td>
-                <td>28-09-2026</td>
-                <td>Dispensed</td>
-                <td>
-                    <button onclick="viewPrescription('P003')">
-                        View
-                    </button>
-                </td>
-            </tr>
+        </a>
 
-        </table>
 
-    </div>
+        <nav class="sidebar-nav">
 
-</main>
+            <div class="nav-section-label">
+                PHARMACY
+            </div>
 
-<script src="pharmacy.js"></script>
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-item-icon">📊</span>
+                <span class="nav-item-label">Dashboard</span>
+            </a>
+
+            <a href="prescription-queue.html"
+               class="nav-item active">
+
+                <span class="nav-item-icon">📋</span>
+                <span class="nav-item-label">
+                    Prescription Queue
+                </span>
+
+            </a>
+
+            <a href="prescription-details.html"
+               class="nav-item">
+
+                <span class="nav-item-icon">📄</span>
+                <span class="nav-item-label">
+                    Prescription Details
+                </span>
+
+            </a>
+
+            <a href="dispense-medicine.html"
+               class="nav-item">
+
+                <span class="nav-item-icon">💊</span>
+                <span class="nav-item-label">
+                    Dispense Medicine
+                </span>
+
+            </a>
+
+            <a href="medicine-inventory.html"
+               class="nav-item">
+
+                <span class="nav-item-icon">📦</span>
+                <span class="nav-item-label">
+                    Medicine Inventory
+                </span>
+
+            </a>
+
+            <a href="stock.html" class="nav-item">
+
+                <span class="nav-item-icon">📈</span>
+                <span class="nav-item-label">
+                    Stock
+                </span>
+
+            </a>
+
+            <a href="pharmacy-billing.html"
+               class="nav-item">
+
+                <span class="nav-item-icon">💰</span>
+                <span class="nav-item-label">
+                    Billing
+                </span>
+
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <div>
+
+                    <div class="topbar-page-title">
+                        Prescription Queue
+                    </div>
+
+                    <div class="topbar-breadcrumb">
+
+                        Pharmacy
+
+                        <span class="topbar-breadcrumb-sep">
+                            /
+                        </span>
+
+                        <span>
+                            Prescription Queue
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="topbar-right">
+
+                <span class="badge badge-primary">
+                    Pharmacist
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <div class="page-content">
+
+            <div class="page-header">
+
+                <div class="page-header-left">
+
+                    <h1 class="page-title">
+                        Prescription Queue
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Manage prescriptions waiting for dispensing
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <div class="table-header">
+
+                    <div class="table-header-left">
+
+                        <div class="table-title">
+                            Pending Prescriptions
+                        </div>
+
+                        <span class="table-count">
+                            3
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Prescription ID
+                                </th>
+
+                                <th>
+                                    Patient
+                                </th>
+
+                                <th>
+                                    Doctor
+                                </th>
+
+                                <th>
+                                    Date
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="prescriptionQueue">
+
+                            <tr>
+
+                                <td class="td-mono">
+                                    P001
+                                </td>
+
+                                <td class="td-primary">
+                                    Rahul
+                                </td>
+
+                                <td>
+                                    Dr. Arun
+                                </td>
+
+                                <td>
+                                    28-09-2026
+                                </td>
+
+                                <td>
+                                    <span class="badge badge-warning">
+                                        Pending
+                                    </span>
+                                </td>
+
+                                <td class="td-actions">
+
+                                    <a href="prescription-details.html?id=P001"
+                                       class="btn btn-primary btn-sm">
+
+                                        View
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td class="td-mono">
+                                    P002
+                                </td>
+
+                                <td class="td-primary">
+                                    Anu
+                                </td>
+
+                                <td>
+                                    Dr. Meera
+                                </td>
+
+                                <td>
+                                    28-09-2026
+                                </td>
+
+                                <td>
+                                    <span class="badge badge-warning">
+                                        Pending
+                                    </span>
+                                </td>
+
+                                <td class="td-actions">
+
+                                    <a href="prescription-details.html?id=P002"
+                                       class="btn btn-primary btn-sm">
+
+                                        View
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td class="td-mono">
+                                    P003
+                                </td>
+
+                                <td class="td-primary">
+                                    Vishnu
+                                </td>
+
+                                <td>
+                                    Dr. Raj
+                                </td>
+
+                                <td>
+                                    28-09-2026
+                                </td>
+
+                                <td>
+                                    <span class="badge badge-success">
+                                        Dispensed
+                                    </span>
+                                </td>
+
+                                <td class="td-actions">
+
+                                    <a href="prescription-details.html?id=P003"
+                                       class="btn btn-outline btn-sm">
+
+                                        View
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="../js/pharmacy.js"></script>
 
 </body>
 </html>
