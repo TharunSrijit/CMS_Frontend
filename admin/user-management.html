@@ -1,172 +1,133 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
-```
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>User Management - CMS</title>
-
-<link rel="stylesheet" href="../css/style.css">
-<link rel="stylesheet" href="../css/forms.css">
-<link rel="stylesheet" href="../css/tables.css">
-```
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f3f6f3">
+    <title>User Management | ClinicCare</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/user-management.css">
 </head>
+<body class="admin-dashboard">
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <a class="admin-brand" href="dashboard.html">
+                <span class="admin-brand-mark" aria-hidden="true">C</span>
+                <span>Clinic<span>Care</span></span>
+            </a>
+            <p class="sidebar-caption">CLINIC OPERATIONS</p>
+            <nav class="admin-nav" aria-label="Administration">
+                <a class="admin-nav-link" href="dashboard.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
+                    <span>Overview</span>
+                </a>
+                <p class="sidebar-caption nav-caption">PEOPLE &amp; ACCESS</p>
+                <a class="admin-nav-link" href="doctor-management.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="7" r="3.5"/><path d="M2.8 20v-1.5a6.2 6.2 0 0 1 12.4 0V20M17 8h5m-2.5-2.5v5"/></svg>
+                    <span>Doctors</span>
+                </a>
+                <a class="admin-nav-link" href="staff-management.html">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20v-1.2a6.5 6.5 0 0 1 13 0V20M16 5.5a3.2 3.2 0 0 1 0 6.2m2.5 2a5 5 0 0 1 3 4.6V20"/></svg>
+                    <span>Staff</span>
+                </a>
+                <a class="admin-nav-link is-current" href="user-management.html" aria-current="page">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2"/><circle cx="12" cy="9" r="2.5"/><path d="M8 16.5a4 4 0 0 1 8 0"/></svg>
+                    <span>User accounts</span>
+                </a>
+            </nav>
+            <a class="sign-in-link" href="../login.html">Return to sign in <span aria-hidden="true">&#8599;</span></a>
+        </aside>
 
-<body>
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <div>
+                    <p class="topbar-kicker">ADMINISTRATION</p>
+                    <p class="topbar-title">People and access</p>
+                </div>
+                <div class="admin-profile">
+                    <span class="profile-mark" aria-hidden="true">A</span>
+                    <span><strong>Administrator</strong><small>Clinic management</small></span>
+                </div>
+            </header>
 
-```
-<!-- Header -->
-<header>
+            <main class="admin-content user-content">
+                <section class="page-intro">
+                    <div>
+                        <p class="section-eyebrow">ACCESS CONTROL</p>
+                        <h1>User management</h1>
+                        <p class="intro-copy">Create accounts and manage access across clinic teams.</p>
+                    </div>
+                </section>
 
-    <h1>Clinic Management System</h1>
+                <section class="user-panel" aria-labelledby="add-user-title">
+                    <div class="user-panel-heading">
+                        <div>
+                            <p class="section-eyebrow">NEW ACCOUNT</p>
+                            <h2 id="add-user-title">Add a user</h2>
+                        </div>
+                    </div>
+                    <form id="userForm" class="user-form" onsubmit="event.preventDefault(); addUser();">
+                        <div class="user-form-grid">
+                            <div class="user-field">
+                                <label for="userName">User name</label>
+                                <input class="user-input" type="text" id="userName" placeholder="Enter user name" autocomplete="name" required>
+                            </div>
+                            <div class="user-field">
+                                <label for="userEmail">Email</label>
+                                <input class="user-input" type="email" id="userEmail" placeholder="name@clinic.com" autocomplete="email" required>
+                            </div>
+                            <div class="user-field">
+                                <label for="userRole">Role</label>
+                                <select class="user-input" id="userRole" required>
+                                    <option value="">Select a role</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Receptionist">Receptionist</option>
+                                    <option value="Lab Technician">Lab Technician</option>
+                                    <option value="Pharmacist">Pharmacist</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="user-form-actions">
+                            <button class="user-submit" type="submit"><span aria-hidden="true">+</span> Add user</button>
+                        </div>
+                    </form>
+                </section>
 
-    <p>User Management</p>
+                <section class="user-panel" aria-labelledby="user-list-title">
+                    <div class="user-panel-heading user-list-heading">
+                        <div>
+                            <p class="section-eyebrow">ACCOUNT DIRECTORY</p>
+                            <h2 id="user-list-title">User accounts</h2>
+                        </div>
+                        <label class="user-search-wrap" for="userSearch">
+                            <span class="visually-hidden">Search user accounts</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.3 4.3"/></svg>
+                            <input type="search" id="userSearch" placeholder="Search user accounts" oninput="searchUsers()">
+                        </label>
+                    </div>
+                    <div class="user-table-scroll">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Role</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
 
-    <a href="dashboard.html">
-        Back to Dashboard
-    </a>
-
-</header>
-
-
-<main>
-
-    <!-- Add User -->
-    <section>
-
-        <h2>Add User</h2>
-
-
-        <form id="userForm"
-              onsubmit="event.preventDefault(); addUser();">
-
-
-            <label for="userName">
-                User Name
-            </label>
-
-            <input
-                type="text"
-                id="userName"
-                placeholder="Enter user name"
-                required
-            >
-
-
-            <label for="userEmail">
-                Email
-            </label>
-
-            <input
-                type="email"
-                id="userEmail"
-                placeholder="Enter email"
-                required
-            >
-
-
-            <label for="userRole">
-                Role
-            </label>
-
-            <select id="userRole" required>
-
-                <option value="">
-                    Select Role
-                </option>
-
-                <option value="Admin">
-                    Admin
-                </option>
-
-                <option value="Doctor">
-                    Doctor
-                </option>
-
-                <option value="Receptionist">
-                    Receptionist
-                </option>
-
-                <option value="Lab Technician">
-                    Lab Technician
-                </option>
-
-                <option value="Pharmacist">
-                    Pharmacist
-                </option>
-
-            </select>
-
-
-            <button type="submit">
-                Add User
-            </button>
-
-        </form>
-
-    </section>
-
-
-    <!-- User List -->
-    <section>
-
-        <h2>User List</h2>
-
-
-        <!-- Search -->
-        <input
-            type="text"
-            id="userSearch"
-            placeholder="Search by name, email or role"
-            oninput="searchUsers()"
-        >
-
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>ID</th>
-
-                    <th>Name</th>
-
-                    <th>Email</th>
-
-                    <th>Role</th>
-
-                    <th>Status</th>
-
-                    <th>Actions</th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody id="userTableBody">
-
-            </tbody>
-
-        </table>
-
-    </section>
-
-</main>
-
-
-<script src="../js/storage.js"></script>
-<script src="../js/admin.js"></script>
-```
-
+    <script src="../js/storage.js"></script>
+    <script src="../js/admin.js"></script>
 </body>
-
 </html>
