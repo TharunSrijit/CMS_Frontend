@@ -153,7 +153,7 @@
 
 .user-table {
   width: 100%;
-  min-width: 720px;
+  min-width: 820px;
   border-collapse: collapse;
   font-size: 12px;
 }
@@ -200,7 +200,7 @@
   white-space: nowrap;
 }
 
-.user-table td:nth-child(5) {
+.user-table td:nth-child(6) {
   color: #38745a;
   font-weight: 600;
 }

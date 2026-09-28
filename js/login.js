@@ -27,6 +27,40 @@ const localAccounts = {
     lab: { password: 'lab123', role: 'LAB_TECHNICIAN', userRole: 'lab', fullName: 'Lab Technician' }
 };
 
+const registeredRoleDetails = {
+    Admin: { role: 'ADMIN', userRole: 'admin' },
+    Doctor: { role: 'DOCTOR', userRole: 'doctor' },
+    Receptionist: { role: 'RECEPTIONIST', userRole: 'receptionist' },
+    'Lab Technician': { role: 'LAB_TECHNICIAN', userRole: 'lab' },
+    Pharmacist: { role: 'PHARMACIST', userRole: 'pharmacist' }
+};
+
+function findRegisteredAccount(username) {
+    let users;
+
+    try {
+        users = JSON.parse(localStorage.getItem('cms_users') || '[]');
+    } catch (error) {
+        return null;
+    }
+
+    const user = users.find(item => item.username && item.username.toLowerCase() === username);
+    const roleDetails = user && registeredRoleDetails[user.role];
+
+    if (!user || !roleDetails) return null;
+
+    return {
+        id: user.id,
+        password: user.password,
+        role: roleDetails.role,
+        userRole: roleDetails.userRole,
+        fullName: user.name,
+        status: user.status,
+        profileId: user.profileId,
+        profileType: user.profileType
+    };
+}
+
 togglePassword.addEventListener('click', () => {
     const showPassword = passwordInput.type === 'password';
     passwordInput.type = showPassword ? 'text' : 'password';
@@ -41,8 +75,14 @@ loginForm.addEventListener('submit', event => {
     if (!loginForm.reportValidity()) return;
 
     const username = usernameInput.value.trim().toLowerCase();
-    const account = localAccounts[username];
+    const registeredAccount = findRegisteredAccount(username);
+    const account = registeredAccount || localAccounts[username];
     const requiredRole = loginForm.dataset.role;
+
+    if (registeredAccount && registeredAccount.status !== 'Active') {
+        message.textContent = 'This account is inactive. Contact your clinic administrator.';
+        return;
+    }
 
     const passwordMatches = account && (Array.isArray(account.password)
         ? account.password.includes(passwordInput.value)
@@ -70,7 +110,10 @@ loginForm.addEventListener('submit', event => {
     localStorage.setItem('loggedInUser', JSON.stringify({
         username,
         name: account.fullName,
-        role: account.userRole
+        role: account.userRole,
+        userId: account.id || null,
+        profileId: account.profileId || null,
+        profileType: account.profileType || null
     }));
     window.location.assign(dashboardByRole[account.role]);
 });

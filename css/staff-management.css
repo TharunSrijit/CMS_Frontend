@@ -270,3 +270,7 @@
     width: 100%;
   }
 }
+
+.staff-field[hidden] {
+  display: none;
+}

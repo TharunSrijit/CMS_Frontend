@@ -83,13 +83,17 @@
                             </div>
                             <div class="staff-field">
                                 <label for="staffRole">Staff role</label>
-                                <select class="staff-input" id="staffRole" required>
+                                <select class="staff-input" id="staffRole" onchange="updateStaffRoleFields()" required>
                                     <option value="">Select a role</option>
                                     <option value="Doctor">Doctor</option>
                                     <option value="Receptionist">Receptionist</option>
                                     <option value="Lab Technician">Lab Technician</option>
                                     <option value="Pharmacist">Pharmacist</option>
                                 </select>
+                            </div>
+                            <div class="staff-field" id="doctor-specialization-field" hidden>
+                                <label for="staffSpecialization">Doctor specialization</label>
+                                <input class="staff-input" type="text" id="staffSpecialization" placeholder="Example: Cardiology">
                             </div>
                         </div>
                         <div class="staff-form-actions">
