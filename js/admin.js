@@ -9,6 +9,8 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
+syncDirectoryRecords();
+
 // Load dashboard
 loadDashboard();
 
@@ -18,8 +20,8 @@ loadDoctors();
 // Load staff
 loadStaff();
 
-// Load users
 loadUsers();
+updateStaffRoleFields();
 
 });
 
@@ -123,117 +125,133 @@ window.location.href =
 
 // ADD DOCTOR
 
-function addDoctor() {
+function syncLinkedAccounts(profileType, profileId, updates) {
+    if (!profileId) return;
 
-const name =
-    document.getElementById("doctorName")
-        .value
-        .trim();
+    const users = getUsers();
+    let changed = false;
 
-const email =
-    document.getElementById("doctorEmail")
-        .value
-        .trim();
-
-const phone =
-    document.getElementById("doctorPhone")
-        .value
-        .trim();
-
-const specialization =
-    document.getElementById("doctorSpecialization")
-        .value
-        .trim();
-
-
-// Validation
-
-if (
-    !name ||
-    !email ||
-    !phone ||
-    !specialization
-) {
-
-    alert("Please fill all doctor details.");
-
-    return;
-
-}
-
-
-// Get existing doctors
-
-const doctors = getDoctors();
-
-
-// Check duplicate email
-
-const emailAlreadyExists =
-    doctors.some(function (doctor) {
-
-        return doctor.email.toLowerCase() ===
-               email.toLowerCase();
-
+    users.forEach(function (user) {
+        if (user.profileType === profileType && user.profileId === profileId) {
+            Object.assign(user, updates);
+            changed = true;
+        }
     });
 
+    if (changed) saveUsers(users);
+}
 
-if (emailAlreadyExists) {
+function syncDirectoryRecords() {
+    getDoctors().forEach(syncDoctorStaffRecord);
 
-    alert(
-        "A doctor with this email already exists."
-    );
+    getStaff().forEach(function (person) {
+        if (person.role === "Doctor" && person.specialization) {
+            syncDoctorProfileFromStaff(person, person.specialization);
+        }
+    });
+}
 
-    return;
+function syncDoctorStaffRecord(doctor) {
+
+const staff = getStaff();
+let person = staff.find(function (item) {
+    return item.id === doctor.staffId || item.doctorId === doctor.id;
+});
+
+if (!person) {
+    person = staff.find(function (item) {
+        return item.role === "Doctor" && item.email.toLowerCase() === doctor.email.toLowerCase();
+    });
+}
+
+if (!person) {
+    person = {
+        id: doctor.staffId || generateId("STAFF"),
+        createdAt: doctor.createdAt
+    };
+    staff.push(person);
+}
+
+doctor.staffId = person.id;
+Object.assign(person, {
+    doctorId: doctor.id,
+    name: doctor.name,
+    email: doctor.email,
+    phone: doctor.phone,
+    role: "Doctor",
+    specialization: doctor.specialization,
+    status: doctor.status
+});
+
+saveStaff(staff);
+const doctors = getDoctors();
+const storedDoctor = doctors.find(function (item) {
+    return item.id === doctor.id;
+});
+if (storedDoctor) {
+    storedDoctor.staffId = doctor.staffId;
+    saveDoctors(doctors);
+}
+syncLinkedAccounts("doctor", doctor.id, {
+    name: doctor.name,
+    email: doctor.email,
+    role: "Doctor",
+    status: doctor.status
+});
 
 }
 
+function removeDoctorStaffRecord(doctor) {
+    const staff = getStaff().filter(function (person) {
+        return person.id !== doctor.staffId && person.doctorId !== doctor.id;
+    });
+    saveStaff(staff);
+    syncLinkedAccounts("doctor", doctor.id, { status: "Inactive" });
+}
 
-// Create doctor
+function addDoctor() {
+
+const name = document.getElementById("doctorName").value.trim();
+const email = document.getElementById("doctorEmail").value.trim();
+const phone = document.getElementById("doctorPhone").value.trim();
+const specialization = document.getElementById("doctorSpecialization").value.trim();
+
+if (!name || !email || !phone || !specialization) {
+    alert("Please fill all doctor details.");
+    return;
+}
+
+const doctors = getDoctors();
+const staff = getStaff();
+const duplicateDoctor = doctors.some(function (item) {
+    return item.email.toLowerCase() === email.toLowerCase();
+});
+const matchingStaff = staff.find(function (person) {
+    return person.email.toLowerCase() === email.toLowerCase();
+});
+
+if (duplicateDoctor || (matchingStaff && matchingStaff.role !== "Doctor")) {
+    alert("A person with this email already exists. Check the staff and doctor directories.");
+    return;
+}
 
 const doctor = {
-
     id: generateId("DOC"),
-
+    staffId: matchingStaff ? matchingStaff.id : generateId("STAFF"),
     name: name,
-
     email: email,
-
     phone: phone,
-
     specialization: specialization,
-
     status: "Active",
-
-    createdAt:
-        new Date().toLocaleDateString()
-
+    createdAt: new Date().toLocaleDateString()
 };
 
-
-// Add doctor
-
 doctors.push(doctor);
-
-
-// Save
-
 saveDoctors(doctors);
+syncDoctorStaffRecord(doctor);
 
-
-alert(
-    "Doctor added successfully."
-);
-
-
-// Clear form
-
-document.getElementById("doctorForm")
-    .reset();
-
-
-// Refresh table
-
+alert("Doctor added successfully.");
+document.getElementById("doctorForm").reset();
 loadDoctors();
 
 }
@@ -432,6 +450,7 @@ doctor.specialization =
 
 
 saveDoctors(doctors);
+syncDoctorStaffRecord(doctor);
 
 
 alert(
@@ -460,10 +479,19 @@ if (!confirmDelete) {
 }
 
 
+const doctor = getDoctors().find(function (item) {
+    return item.id === id;
+});
+
+
 deleteById(
     STORAGE_KEYS.doctors,
     id
 );
+
+if (doctor) {
+    removeDoctorStaffRecord(doctor);
+}
 
 
 alert(
@@ -509,6 +537,7 @@ if (doctor.status === "Active") {
 
 
 saveDoctors(doctors);
+syncDoctorStaffRecord(doctor);
 
 
 loadDoctors();
@@ -659,106 +688,138 @@ doctors.forEach(function (doctor) {
 
 // ADD STAFF
 
-function addStaff() {
+function updateStaffRoleFields() {
+    const roleInput = document.getElementById("staffRole");
+    const specializationField = document.getElementById("doctor-specialization-field");
+    const specializationInput = document.getElementById("staffSpecialization");
 
-const name =
-    document.getElementById("staffName")
-        .value
-        .trim();
+    if (!roleInput || !specializationField || !specializationInput) return;
 
-const email =
-    document.getElementById("staffEmail")
-        .value
-        .trim();
-
-const phone =
-    document.getElementById("staffPhone")
-        .value
-        .trim();
-
-const role =
-    document.getElementById("staffRole")
-        .value;
-
-
-if (
-    !name ||
-    !email ||
-    !phone ||
-    !role
-) {
-
-    alert(
-        "Please fill all staff details."
-    );
-
-    return;
-
+    const isDoctor = roleInput.value === "Doctor";
+    specializationField.hidden = !isDoctor;
+    specializationInput.required = isDoctor;
 }
 
-
-const staff = getStaff();
-
-
-// Check duplicate email
-
-const emailAlreadyExists =
-    staff.some(function (person) {
-
-        return person.email.toLowerCase() ===
-               email.toLowerCase();
-
+function syncDoctorProfileFromStaff(person, specialization) {
+    const doctors = getDoctors();
+    let doctor = doctors.find(function (item) {
+        return item.id === person.doctorId || item.staffId === person.id;
     });
 
+    if (!doctor) {
+        doctor = {
+            id: generateId("DOC"),
+            staffId: person.id,
+            createdAt: person.createdAt
+        };
+        doctors.push(doctor);
+    }
 
-if (emailAlreadyExists) {
+    Object.assign(doctor, {
+        staffId: person.id,
+        name: person.name,
+        email: person.email,
+        phone: person.phone,
+        specialization: specialization,
+        status: person.status
+    });
+    person.doctorId = doctor.id;
+    person.specialization = specialization;
 
-    alert(
-        "A staff member with this email already exists."
-    );
+    const staff = getStaff();
+    const storedPerson = staff.find(function (item) {
+        return item.id === person.id;
+    });
+    if (storedPerson) Object.assign(storedPerson, person);
 
-    return;
-
+    saveDoctors(doctors);
+    saveStaff(staff);
+    syncLinkedAccounts("staff", person.id, {
+        profileType: "doctor",
+        profileId: doctor.id,
+        name: person.name,
+        email: person.email,
+        role: "Doctor",
+        status: person.status
+    });
+    syncLinkedAccounts("doctor", doctor.id, {
+        name: person.name,
+        email: person.email,
+        role: "Doctor",
+        status: person.status
+    });
 }
 
+function removeDoctorProfileForStaff(person) {
+    const existingDoctors = getDoctors();
+    const linkedDoctors = existingDoctors.filter(function (doctor) {
+        return doctor.id === person.doctorId || doctor.staffId === person.id;
+    });
 
-// Create staff
+    linkedDoctors.forEach(function (doctor) {
+        syncLinkedAccounts("doctor", doctor.id, {
+            profileType: "staff",
+            profileId: person.id,
+            role: person.role,
+            name: person.name,
+            email: person.email,
+            status: person.status
+        });
+    });
+
+    const doctors = existingDoctors.filter(function (doctor) {
+        return doctor.id !== person.doctorId && doctor.staffId !== person.id;
+    });
+    saveDoctors(doctors);
+}
+
+function addStaff() {
+
+const name = document.getElementById("staffName").value.trim();
+const email = document.getElementById("staffEmail").value.trim();
+const phone = document.getElementById("staffPhone").value.trim();
+const role = document.getElementById("staffRole").value;
+const specializationInput = document.getElementById("staffSpecialization");
+const specialization = specializationInput ? specializationInput.value.trim() : "";
+
+if (!name || !email || !phone || !role || (role === "Doctor" && !specialization)) {
+    alert("Please fill all required staff details.");
+    return;
+}
+
+const staff = getStaff();
+const duplicateStaff = staff.some(function (person) {
+    return person.email.toLowerCase() === email.toLowerCase();
+});
+const duplicateDoctor = role === "Doctor" && getDoctors().some(function (doctor) {
+    return doctor.email.toLowerCase() === email.toLowerCase();
+});
+
+if (duplicateStaff || duplicateDoctor) {
+    alert("A person with this email already exists in the directory.");
+    return;
+}
 
 const newStaff = {
-
     id: generateId("STAFF"),
-
     name: name,
-
     email: email,
-
     phone: phone,
-
     role: role,
-
     status: "Active",
-
-    createdAt:
-        new Date().toLocaleDateString()
-
+    createdAt: new Date().toLocaleDateString()
 };
 
-
 staff.push(newStaff);
-
-
 saveStaff(staff);
 
+if (role === "Doctor") {
+    syncDoctorProfileFromStaff(newStaff, specialization);
+}
 
-alert(
-    "Staff added successfully."
-);
-
-
-document.getElementById("staffForm")
-    .reset();
-
-
+alert("Staff added successfully.");
+document.getElementById("staffForm").reset();
+updateStaffRoleFields();
 loadStaff();
 
 }
@@ -913,12 +974,37 @@ if (phone === null) return;
 
 const role =
     prompt(
-        "Enter role:\nReceptionist\nLab Technician\nPharmacist",
+        "Enter role:\nDoctor\nReceptionist\nLab Technician\nPharmacist",
         person.role
     );
 
 
 if (role === null) return;
+
+const nextRole = role.trim();
+const originalDoctorId = person.doctorId;
+let specialization = person.specialization || "";
+
+if (nextRole === "Doctor") {
+    specialization = prompt("Enter doctor specialization:", specialization);
+    if (specialization === null || !specialization.trim()) {
+        alert("Doctor specialization is required.");
+        return;
+    }
+    specialization = specialization.trim();
+}
+
+const duplicateStaff = staff.some(function (item) {
+    return item.id !== id && item.email.toLowerCase() === email.trim().toLowerCase();
+});
+const duplicateDoctor = nextRole === "Doctor" && getDoctors().some(function (doctor) {
+    return doctor.id !== originalDoctorId && doctor.email.toLowerCase() === email.trim().toLowerCase();
+});
+
+if (duplicateStaff || duplicateDoctor) {
+    alert("A person with this email already exists in the directory.");
+    return;
+}
 
 
 person.name =
@@ -931,10 +1017,33 @@ person.phone =
     phone.trim();
 
 person.role =
-    role.trim();
+    nextRole;
 
 
 saveStaff(staff);
+
+if (nextRole === "Doctor") {
+    syncDoctorProfileFromStaff(person, specialization);
+} else if (originalDoctorId || person.role === "Doctor") {
+    person.doctorId = originalDoctorId;
+    removeDoctorProfileForStaff(person);
+    delete person.doctorId;
+    delete person.specialization;
+    saveStaff(staff);
+    syncLinkedAccounts("staff", person.id, {
+        name: person.name,
+        email: person.email,
+        role: person.role,
+        status: person.status
+    });
+} else {
+    syncLinkedAccounts("staff", person.id, {
+        name: person.name,
+        email: person.email,
+        role: person.role,
+        status: person.status
+    });
+}
 
 
 alert(
@@ -962,11 +1071,22 @@ if (!confirmDelete) {
 
 }
 
+const person = getStaff().find(function (item) {
+    return item.id === id;
+});
+
 
 deleteById(
     STORAGE_KEYS.staff,
     id
 );
+
+if (person && person.role === "Doctor") {
+    removeDoctorProfileForStaff(person);
+    syncLinkedAccounts("staff", person.id, { status: "Inactive" });
+} else if (person) {
+    syncLinkedAccounts("staff", person.id, { status: "Inactive" });
+}
 
 
 alert(
@@ -1007,6 +1127,17 @@ person.status =
 
 
 saveStaff(staff);
+
+if (person.role === "Doctor") {
+    syncDoctorProfileFromStaff(person, person.specialization || "");
+} else {
+    syncLinkedAccounts("staff", person.id, {
+        name: person.name,
+        email: person.email,
+        role: person.role,
+        status: person.status
+    });
+}
 
 
 loadStaff();
@@ -1165,86 +1296,94 @@ const email =
         .value
         .trim();
 
+const username =
+    document.getElementById("userUsername")
+        .value
+        .trim()
+        .toLowerCase();
+
+const password =
+    document.getElementById("userPassword")
+        .value;
+
 const role =
     document.getElementById("userRole")
         .value;
 
-
-if (
-    !name ||
-    !email ||
-    !role
-) {
-
-    alert(
-        "Please fill all user details."
-    );
-
+if (!name || !email || !username || !password || !role) {
+    alert("Please fill all user details.");
     return;
-
 }
 
+if (password.length < 8) {
+    alert("The temporary password must be at least 8 characters.");
+    return;
+}
 
 const users = getUsers();
+const reservedUsernames = [
+    "admin", "doctor", "reception", "receptionist", "pharmacy", "pharmacist", "lab"
+];
 
-
-// Check duplicate email
-
-const emailAlreadyExists =
-    users.some(function (user) {
-
-        return user.email.toLowerCase() ===
-               email.toLowerCase();
-
-    });
-
-
-if (emailAlreadyExists) {
-
-    alert(
-        "A user with this email already exists."
-    );
-
+if (reservedUsernames.includes(username) || users.some(function (user) {
+    return user.username && user.username.toLowerCase() === username;
+})) {
+    alert("That username is already in use. Choose another username.");
     return;
-
 }
 
+const emailAlreadyExists = users.some(function (user) {
+    return user.email.toLowerCase() === email.toLowerCase();
+});
 
-// Create user
+if (emailAlreadyExists) {
+    alert("A user with this email already exists.");
+    return;
+}
+
+let profile = null;
+let profileType = null;
+
+if (role === "Doctor") {
+    profile = getDoctors().find(function (doctor) {
+        return doctor.email.toLowerCase() === email.toLowerCase();
+    });
+    profileType = "doctor";
+} else if (role !== "Admin") {
+    profile = getStaff().find(function (person) {
+        return person.email.toLowerCase() === email.toLowerCase() && person.role === role;
+    });
+    profileType = "staff";
+}
+
+if (role !== "Admin" && !profile) {
+    alert("Add this person to the matching staff or doctor directory before creating a login.");
+    return;
+}
+
+if (profile && profile.status !== "Active") {
+    alert("Activate this staff or doctor profile before creating a login.");
+    return;
+}
 
 const user = {
-
     id: generateId("USER"),
-
     name: name,
-
     email: email,
-
+    username: username,
+    password: password,
     role: role,
-
+    profileId: profile ? profile.id : null,
+    profileType: profileType,
     status: "Active",
-
-    createdAt:
-        new Date().toLocaleDateString()
-
+    createdAt: new Date().toLocaleDateString()
 };
 
-
 users.push(user);
-
-
 saveUsers(users);
 
-
-alert(
-    "User added successfully."
-);
-
-
-document.getElementById("userForm")
-    .reset();
-
-
+alert("User added successfully.");
+document.getElementById("userForm").reset();
 loadUsers();
 
 }
@@ -1278,7 +1417,7 @@ if (users.length === 0) {
 
         <tr>
 
-            <td colspan="6">
+            <td colspan="7">
                 No users found.
             </td>
 
@@ -1304,6 +1443,8 @@ users.forEach(function (user) {
         <td>${user.name}</td>
 
         <td>${user.email}</td>
+
+        <td>${user.username || "-"}</td>
 
         <td>${user.role}</td>
 
@@ -1385,27 +1526,123 @@ const email =
 if (email === null) return;
 
 
-const role =
-    prompt(
-        "Enter role:\nAdmin\nDoctor\nReceptionist\nLab Technician\nPharmacist",
-        user.role
-    );
-
-
+const role = prompt(
+    "Enter role:\nAdmin\nDoctor\nReceptionist\nLab Technician\nPharmacist",
+    user.role
+);
 if (role === null) return;
 
 
-user.name =
-    name.trim();
+const username =
+    prompt(
+        "Enter login username:",
+        user.username || ""
+    );
 
-user.email =
-    email.trim();
 
-user.role =
-    role.trim();
+if (username === null) return;
+
+const newPassword = prompt("New password (leave blank to keep current):", "");
+if (newPassword === null) return;
+
+const nextName = name.trim();
+const nextEmail = email.trim();
+const nextUsername = username.trim().toLowerCase();
+const nextRole = role.trim();
+const allowedRoles = ["Admin", "Doctor", "Receptionist", "Lab Technician", "Pharmacist"];
+
+if (!nextName || !nextEmail || !nextUsername || !allowedRoles.includes(nextRole)) {
+    alert("Name, email, username, and a valid role are required.");
+    return;
+}
+
+if (newPassword && newPassword.length < 8) {
+    alert("The password must be at least 8 characters.");
+    return;
+}
+
+const reservedUsernames = [
+    "admin", "doctor", "reception", "receptionist", "pharmacy", "pharmacist", "lab"
+];
+const usernameInUse = reservedUsernames.includes(nextUsername) || users.some(function (item) {
+    return item.id !== id && item.username && item.username.toLowerCase() === nextUsername;
+});
+const emailInUse = users.some(function (item) {
+    return item.id !== id && item.email.toLowerCase() === nextEmail.toLowerCase();
+});
+
+if (usernameInUse || emailInUse) {
+    alert("That username or email is already in use.");
+    return;
+}
+
+let profile = null;
+let profileType = null;
+
+if (nextRole === "Doctor") {
+    profile = getDoctors().find(function (doctor) {
+        return doctor.email.toLowerCase() === nextEmail.toLowerCase();
+    });
+    profileType = "doctor";
+} else if (nextRole !== "Admin") {
+    profile = getStaff().find(function (person) {
+        return person.email.toLowerCase() === nextEmail.toLowerCase() && person.role === nextRole;
+    });
+    profileType = "staff";
+}
+
+if (nextRole !== "Admin" && !profile) {
+    alert("Add this person to the matching staff or doctor directory before assigning this role.");
+    return;
+}
+
+if (profile && profile.status !== "Active") {
+    alert("Activate this staff or doctor profile before assigning this account.");
+    return;
+}
+
+
+user.name = nextName;
+user.email = nextEmail;
+user.username = nextUsername;
+if (newPassword) user.password = newPassword;
+user.role = nextRole;
+user.profileId = profile ? profile.id : null;
+user.profileType = profileType;
 
 
 saveUsers(users);
+
+if (user.profileType === "doctor") {
+    const doctors = getDoctors();
+    const doctor = doctors.find(function (item) {
+        return item.id === user.profileId;
+    });
+    if (doctor) {
+        doctor.name = nextName;
+        doctor.email = nextEmail;
+        saveDoctors(doctors);
+        syncDoctorStaffRecord(doctor);
+    }
+} else if (user.profileType === "staff") {
+    const staff = getStaff();
+    const person = staff.find(function (item) {
+        return item.id === user.profileId;
+    });
+    if (person) {
+        person.name = nextName;
+        person.email = nextEmail;
+        saveStaff(staff);
+        if (person.role === "Doctor") {
+            syncDoctorProfileFromStaff(person, person.specialization || "");
+        } else {
+            syncLinkedAccounts("staff", person.id, {
+                name: nextName,
+                email: nextEmail
+            });
+        }
+    }
+}
 
 
 alert(
@@ -1516,6 +1753,12 @@ const filteredUsers =
 
             ||
 
+            (user.username || "")
+                .toLowerCase()
+                .includes(search)
+
+            ||
+
             user.role
                 .toLowerCase()
                 .includes(search)
@@ -1553,7 +1796,7 @@ if (users.length === 0) {
 
         <tr>
 
-            <td colspan="6">
+            <td colspan="7">
                 No users found.
             </td>
 
@@ -1579,6 +1822,8 @@ users.forEach(function (user) {
         <td>${user.name}</td>
 
         <td>${user.email}</td>
+
+        <td>${user.username || "-"}</td>
 
         <td>${user.role}</td>
 
