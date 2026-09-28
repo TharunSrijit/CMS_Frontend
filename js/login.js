@@ -13,6 +13,10 @@ const dashboardByRole = {
     PHARMACIST: 'pharmacy/dashboard.html'
 };
 
+const localAccounts = {
+    admin: { password: 'admin123', role: 'ADMIN', fullName: 'Administrator' }
+};
+
 togglePassword.addEventListener('click', () => {
     const showPassword = passwordInput.type === 'password';
     passwordInput.type = showPassword ? 'text' : 'password';
@@ -20,47 +24,28 @@ togglePassword.addEventListener('click', () => {
     togglePassword.setAttribute('aria-pressed', String(showPassword));
 });
 
-loginForm.addEventListener('submit', async event => {
+loginForm.addEventListener('submit', event => {
     event.preventDefault();
     message.textContent = '';
 
     if (!loginForm.reportValidity()) return;
 
-    submitButton.disabled = true;
-    submitButton.querySelector('span').textContent = 'Signing in...';
+    const username = usernameInput.value.trim().toLowerCase();
+    const account = localAccounts[username];
+    const requiredRole = loginForm.dataset.role;
 
-    try {
-        const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: usernameInput.value.trim(),
-                password: passwordInput.value
-            })
-        });
-
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            const detail = result.detail || result.non_field_errors?.[0];
-            throw new Error(detail || 'Sign-in failed. Check your username and password.');
-        }
-
-        const role = String(result.role || '').trim().toUpperCase().replace(/[\s-]+/g, '_');
-        const dashboard = dashboardByRole[role];
-        if (!dashboard) {
-            throw new Error('Your account role does not have a dashboard configured.');
-        }
-
-        localStorage.setItem('fd_access', result.access || '');
-        localStorage.setItem('fd_refresh', result.refresh || '');
-        localStorage.setItem('fd_name', result.full_name || result.username || usernameInput.value.trim());
-        window.location.assign(dashboard);
-    } catch (error) {
-        message.textContent = error instanceof TypeError
-            ? 'Cannot reach the sign-in server. Make sure the clinic API is running at 127.0.0.1:8000.'
-            : error.message;
-    } finally {
-        submitButton.disabled = false;
-        submitButton.querySelector('span').textContent = 'Sign in to your workspace';
+    if (!account || account.password !== passwordInput.value) {
+        message.textContent = 'Sign-in failed. Use the local administrator credentials.';
+        return;
     }
+
+    if (requiredRole && account.role !== requiredRole) {
+        message.textContent = 'This sign-in is for administrator accounts only.';
+        return;
+    }
+
+    localStorage.setItem('fd_access', 'local-session');
+    localStorage.setItem('fd_refresh', '');
+    localStorage.setItem('fd_name', account.fullName);
+    window.location.assign(dashboardByRole[account.role]);
 });
