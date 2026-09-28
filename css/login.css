@@ -198,6 +198,44 @@ a {
     line-height: 1.6;
 }
 
+.portal-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    margin: -14px 0 27px;
+    padding: 3px;
+    border: 1px solid var(--line);
+    background: #f7eee8;
+}
+
+.portal-option {
+    display: grid;
+    min-height: 36px;
+    place-items: center;
+    border: 0;
+    color: var(--muted);
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.portal-option:hover {
+    color: var(--ink);
+}
+
+.portal-option.is-current {
+    color: #fff;
+    background: var(--teal);
+    box-shadow: 0 1px 3px rgba(61, 42, 37, .16);
+}
+
+.portal-option:focus-visible {
+    outline: 2px solid var(--teal-dark);
+    outline-offset: 2px;
+}
+
 .field {
     margin-bottom: 21px;
 }

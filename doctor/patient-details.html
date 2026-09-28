@@ -308,7 +308,7 @@
    1. AUTH GUARD
    ──────────────────────────────────────────────────────────── */
 const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-if (!loggedInUser || loggedInUser.role !== 'doctor') {
+if (!loggedInUser || (loggedInUser.role !== 'doctor' && loggedInUser.role !== 'admin')) {
   window.location.replace('../index.html');
 }
 

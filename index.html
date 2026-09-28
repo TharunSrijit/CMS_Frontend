@@ -30,11 +30,15 @@
 		<section class="form-panel" aria-labelledby="login-title">
 			<div class="form-wrap">
 				<a class="mobile-brand" href="index.html"><span class="brand-mark" aria-hidden="true">C</span> Clinic<span>Care</span></a>
-				<p class="eyebrow form-eyebrow">STAFF PORTAL</p>
+				<p class="eyebrow form-eyebrow" id="portal-eyebrow">STAFF PORTAL</p>
 				<h2 id="login-title">Welcome back</h2>
-				<p class="form-intro">Sign in with your staff account to continue.</p>
+				<p class="form-intro" id="portal-intro">Sign in with your staff account to continue.</p>
+				<div class="portal-switch" role="group" aria-label="Choose sign-in portal">
+					<button class="portal-option is-current" type="button" data-role="STAFF" aria-pressed="true">Staff</button>
+					<button class="portal-option" type="button" data-role="ADMIN" aria-pressed="false">Admin</button>
+				</div>
 
-				<form id="login-form" novalidate>
+				<form id="login-form" data-role="STAFF" novalidate>
 					<div class="field">
 						<label for="username">Username</label>
 						<input id="username" name="username" type="text" autocomplete="username" placeholder="Enter your username" required>
@@ -48,7 +52,7 @@
 					</div>
 					<p class="form-message" id="form-message" role="alert" aria-live="polite"></p>
 					<button class="submit-button" id="submit-button" type="submit">
-						<span>Sign in to your workspace</span>
+						<span id="submit-label">Sign in as Staff</span>
 						<span class="button-arrow" aria-hidden="true">&#8594;</span>
 					</button>
 				</form>

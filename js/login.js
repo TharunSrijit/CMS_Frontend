@@ -4,6 +4,10 @@ const passwordInput = document.getElementById('password');
 const message = document.getElementById('form-message');
 const submitButton = document.getElementById('submit-button');
 const togglePassword = document.getElementById('toggle-password');
+const submitLabel = document.getElementById('submit-label');
+const portalEyebrow = document.getElementById('portal-eyebrow');
+const portalIntro = document.getElementById('portal-intro');
+const portalOptions = document.querySelectorAll('.portal-option');
 
 const dashboardByRole = {
     ADMIN: 'admin/dashboard.html',
@@ -49,7 +53,13 @@ loginForm.addEventListener('submit', event => {
         return;
     }
 
-    if (requiredRole && account.role !== requiredRole) {
+    const isAuthorized = requiredRole === 'ADMIN'
+        ? account.role === 'ADMIN'
+        : requiredRole === 'STAFF'
+            ? account.role !== 'ADMIN'
+            : true;
+
+    if (!isAuthorized) {
         message.textContent = 'This sign-in is not authorized for this workspace.';
         return;
     }
@@ -63,4 +73,27 @@ loginForm.addEventListener('submit', event => {
         role: account.userRole
     }));
     window.location.assign(dashboardByRole[account.role]);
+});
+
+portalOptions.forEach(option => {
+    option.addEventListener('click', () => {
+        const isAdmin = option.dataset.role === 'ADMIN';
+        loginForm.dataset.role = isAdmin ? 'ADMIN' : 'STAFF';
+
+        portalOptions.forEach(portalOption => {
+            const isCurrent = portalOption === option;
+            portalOption.classList.toggle('is-current', isCurrent);
+            portalOption.setAttribute('aria-pressed', String(isCurrent));
+        });
+
+        portalEyebrow.textContent = isAdmin ? 'ADMINISTRATOR ACCESS' : 'STAFF PORTAL';
+        portalIntro.textContent = isAdmin
+            ? 'Sign in with your administrator account to continue.'
+            : 'Sign in with your staff account to continue.';
+        submitLabel.textContent = isAdmin ? 'Sign in as Admin' : 'Sign in as Staff';
+        document.title = isAdmin
+            ? 'Administrator Sign In | Clinic Management System'
+            : 'Sign In | Clinic Management System';
+        message.textContent = '';
+    });
 });

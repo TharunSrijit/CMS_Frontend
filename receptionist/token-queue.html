@@ -161,7 +161,7 @@
 
 /* ── AUTH GUARD ── */
 const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-if (!loggedInUser || loggedInUser.role !== 'receptionist') {
+if (!loggedInUser || (loggedInUser.role !== 'receptionist' && loggedInUser.role !== 'admin')) {
   window.location.href = '../index.html';
 }
 

@@ -831,8 +831,62 @@
 .admin-note > p:not(.section-eyebrow) { margin: 9px 0 20px; color: #667670; font-size: 12px; line-height: 1.65; }
 .admin-note > a { color: #24685e; font-size: 11px; font-weight: 700; text-decoration: none; }
 
+.workspaces-section { margin: 0 0 28px; }
+
+.workspaces-section .section-heading { margin-bottom: 13px; }
+
+.workspace-links {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workspace-link {
+  display: flex;
+  min-width: 0;
+  min-height: 72px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e1e8e3;
+  border-radius: 4px;
+  background: #fff;
+  text-decoration: none;
+  transition: border-color .18s ease, background .18s ease;
+}
+
+.workspace-link:hover {
+  border-color: #b7c9c0;
+  background: #f9fbf9;
+}
+
+.workspace-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--workspace-color);
+  background: var(--workspace-soft);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.workspace-doctor { --workspace-color: #24685e; --workspace-soft: #e2efea; }
+.workspace-reception { --workspace-color: #a16c3b; --workspace-soft: #f5ecdf; }
+.workspace-lab { --workspace-color: #4c7180; --workspace-soft: #e6eff1; }
+.workspace-pharmacy { --workspace-color: #6b7042; --workspace-soft: #eef0e3; }
+
+.workspace-link > span:nth-child(2) { min-width: 0; flex: 1; }
+.workspace-link strong,.workspace-link small { display: block; }
+.workspace-link strong { color: #2b403c; font-size: 11px; }
+.workspace-link small { overflow: hidden; margin-top: 3px; color: #798781; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-arrow { color: #72837d; font-size: 16px; }
+
 @media (max-width: 1100px) {
   .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboard-lower { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .admin-note { max-width: none; }
 }
@@ -849,6 +903,7 @@
   .sign-in-link { display: none; }
   .admin-topbar { min-height: 64px; padding: 10px 20px; }
   .admin-content { padding: 28px 20px 40px; }
+  .workspace-links { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 520px) {
