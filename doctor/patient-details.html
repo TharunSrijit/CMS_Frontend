@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Doctor Patient Clinical History — Clinic Management System" />
+  <title>Patient Medical Record | Doctor — CMS</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+  <link rel="stylesheet" href="../css/tables.css" />
+
+  <style>
+    .patient-profile-header {
+      background: linear-gradient(135deg, var(--surface) 0%, #fdf8f5 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .profile-avatar-large {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .profile-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .profile-meta-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+    }
+    .profile-meta-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .profile-meta-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Tabs */
+    .clinical-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 10px 18px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover { color: var(--accent); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Consultation history cards */
+    .timeline-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .timeline-date {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+  </style>
+</head>
+
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<div class="sidebar" id="sidebar">
+  <a class="sidebar-brand" href="dashboard.html">
+    <div class="sidebar-brand-icon">🏥</div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">MediCare CMS</span>
+      <span class="sidebar-brand-sub">Doctor Portal</span>
+    </div>
+  </a>
+
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
+    <a class="nav-item" href="dashboard.html" id="nav-dashboard">
+      <span class="nav-item-icon">📊</span>
+      <span class="nav-item-label">Dashboard</span>
+    </a>
+    <a class="nav-item" href="appointments.html" id="nav-appointments">
+      <span class="nav-item-icon">📅</span>
+      <span class="nav-item-label">Appointments</span>
+      <span class="nav-badge" id="sidebarApptBadge">0</span>
+    </a>
+    <a class="nav-item" href="patients.html" id="nav-patients">
+      <span class="nav-item-icon">👤</span>
+      <span class="nav-item-label">Patients</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <span class="nav-section-label">Clinical</span>
+    <a class="nav-item" href="consultation.html" id="nav-consultation">
+      <span class="nav-item-icon">🩺</span>
+      <span class="nav-item-label">Consultation</span>
+    </a>
+    <a class="nav-item" href="prescriptions.html" id="nav-prescriptions">
+      <span class="nav-item-icon">💊</span>
+      <span class="nav-item-label">Prescriptions</span>
+    </a>
+    <a class="nav-item" href="lab-tests.html" id="nav-lab">
+      <span class="nav-item-icon">🧪</span>
+      <span class="nav-item-label">Lab Tests</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <span class="nav-section-label">History</span>
+    <a class="nav-item active" href="patient-details.html" id="nav-history">
+      <span class="nav-item-icon">📋</span>
+      <span class="nav-item-label">Past Consultations</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="sidebar-avatar" id="sidebarAvatar">DR</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name" id="sidebarName">Dr. Arun Kumar</div>
+      <div class="sidebar-user-role">Doctor</div>
+    </div>
+    <button class="sidebar-logout-btn" onclick="logout()" title="Logout">⏏</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="topbar-menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+      <div>
+        <div class="topbar-title">Medical Record & Clinical History</div>
+        <div class="topbar-subtitle">Past visits, diagnoses, prescriptions, and reports</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <select id="quickPatientPicker" onchange="switchPatient(this.value)" style="padding:6px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; background:var(--surface);">
+          <!-- loaded via JS -->
+        </select>
+      </div>
+      <div class="user-chip">
+        <div class="user-chip-avatar" id="topbarAvatar">DR</div>
+        <div class="user-chip-info">
+          <div class="user-chip-name" id="topbarName">Dr. Arun Kumar</div>
+          <div class="user-chip-role">Cardiologist / Physician</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- PATIENT HERO CARD -->
+    <div class="patient-profile-header">
+      <div style="display:flex; gap:18px; align-items:flex-start;">
+        <div class="profile-avatar-large" id="pHeroAvatar">RM</div>
+        <div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <h1 style="margin:0; font-size:22px; font-weight:800; color:var(--text-primary);" id="pHeroName">Rahul Menon</h1>
+            <span class="badge" style="background:#f0e9e4; color:#3d2a25; font-family:monospace;" id="pHeroId">PAT001</span>
+            <span class="badge badge-success">Registered Patient</span>
+          </div>
+          <div style="margin-top:6px; font-size:13px; color:var(--text-secondary);" id="pHeroSub">
+            24 yrs · Male · Blood: O+ · Phone: 9876543210
+          </div>
+          <div style="margin-top:8px;">
+            <span class="badge badge-danger" id="pHeroAllergies">⚠️ Allergies: None</span>
+            <span class="badge badge-info" id="pHeroChronic" style="margin-left:6px;">🩺 Condition: Routine Care</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print Record</button>
+        <button class="btn btn-primary btn-sm" id="btnLaunchConsult" onclick="startConsultationForPatient()">🩺 New Consultation</button>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="clinical-tabs">
+      <button class="tab-btn active" onclick="setTab('consultations', this)">📋 Consultations (<span id="countConsults">0</span>)</button>
+      <button class="tab-btn" onclick="setTab('prescriptions', this)">💊 Prescriptions (<span id="countPrescriptions">0</span>)</button>
+      <button class="tab-btn" onclick="setTab('labs', this)">🧪 Lab Reports (<span id="countLabs">0</span>)</button>
+    </div>
+
+    <!-- TAB 1: CONSULTATIONS -->
+    <div id="tabConsultations" class="tab-content">
+      <div id="consultationsContainer">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- TAB 2: PRESCRIPTIONS -->
+    <div id="tabPrescriptions" class="tab-content" style="display:none;">
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rx ID</th>
+                <th>Date</th>
+                <th>Prescribed Medication</th>
+                <th>Dosage & Frequency</th>
+                <th>Duration</th>
+                <th>Doctor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="prescriptionsTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: LAB REPORTS -->
+    <div id="tabLabs" class="tab-content" style="display:none;">
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Test Name</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Doctor</th>
+                <th>Result Summary</th>
+              </tr>
+            </thead>
+            <tbody id="labsTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ────────────────────────────────────────────────────────────
+   1. AUTH GUARD
+   ──────────────────────────────────────────────────────────── */
+const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+if (!loggedInUser || loggedInUser.role !== 'doctor') {
+  window.location.replace('../index.html');
+}
+
+/* ────────────────────────────────────────────────────────────
+   2. STATE
+   ──────────────────────────────────────────────────────────── */
+let currentPatient = null;
+let patientConsultations = [];
+let patientPrescriptions = [];
+let patientLabs = [];
+
+/* ────────────────────────────────────────────────────────────
+   3. INIT
+   ──────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  initUserUI();
+  loadPatientData();
+});
+
+function initUserUI() {
+  const name = loggedInUser.name || loggedInUser.username || 'Doctor';
+  const ini  = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  document.getElementById('sidebarAvatar').textContent = ini;
+  document.getElementById('sidebarName').textContent   = name;
+  document.getElementById('topbarAvatar').textContent  = ini;
+  document.getElementById('topbarName').textContent    = name;
+
+  const appts = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+  const today = new Date().toISOString().split('T')[0];
+  const waiting = appts.filter(a => a.date === today && a.status === 'Waiting').length;
+  document.getElementById('sidebarApptBadge').textContent = waiting;
+}
+
+function loadPatientData() {
+  const patients = JSON.parse(localStorage.getItem('cms_patients') || '[]');
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedId = urlParams.get('id') || 'PAT001';
+
+  // Fill patient selector
+  const picker = document.getElementById('quickPatientPicker');
+  picker.innerHTML = patients.map(p => `
+    <option value="${p.id}" ${p.id === requestedId ? 'selected' : ''}>
+      ${p.name} (${p.id})
+    </option>
+  `).join('');
+
+  currentPatient = patients.find(p => p.id === requestedId) || patients[0] || {
+    id: 'PAT001',
+    name: 'Rahul Menon',
+    age: 24,
+    gender: 'Male',
+    blood: 'O+',
+    phone: '9876543210',
+    allergies: 'None',
+    chronic: 'None'
+  };
+
+  renderPatientHeader(currentPatient);
+  loadClinicalHistory(currentPatient);
+}
+
+function switchPatient(id) {
+  window.location.href = `patient-details.html?id=${id}`;
+}
+
+function renderPatientHeader(p) {
+  const initials = p.name.split(' ').map(w => w[0]).join('').slice(0, 2);
+  document.getElementById('pHeroAvatar').textContent = initials;
+  document.getElementById('pHeroName').textContent   = p.name;
+  document.getElementById('pHeroId').textContent     = p.id;
+  document.getElementById('pHeroSub').textContent    = `${p.age || 28} yrs · ${p.gender || 'Unknown'} · Blood: ${p.blood || '—'} · Phone: ${p.phone || '—'}`;
+  
+  const allergyEl = document.getElementById('pHeroAllergies');
+  if (p.allergies && p.allergies !== 'None') {
+    allergyEl.textContent = `⚠️ Allergies: ${p.allergies}`;
+    allergyEl.className = 'badge badge-danger';
+  } else {
+    allergyEl.textContent = '✓ No known drug allergies';
+    allergyEl.className = 'badge badge-success';
+  }
+
+  document.getElementById('pHeroChronic').textContent = p.chronic && p.chronic !== 'None' ? `🩺 Chronic: ${p.chronic}` : '🩺 General Medicine';
+}
+
+function loadClinicalHistory(p) {
+  // 1. Consultations
+  const allConsults = JSON.parse(localStorage.getItem('cms_consultations') || '[]');
+  patientConsultations = allConsults.filter(c => c.patientId === p.id || c.patientName === p.name);
+
+  // Default sample past consultation if none yet
+  if (patientConsultations.length === 0) {
+    patientConsultations = [
+      {
+        id: 'CNS-Sample',
+        date: '2026-02-14',
+        time: '10:30 AM',
+        doctorName: 'Dr. Arun Kumar',
+        diagnosis: 'Acute Upper Respiratory Tract Infection',
+        secondaryDiagnosis: 'None',
+        notes: 'Patient presented with 3-day history of dry cough and low-grade pyrexia. Throat examination revealed mild erythematous pharynx. Chest clear to auscultation.',
+        vitals: { bp: '118/76', pulse: '76', temp: '99.1', spo2: '98', weight: '67' },
+        medicines: [
+          { medicine: 'Amoxicillin 500mg', dosage: '1 Cap', frequency: '1-0-1', duration: '5 Days', instructions: 'After food' },
+          { medicine: 'Paracetamol 650mg', dosage: '1 Tab', frequency: 'SOS / As needed', duration: '3 Days', instructions: 'For fever/body ache' }
+        ],
+        labTests: ['Complete Blood Count (CBC)'],
+        advice: 'Adequate hydration, warm saline gargles twice daily. Review if fever persists over 48 hours.',
+        followUp: '1 Week'
+      }
+    ];
+  }
+  document.getElementById('countConsults').textContent = patientConsultations.length;
+  renderConsultations(patientConsultations);
+
+  // 2. Prescriptions
+  const allRx = JSON.parse(localStorage.getItem('cms_prescriptions') || '[]');
+  patientPrescriptions = allRx.filter(r => r.patientId === p.id || r.patientName === p.name);
+  if (patientPrescriptions.length === 0) {
+    patientPrescriptions = [
+      {
+        id: 'RX-98210',
+        date: '2026-02-14',
+        doctorName: 'Dr. Arun Kumar',
+        status: 'Dispensed',
+        medicines: [
+          { medicine: 'Amoxicillin 500mg', dosage: '1 Cap', frequency: '1-0-1', duration: '5 Days' },
+          { medicine: 'Paracetamol 650mg', dosage: '1 Tab', frequency: 'SOS', duration: '3 Days' }
+        ]
+      }
+    ];
+  }
+  document.getElementById('countPrescriptions').textContent = patientPrescriptions.length;
+  renderPrescriptions(patientPrescriptions);
+
+  // 3. Lab Tests
+  const allLabs = JSON.parse(localStorage.getItem('cms_lab_tests') || '[]');
+  patientLabs = allLabs.filter(l => l.patientId === p.id || l.patientName === p.name);
+  if (patientLabs.length === 0) {
+    patientLabs = [
+      {
+        id: 'LAB-1029',
+        orderDate: '2026-02-14',
+        testName: 'Complete Blood Count (CBC)',
+        status: 'Completed',
+        priority: 'Normal',
+        doctorName: 'Dr. Arun Kumar',
+        summary: 'Hb: 14.2 g/dL, WBC: 7,800 /mcL, Platelets: 240,000 /mcL (Normal limits)'
+      }
+    ];
+  }
+  document.getElementById('countLabs').textContent = patientLabs.length;
+  renderLabs(patientLabs);
+}
+
+function renderConsultations(consults) {
+  const container = document.getElementById('consultationsContainer');
+  container.innerHTML = consults.map(c => `
+    <div class="timeline-card">
+      <div class="timeline-header">
+        <div>
+          <span class="timeline-date">📅 ${c.date} · ${c.time || '10:00 AM'}</span>
+          <span style="margin-left:10px; font-size:12px; color:var(--text-muted);">Consulted by <b>${c.doctorName || 'Dr. Arun Kumar'}</b></span>
+        </div>
+        <span class="badge badge-success">Completed</span>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">
+          🩺 ${c.diagnosis}
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0;">
+          ${c.notes || 'Clinical consultation documented.'}
+        </p>
+      </div>
+
+      <!-- Vitals banner -->
+      ${c.vitals ? `
+        <div style="display:flex; gap:16px; flex-wrap:wrap; background:var(--surface-secondary); padding:8px 14px; border-radius:6px; font-size:12px; margin-bottom:12px;">
+          <span><b>BP:</b> ${c.vitals.bp || '—'} mmHg</span>
+          <span><b>Pulse:</b> ${c.vitals.pulse || '—'} bpm</span>
+          <span><b>Temp:</b> ${c.vitals.temp || '—'} °F</span>
+          <span><b>SpO2:</b> ${c.vitals.spo2 || '—'}%</span>
+          <span><b>Weight:</b> ${c.vitals.weight || '—'} kg</span>
+        </div>
+      ` : ''}
+
+      <!-- Prescribed meds summary -->
+      ${c.medicines && c.medicines.length > 0 ? `
+        <div style="font-size:13px; margin-bottom:8px;">
+          <b>Prescribed Medications:</b>
+          <ul style="margin:4px 0 8px 18px; padding:0; color:var(--text-primary);">
+            ${c.medicines.map(m => `<li><b>${m.medicine}</b> — ${m.dosage || ''} (${m.frequency || ''}) for ${m.duration || ''}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+
+      <!-- Advice & Followup -->
+      <div style="font-size:12px; color:var(--text-secondary); display:flex; justify-content:space-between; flex-wrap:wrap; border-top:1px solid var(--border-light); padding-top:8px;">
+        <div><b>Advice:</b> ${c.advice || 'Follow general healthcare advice.'}</div>
+        <div><b>Follow-up:</b> ${c.followUp || 'As needed'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPrescriptions(prescriptions) {
+  const tbody = document.getElementById('prescriptionsTableBody');
+  tbody.innerHTML = prescriptions.map(rx => {
+    return (rx.medicines || []).map((m, i) => `
+      <tr>
+        ${i === 0 ? `<td rowspan="${rx.medicines.length}" style="font-family:monospace; font-weight:600; color:var(--accent);">${rx.id}</td>` : ''}
+        ${i === 0 ? `<td rowspan="${rx.medicines.length}">${rx.date}</td>` : ''}
+        <td style="font-weight:600;">${m.medicine}</td>
+        <td>${m.dosage} (${m.frequency})</td>
+        <td>${m.duration}</td>
+        ${i === 0 ? `<td rowspan="${rx.medicines.length}">${rx.doctorName || 'Dr. Arun Kumar'}</td>` : ''}
+        ${i === 0 ? `<td rowspan="${rx.medicines.length}"><span class="badge badge-success">${rx.status || 'Active'}</span></td>` : ''}
+      </tr>
+    `).join('');
+  }).join('');
+}
+
+function renderLabs(labs) {
+  const tbody = document.getElementById('labsTableBody');
+  tbody.innerHTML = labs.map(l => `
+    <tr>
+      <td style="font-family:monospace; font-weight:600; color:var(--accent);">${l.id}</td>
+      <td>${l.orderDate}</td>
+      <td style="font-weight:600;">${l.testName}</td>
+      <td><span class="badge ${l.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${l.status}</span></td>
+      <td><span class="badge" style="background:#f0e9e4;">${l.priority || 'Normal'}</span></td>
+      <td>${l.doctorName || 'Dr. Arun Kumar'}</td>
+      <td style="font-size:12px; color:var(--text-secondary);">${l.summary || 'Awaiting lab technician results'}</td>
+    </tr>
+  `).join('');
+}
+
+function setTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.getElementById('tabConsultations').style.display = tab === 'consultations' ? 'block' : 'none';
+  document.getElementById('tabPrescriptions').style.display = tab === 'prescriptions' ? 'block' : 'none';
+  document.getElementById('tabLabs').style.display          = tab === 'labs' ? 'block' : 'none';
+}
+
+function startConsultationForPatient() {
+  if (!currentPatient) return;
+  // Generate active consultation appointment
+  const appts = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+  const today = new Date().toISOString().split('T')[0];
+  let appt = appts.find(a => a.patientId === currentPatient.id && a.date === today);
+
+  if (!appt) {
+    const token = appts.filter(a => a.date === today).length + 1;
+    appt = {
+      id: 'APT-' + Date.now(),
+      token: token,
+      patientId: currentPatient.id,
+      patientName: currentPatient.name,
+      age: currentPatient.age || 30,
+      gender: currentPatient.gender || 'Male',
+      blood: currentPatient.blood || 'O+',
+      time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }),
+      type: 'Follow-up',
+      status: 'In Progress',
+      complaint: 'Clinical follow-up consultation',
+      date: today
+    };
+    appts.push(appt);
+    localStorage.setItem('cms_appointments', JSON.stringify(appts));
+  } else {
+    appt.status = 'In Progress';
+    localStorage.setItem('cms_appointments', JSON.stringify(appts));
+  }
+
+  localStorage.setItem('cms_active_appointment', appt.id);
+  window.location.href = `consultation.html?id=${appt.id}`;
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+function logout() {
+  localStorage.removeItem('loggedInUser');
+  window.location.replace('../index.html');
+}
+</script>
+</body>
+</html>
