@@ -1,4 +1,4 @@
-:root{--paper:#f2f5f7;--card:#fff;--ink:#12263a;--mute:#5d6f80;--line:#dbe3ea;--teal:#0e8a8c;--teal-d:#0a6b6d;--amber:#c98512;--coral:#c4472f;--green:#2f8f4e;
+:root{--paper:#fbf6f1;--card:#fff;--ink:#3d2a25;--mute:#765f56;--line:#ddcfc7;--teal:#8f5f4e;--teal-d:#6f4639;--amber:#b47745;--coral:#a4493b;--green:#7d684b;
 --f-head:'Bricolage Grotesque',system-ui,sans-serif;--f-body:'Figtree',system-ui,sans-serif}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.5 var(--f-body);background:var(--paper);color:var(--ink)}
@@ -9,7 +9,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .hide{display:none!important}
 /* layout */
 #app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
-nav{background:var(--ink);color:#cfdbe6;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+nav{background:var(--ink);color:#e0cfc5;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
 nav a{display:block;text-decoration:none}
 nav .brand{font:700 20px var(--f-head);color:#fff;padding:0 10px 18px}
 nav button,nav a{background:none;border:0;text-align:left;padding:10px 12px;border-radius:8px;color:inherit;cursor:pointer;font-weight:500}

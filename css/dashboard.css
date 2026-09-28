@@ -539,8 +539,8 @@
 /* Admin dashboard */
 .admin-dashboard {
   min-height: 100vh;
-  background: #f3f6f3;
-  color: #243b38;
+  background: #fbf6f1;
+  color: #3d2a25;
 }
 
 .admin-shell {
@@ -556,8 +556,8 @@
   height: 100vh;
   flex-direction: column;
   padding: 25px 16px 18px;
-  color: #e8f0ec;
-  background: #173b37;
+  color: #f6e3d6;
+  background: #3d2a25;
 }
 
 .admin-brand {
@@ -571,16 +571,16 @@
   text-decoration: none;
 }
 
-.admin-brand > span:last-child span { color: #a9d1bd; font-weight: 500; }
+.admin-brand > span:last-child span { color: #d9b7a7; font-weight: 500; }
 
 .admin-brand-mark {
   display: grid;
   width: 36px;
   height: 36px;
   place-items: center;
-  border: 1px solid #9fc8b1;
+  border: 1px solid #c99f88;
   border-radius: 50%;
-  color: #d6ebdd;
+  color: #f1d8c7;
   font-family: Georgia, serif;
   font-size: 22px;
   font-weight: 400;
@@ -588,7 +588,7 @@
 
 .sidebar-caption {
   margin: 0 10px 10px;
-  color: #91ada3;
+  color: #c5a99b;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .11em;
@@ -605,7 +605,7 @@
   gap: 12px;
   padding: 0 12px;
   border-radius: 5px;
-  color: #c5d5ce;
+  color: #e0cfc5;
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;
@@ -624,8 +624,8 @@
 }
 
 .admin-nav-link:hover,
-.admin-nav-link.is-current { color: #fff; background: #28534c; }
-.admin-nav-link.is-current { box-shadow: inset 3px 0 #e8a66f; }
+.admin-nav-link.is-current { color: #fff; background: #6f4639; }
+.admin-nav-link.is-current { box-shadow: inset 3px 0 #d9a06f; }
 
 .sign-in-link {
   display: flex;
@@ -633,7 +633,7 @@
   margin-top: auto;
   padding: 15px 10px 5px;
   border-top: 1px solid rgba(255,255,255,.12);
-  color: #b9ccc3;
+  color: #d3bcb0;
   font-size: 12px;
   text-decoration: none;
 }
@@ -649,20 +649,20 @@
   justify-content: space-between;
   gap: 20px;
   padding: 12px clamp(24px, 4vw, 58px);
-  border-bottom: 1px solid #e1e8e3;
+  border-bottom: 1px solid #edddd4;
   background: rgba(255,255,255,.86);
 }
 
 .topbar-kicker,
 .section-eyebrow {
   margin: 0 0 3px;
-  color: #72847e;
+  color: #927d73;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .1em;
 }
 
-.topbar-title { margin: 0; color: #243b38; font-size: 14px; font-weight: 700; }
+.topbar-title { margin: 0; color: #59433b; font-size: 14px; font-weight: 700; }
 
 .admin-profile { display: flex; align-items: center; gap: 10px; }
 
@@ -672,16 +672,16 @@
   height: 36px;
   place-items: center;
   border-radius: 50%;
-  color: #31534b;
-  background: #e2eee6;
+  color: #6f4639;
+  background: #f0ddd7;
   font-size: 13px;
   font-weight: 700;
 }
 
 .admin-profile strong,
 .admin-profile small { display: block; }
-.admin-profile strong { color: #2b403c; font-size: 12px; }
-.admin-profile small { margin-top: 2px; color: #788781; font-size: 10px; }
+.admin-profile strong { color: #4c372f; font-size: 12px; }
+.admin-profile small { margin-top: 2px; color: #927d73; font-size: 10px; }
 
 .admin-content {
   width: min(100%, 1440px);
@@ -698,8 +698,8 @@
 }
 
 .page-intro .section-eyebrow { margin-bottom: 8px; color: #a66b43; }
-.page-intro h1 { margin: 0; color: #203633; font-size: 29px; line-height: 1.2; }
-.intro-copy { margin: 8px 0 0; color: #71807b; font-size: 13px; }
+.page-intro h1 { margin: 0; color: #3d2a25; font-size: 29px; line-height: 1.2; }
+.intro-copy { margin: 8px 0 0; color: #765f56; font-size: 13px; }
 
 .primary-link {
   display: inline-flex;
@@ -709,14 +709,14 @@
   padding: 0 14px;
   border-radius: 4px;
   color: #fff;
-  background: #24675d;
+  background: #8f5f4e;
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
   transition: background .18s ease;
 }
 
-.primary-link:hover { color: #fff; background: #184f47; }
+.primary-link:hover { color: #fff; background: #6f4639; }
 
 .metrics-grid {
   display: grid;

@@ -14,7 +14,11 @@ const dashboardByRole = {
 };
 
 const localAccounts = {
-    admin: { password: 'admin123', role: 'ADMIN', fullName: 'Administrator' }
+    admin: { password: 'admin123', role: 'ADMIN', fullName: 'Administrator' },
+    receptionist: { password: 'receptionist123', role: 'RECEPTIONIST', fullName: 'Receptionist' },
+    doctor: { password: 'doctor123', role: 'DOCTOR', fullName: 'Doctor' },
+    lab: { password: 'lab123', role: 'LAB_TECHNICIAN', fullName: 'Lab Technician' },
+    pharmacist: { password: 'pharmacist123', role: 'PHARMACIST', fullName: 'Pharmacist' }
 };
 
 togglePassword.addEventListener('click', () => {
@@ -47,5 +51,10 @@ loginForm.addEventListener('submit', event => {
     localStorage.setItem('fd_access', 'local-session');
     localStorage.setItem('fd_refresh', '');
     localStorage.setItem('fd_name', account.fullName);
+    localStorage.setItem('loggedInUser', JSON.stringify({
+        username,
+        name: account.fullName,
+        role: account.role.toLowerCase()
+    }));
     window.location.assign(dashboardByRole[account.role]);
 });
