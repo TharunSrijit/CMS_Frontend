@@ -252,7 +252,7 @@ function searchPatient(q) {
   dd.innerHTML = found.map(p =>
     '<div onclick="selectPatient(' + JSON.stringify(p).replace(/"/g,'&quot;') + ')" ' +
     'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border-light);font-size:var(--text-sm);" ' +
-    'onmouseover="this.style.background='var(--clr-blush)'" onmouseout="this.style.background=''">' +
+    'onmouseover="this.style.background=\'var(--clr-blush)\'" onmouseout="this.style.background=\'\'">' +
     '<strong>' + p.id + '</strong> — ' + p.name + ' · ' + (p.phone||'—') + '</div>'
   ).join('');
   dd.style.display='block';
