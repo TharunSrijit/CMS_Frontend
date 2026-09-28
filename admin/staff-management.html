@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+```
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Staff Management - CMS</title>
+
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/forms.css">
+<link rel="stylesheet" href="../css/tables.css">
+```
+
+</head>
+
+<body>
+
+```
+<!-- Header -->
+<header>
+
+    <h1>Clinic Management System</h1>
+
+    <p>Staff Management</p>
+
+    <a href="dashboard.html">
+        Back to Dashboard
+    </a>
+
+</header>
+
+
+<main>
+
+    <!-- Add Staff -->
+    <section>
+
+        <h2>Add Staff</h2>
+
+
+        <form id="staffForm"
+              onsubmit="event.preventDefault(); addStaff();">
+
+
+            <label for="staffName">
+                Staff Name
+            </label>
+
+            <input
+                type="text"
+                id="staffName"
+                placeholder="Enter staff name"
+                required
+            >
+
+
+            <label for="staffEmail">
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="staffEmail"
+                placeholder="Enter email"
+                required
+            >
+
+
+            <label for="staffPhone">
+                Phone
+            </label>
+
+            <input
+                type="tel"
+                id="staffPhone"
+                placeholder="Enter phone number"
+                required
+            >
+
+
+            <label for="staffRole">
+                Staff Role
+            </label>
+
+            <select id="staffRole" required>
+
+                <option value="">
+                    Select Role
+                </option>
+
+                <option value="Receptionist">
+                    Receptionist
+                </option>
+
+                <option value="Lab Technician">
+                    Lab Technician
+                </option>
+
+                <option value="Pharmacist">
+                    Pharmacist
+                </option>
+
+            </select>
+
+
+            <button type="submit">
+                Add Staff
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- Staff List -->
+    <section>
+
+        <h2>Staff List</h2>
+
+
+        <!-- Search -->
+        <input
+            type="text"
+            id="staffSearch"
+            placeholder="Search by name, email or role"
+            oninput="searchStaff()"
+        >
+
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Name</th>
+
+                    <th>Email</th>
+
+                    <th>Phone</th>
+
+                    <th>Role</th>
+
+                    <th>Status</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="staffTableBody">
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+</main>
+
+
+<script src="../js/storage.js"></script>
+<script src="../js/admin.js"></script>
+```
+
+</body>
+
+</html>

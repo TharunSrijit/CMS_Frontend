@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+```
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Doctor Management - CMS</title>
+
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/forms.css">
+<link rel="stylesheet" href="../css/tables.css">
+```
+
+</head>
+
+<body>
+
+```
+<!-- Header -->
+<header>
+
+    <h1>Clinic Management System</h1>
+
+    <p>Doctor Management</p>
+
+    <a href="dashboard.html">
+        Back to Dashboard
+    </a>
+
+</header>
+
+
+<main>
+
+    <!-- Add Doctor -->
+    <section>
+
+        <h2>Add Doctor</h2>
+
+
+        <form id="doctorForm"
+              onsubmit="event.preventDefault(); addDoctor();">
+
+
+            <label for="doctorName">
+                Doctor Name
+            </label>
+
+            <input
+                type="text"
+                id="doctorName"
+                placeholder="Enter doctor name"
+                required
+            >
+
+
+            <label for="doctorEmail">
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="doctorEmail"
+                placeholder="Enter email"
+                required
+            >
+
+
+            <label for="doctorPhone">
+                Phone
+            </label>
+
+            <input
+                type="tel"
+                id="doctorPhone"
+                placeholder="Enter phone number"
+                required
+            >
+
+
+            <label for="doctorSpecialization">
+                Specialization
+            </label>
+
+            <input
+                type="text"
+                id="doctorSpecialization"
+                placeholder="Example: Cardiology"
+                required
+            >
+
+
+            <button type="submit">
+                Add Doctor
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- Doctor List -->
+    <section>
+
+        <h2>Doctor List</h2>
+
+
+        <!-- Search -->
+        <input
+            type="text"
+            id="doctorSearch"
+            placeholder="Search by name, email or specialization"
+            oninput="searchDoctors()"
+        >
+
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Name</th>
+
+                    <th>Email</th>
+
+                    <th>Phone</th>
+
+                    <th>Specialization</th>
+
+                    <th>Status</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="doctorTableBody">
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+</main>
+
+
+<script src="../js/storage.js"></script>
+<script src="../js/admin.js"></script>
+```
+
+</body>
+
+</html>

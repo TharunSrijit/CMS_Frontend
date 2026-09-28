@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>Admin Dashboard - Clinic Management System</title>
+
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+```
+
+</head>
+
+<body>
+
+```
+<!-- Header -->
+<header>
+    <h1>Clinic Management System</h1>
+    <p>Admin Dashboard</p>
+</header>
+
+
+<!-- Navigation -->
+<nav>
+
+    <a href="dashboard.html">
+        Dashboard
+    </a>
+
+    <a href="doctor-management.html">
+        Doctor Management
+    </a>
+
+    <a href="staff-management.html">
+        Staff Management
+    </a>
+
+    <a href="user-management.html">
+        User Management
+    </a>
+
+</nav>
+
+
+<!-- Main Content -->
+<main>
+
+    <h2>Admin Dashboard</h2>
+
+    <!-- Dashboard Cards -->
+    <div class="dashboard-cards">
+
+        <div class="card">
+            <h3>Total Doctors</h3>
+            <p id="totalDoctors">0</p>
+        </div>
+
+
+        <div class="card">
+            <h3>Total Staff</h3>
+            <p id="totalStaff">0</p>
+        </div>
+
+
+        <div class="card">
+            <h3>Total Users</h3>
+            <p id="totalUsers">0</p>
+        </div>
+
+
+        <div class="card">
+            <h3>Active Users</h3>
+            <p id="activeUsers">0</p>
+        </div>
+
+    </div>
+
+
+    <!-- Admin Responsibilities -->
+    <section>
+
+        <h2>Admin Responsibilities</h2>
+
+        <ul>
+
+            <li>Manage Doctors</li>
+
+            <li>Manage Staff</li>
+
+            <li>Manage Users</li>
+
+            <li>Activate or Deactivate Accounts</li>
+
+            <li>View Clinic Statistics</li>
+
+        </ul>
+
+    </section>
+
+
+    <!-- Quick Actions -->
+    <section>
+
+        <h2>Quick Actions</h2>
+
+        <button onclick="goToDoctors()">
+            Manage Doctors
+        </button>
+
+        <button onclick="goToStaff()">
+            Manage Staff
+        </button>
+
+        <button onclick="goToUsers()">
+            Manage Users
+        </button>
+
+    </section>
+
+</main>
+
+
+<!-- JavaScript -->
+<script src="../js/storage.js"></script>
+<script src="../js/admin.js"></script>
+```
+
+</body>
+
+</html>
