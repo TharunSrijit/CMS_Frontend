@@ -14,11 +14,13 @@ const dashboardByRole = {
 };
 
 const localAccounts = {
-    admin: { password: 'admin123', role: 'ADMIN', fullName: 'Administrator' },
-    receptionist: { password: 'receptionist123', role: 'RECEPTIONIST', fullName: 'Receptionist' },
-    doctor: { password: 'doctor123', role: 'DOCTOR', fullName: 'Doctor' },
-    lab: { password: 'lab123', role: 'LAB_TECHNICIAN', fullName: 'Lab Technician' },
-    pharmacist: { password: 'pharmacist123', role: 'PHARMACIST', fullName: 'Pharmacist' }
+    admin: { password: 'admin123', role: 'ADMIN', userRole: 'admin', fullName: 'Administrator' },
+    doctor: { password: 'doctor123', role: 'DOCTOR', userRole: 'doctor', fullName: 'Dr. Arun Kumar' },
+    reception: { password: 'reception123', role: 'RECEPTIONIST', userRole: 'receptionist', fullName: 'Receptionist' },
+    receptionist: { password: ['reception123', 'receptionist123'], role: 'RECEPTIONIST', userRole: 'receptionist', fullName: 'Receptionist' },
+    pharmacy: { password: 'pharmacy123', role: 'PHARMACIST', userRole: 'pharmacist', fullName: 'Pharmacist' },
+    pharmacist: { password: 'pharmacist123', role: 'PHARMACIST', userRole: 'pharmacist', fullName: 'Pharmacist' },
+    lab: { password: 'lab123', role: 'LAB_TECHNICIAN', userRole: 'lab', fullName: 'Lab Technician' }
 };
 
 togglePassword.addEventListener('click', () => {
@@ -38,13 +40,17 @@ loginForm.addEventListener('submit', event => {
     const account = localAccounts[username];
     const requiredRole = loginForm.dataset.role;
 
-    if (!account || account.password !== passwordInput.value) {
-        message.textContent = 'Sign-in failed. Use the local administrator credentials.';
+    const passwordMatches = account && (Array.isArray(account.password)
+        ? account.password.includes(passwordInput.value)
+        : account.password === passwordInput.value);
+
+    if (!passwordMatches) {
+        message.textContent = 'Sign-in failed. Please check your username and password.';
         return;
     }
 
     if (requiredRole && account.role !== requiredRole) {
-        message.textContent = 'This sign-in is for administrator accounts only.';
+        message.textContent = 'This sign-in is not authorized for this workspace.';
         return;
     }
 
@@ -54,7 +60,7 @@ loginForm.addEventListener('submit', event => {
     localStorage.setItem('loggedInUser', JSON.stringify({
         username,
         name: account.fullName,
-        role: account.role.toLowerCase()
+        role: account.userRole
     }));
     window.location.assign(dashboardByRole[account.role]);
 });

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Doctor Patients Directory — Clinic Management System" />
+  <title>Patients Directory | Doctor — CMS</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+  <link rel="stylesheet" href="../css/tables.css" />
+
+  <style>
+    .patient-avatar-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .allergy-chip {
+      background: var(--danger-light);
+      color: var(--danger);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .safe-chip {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<div class="sidebar" id="sidebar">
+  <a class="sidebar-brand" href="dashboard.html">
+    <div class="sidebar-brand-icon">🏥</div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">MediCare CMS</span>
+      <span class="sidebar-brand-sub">Doctor Portal</span>
+    </div>
+  </a>
+
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
+    <a class="nav-item" href="dashboard.html" id="nav-dashboard">
+      <span class="nav-item-icon">📊</span>
+      <span class="nav-item-label">Dashboard</span>
+    </a>
+    <a class="nav-item" href="appointments.html" id="nav-appointments">
+      <span class="nav-item-icon">📅</span>
+      <span class="nav-item-label">Appointments</span>
+      <span class="nav-badge" id="sidebarApptBadge">0</span>
+    </a>
+    <a class="nav-item active" href="patients.html" id="nav-patients">
+      <span class="nav-item-icon">👤</span>
+      <span class="nav-item-label">Patients</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <span class="nav-section-label">Clinical</span>
+    <a class="nav-item" href="consultation.html" id="nav-consultation">
+      <span class="nav-item-icon">🩺</span>
+      <span class="nav-item-label">Consultation</span>
+    </a>
+    <a class="nav-item" href="prescriptions.html" id="nav-prescriptions">
+      <span class="nav-item-icon">💊</span>
+      <span class="nav-item-label">Prescriptions</span>
+    </a>
+    <a class="nav-item" href="lab-tests.html" id="nav-lab">
+      <span class="nav-item-icon">🧪</span>
+      <span class="nav-item-label">Lab Tests</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <span class="nav-section-label">History</span>
+    <a class="nav-item" href="patient-details.html" id="nav-history">
+      <span class="nav-item-icon">📋</span>
+      <span class="nav-item-label">Past Consultations</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="sidebar-avatar" id="sidebarAvatar">DR</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name" id="sidebarName">Dr. Arun Kumar</div>
+      <div class="sidebar-user-role">Doctor</div>
+    </div>
+    <button class="sidebar-logout-btn" onclick="logout()" title="Logout">⏏</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="topbar-menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+      <div>
+        <div class="topbar-title">Patient Directory</div>
+        <div class="topbar-subtitle" id="topbarSubtitle">All clinic patient records and profiles</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-chip-avatar" id="topbarAvatar">DR</div>
+        <div class="user-chip-info">
+          <div class="user-chip-name" id="topbarName">Dr. Arun Kumar</div>
+          <div class="user-chip-role">Cardiologist / Physician</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- STATS CARDS -->
+    <div class="stat-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px;">
+      <div class="stat-card">
+        <div class="stat-card-label">Total Patients</div>
+        <div class="stat-card-value" id="statTotalPatients">0</div>
+        <div class="stat-card-footer">Registered in clinic</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Consulted by You</div>
+        <div class="stat-card-value" id="statSeenByDoc">0</div>
+        <div class="stat-card-footer">Consultation records</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">With Chronic Conditions</div>
+        <div class="stat-card-value" id="statChronic">0</div>
+        <div class="stat-card-footer">Hypertension, Diabetes, etc.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Known Drug Allergies</div>
+        <div class="stat-card-value" id="statAllergies">0</div>
+        <div class="stat-card-footer">Marked with safety alerts</div>
+      </div>
+    </div>
+
+    <!-- FILTER & SEARCH BAR -->
+    <div class="table-card" style="margin-bottom:20px;">
+      <div class="table-toolbar" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:16px;">
+        <div style="display:flex; gap:12px; align-items:center; flex:1; min-width:280px;">
+          <input type="text" id="patientSearchInput" placeholder="🔍 Search patient by name, ID, phone..." oninput="handleSearch(this.value)" style="flex:1; padding:8px 14px; border:1px solid var(--border); border-radius:6px; font-size:13px;" />
+          <select id="genderFilter" onchange="applyFilters()" style="padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; background:var(--surface);">
+            <option value="">All Genders</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+          <select id="bloodFilter" onchange="applyFilters()" style="padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; background:var(--surface);">
+            <option value="">All Blood Groups</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="exportPatientsCSV()">📥 Export List</button>
+        </div>
+      </div>
+
+      <!-- PATIENTS TABLE -->
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Patient ID</th>
+              <th>Patient Name</th>
+              <th>Age & Gender</th>
+              <th>Contact Phone</th>
+              <th>Blood Group</th>
+              <th>Allergies Alert</th>
+              <th>Status</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="patientsTableBody">
+            <!-- Filled dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer" style="padding:14px 16px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-light); font-size:13px; color:var(--text-secondary);">
+        <span id="patientCountLabel">Showing 0 patients</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ────────────────────────────────────────────────────────────
+   1. AUTH GUARD
+   ──────────────────────────────────────────────────────────── */
+const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+if (!loggedInUser || loggedInUser.role !== 'doctor') {
+  window.location.replace('../index.html');
+}
+
+/* ────────────────────────────────────────────────────────────
+   2. INITIAL SEED PATIENTS
+   ──────────────────────────────────────────────────────────── */
+const DEFAULT_PATIENTS = [
+  { id: 'PAT001', name: 'Rahul Menon', age: 24, gender: 'Male', blood: 'O+', phone: '9876543210', allergies: 'None', chronic: 'None', status: 'Active' },
+  { id: 'PAT002', name: 'Anu Thomas', age: 32, gender: 'Female', blood: 'A+', phone: '9812345670', allergies: 'Penicillin', chronic: 'Post-Surgery Check', status: 'Active' },
+  { id: 'PAT003', name: 'Arjun Kumar', age: 45, gender: 'Male', blood: 'B-', phone: '9823456701', allergies: 'Sulfa drugs', chronic: 'Hypertension', status: 'Active' },
+  { id: 'PAT004', name: 'Priya Nair', age: 28, gender: 'Female', blood: 'AB+', phone: '9834567012', allergies: 'None', chronic: 'None', status: 'Active' },
+  { id: 'PAT005', name: 'Suresh Babu', age: 60, gender: 'Male', blood: 'O-', phone: '9845678123', allergies: 'Aspirin', chronic: 'Type 2 Diabetes', status: 'Active' },
+  { id: 'PAT006', name: 'Lakshmi Devi', age: 38, gender: 'Female', blood: 'A-', phone: '9856789234', allergies: 'None', chronic: 'None', status: 'Active' },
+  { id: 'PAT007', name: 'Mohammed Rizwan', age: 22, gender: 'Male', blood: 'B+', phone: '9867890345', allergies: 'None', chronic: 'Gastritis', status: 'Active' },
+  { id: 'PAT008', name: 'Divya Krishnan', age: 35, gender: 'Female', blood: 'O+', phone: '9878901456', allergies: 'Latex', chronic: 'Hypothyroidism', status: 'Active' },
+  { id: 'PAT009', name: 'Ravi Shankar', age: 50, gender: 'Male', blood: 'A+', phone: '9889012567', allergies: 'None', chronic: 'Lumbar Spondylosis', status: 'Active' },
+  { id: 'PAT010', name: 'Meera Pillai', age: 29, gender: 'Female', blood: 'B+', phone: '9890123678', allergies: 'Codeine', chronic: 'Migraine', status: 'Active' },
+  { id: 'PAT011', name: 'Anand Mohan', age: 41, gender: 'Male', blood: 'AB-', phone: '9801234789', allergies: 'None', chronic: 'Asthma', status: 'Active' },
+  { id: 'PAT012', name: 'Kavitha Ramesh', age: 55, gender: 'Female', blood: 'O+', phone: '9812340890', allergies: 'Iodine', chronic: 'Hypertension', status: 'Active' }
+];
+
+let allPatients = [];
+let filteredPatients = [];
+
+/* ────────────────────────────────────────────────────────────
+   3. INIT
+   ──────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  initUserUI();
+  loadPatients();
+});
+
+function initUserUI() {
+  const name = loggedInUser.name || loggedInUser.username || 'Doctor';
+  const ini  = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  document.getElementById('sidebarAvatar').textContent = ini;
+  document.getElementById('sidebarName').textContent   = name;
+  document.getElementById('topbarAvatar').textContent  = ini;
+  document.getElementById('topbarName').textContent    = name;
+}
+
+function loadPatients() {
+  let stored = JSON.parse(localStorage.getItem('cms_patients') || '[]');
+  if (!stored || stored.length === 0) {
+    stored = DEFAULT_PATIENTS;
+    localStorage.setItem('cms_patients', JSON.stringify(stored));
+  }
+  allPatients = stored;
+  applyFilters();
+  updateStats();
+
+  const appts = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+  const today = new Date().toISOString().split('T')[0];
+  const waiting = appts.filter(a => a.date === today && a.status === 'Waiting').length;
+  document.getElementById('sidebarApptBadge').textContent = waiting;
+}
+
+function updateStats() {
+  document.getElementById('statTotalPatients').textContent = allPatients.length;
+  const chronicCount = allPatients.filter(p => p.chronic && p.chronic !== 'None').length;
+  document.getElementById('statChronic').textContent = chronicCount;
+  const allergyCount = allPatients.filter(p => p.allergies && p.allergies !== 'None').length;
+  document.getElementById('statAllergies').textContent = allergyCount;
+
+  const consults = JSON.parse(localStorage.getItem('cms_consultations') || '[]');
+  document.getElementById('statSeenByDoc').textContent = consults.length || 8;
+}
+
+function applyFilters() {
+  const q = document.getElementById('patientSearchInput').value.trim().toLowerCase();
+  const gender = document.getElementById('genderFilter').value;
+  const blood = document.getElementById('bloodFilter').value;
+
+  filteredPatients = allPatients.filter(p => {
+    const matchQ = !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || (p.phone && p.phone.includes(q));
+    const matchG = !gender || p.gender === gender;
+    const matchB = !blood || p.blood === blood;
+    return matchQ && matchG && matchB;
+  });
+
+  renderTable();
+}
+
+function handleSearch() {
+  applyFilters();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('patientsTableBody');
+  document.getElementById('patientCountLabel').textContent = `Showing ${filteredPatients.length} of ${allPatients.length} patients`;
+
+  if (filteredPatients.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:32px; color:var(--text-muted);">No patients found matching your search.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filteredPatients.map(p => {
+    const hasAllergy = p.allergies && p.allergies !== 'None';
+    return `
+      <tr>
+        <td style="font-weight:600; font-family:monospace; color:var(--accent);">${p.id}</td>
+        <td>
+          <div class="patient-avatar-cell">
+            <div class="avatar avatar-sm" style="background:#e8dfd8; color:#5c4033; font-weight:700; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px;">
+              ${p.name.split(' ').map(w=>w[0]).join('').slice(0,2)}
+            </div>
+            <div>
+              <div style="font-weight:600; color:var(--text-primary);">${p.name}</div>
+              <div style="font-size:11px; color:var(--text-muted);">${p.chronic && p.chronic !== 'None' ? '🩺 ' + p.chronic : 'No chronic conditions'}</div>
+            </div>
+          </div>
+        </td>
+        <td>${p.age} yrs, ${p.gender}</td>
+        <td>${p.phone || '—'}</td>
+        <td><span class="badge" style="background:#f0e9e4; color:#3d2a25;">${p.blood || '—'}</span></td>
+        <td>
+          ${hasAllergy ? `<span class="allergy-chip">⚠️ ${p.allergies}</span>` : `<span class="safe-chip">None reported</span>`}
+        </td>
+        <td><span class="badge badge-success">Active</span></td>
+        <td style="text-align:right;">
+          <div style="display:inline-flex; gap:6px;">
+            <a href="patient-details.html?id=${p.id}" class="btn btn-outline btn-sm" title="View Full Medical Record">Profile ↗</a>
+            <button class="btn btn-secondary btn-sm" onclick="startConsultFor('${p.id}', '${p.name}')" title="Start Consultation">🩺 Consult</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function startConsultFor(patientId, patientName) {
+  // Check if patient has an appointment today or generate a walk-in token
+  const appts = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+  const today = new Date().toISOString().split('T')[0];
+  let appt = appts.find(a => a.patientId === patientId && a.date === today);
+
+  if (!appt) {
+    const token = appts.filter(a => a.date === today).length + 1;
+    appt = {
+      id: 'APT-' + Date.now(),
+      token: token,
+      patientId: patientId,
+      patientName: patientName,
+      age: 30,
+      gender: 'Male',
+      blood: 'O+',
+      time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }),
+      type: 'Walk-in',
+      status: 'In Progress',
+      complaint: 'Routine consultation',
+      date: today
+    };
+    appts.push(appt);
+    localStorage.setItem('cms_appointments', JSON.stringify(appts));
+  } else {
+    appt.status = 'In Progress';
+    localStorage.setItem('cms_appointments', JSON.stringify(appts));
+  }
+
+  localStorage.setItem('cms_active_appointment', appt.id);
+  window.location.href = `consultation.html?id=${appt.id}`;
+}
+
+function exportPatientsCSV() {
+  const rows = [['Patient ID', 'Name', 'Age', 'Gender', 'Phone', 'Blood Group', 'Allergies', 'Chronic Conditions']];
+  allPatients.forEach(p => {
+    rows.push([p.id, p.name, p.age, p.gender, p.phone, p.blood, `"${p.allergies}"`, `"${p.chronic || ''}"`]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `medicare_patients_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+function logout() {
+  localStorage.removeItem('loggedInUser');
+  window.location.replace('../index.html');
+}
+</script>
+</body>
+</html>
