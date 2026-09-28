@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Inventory</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Pharmacy Management System</h1>
+    <p>Medicine Inventory</p>
+</header>
+
+<nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="prescription-queue.html">Prescription Queue</a>
+    <a href="prescription-details.html">Prescription Details</a>
+    <a href="dispense-medicine.html">Dispense Medicine</a>
+    <a href="medicine-inventory.html">Medicine Inventory</a>
+    <a href="stock.html">Stock</a>
+    <a href="pharmacy-billing.html">Billing</a>
+</nav>
+
+<main>
+
+    <h2>Medicine Inventory</h2>
+
+    <div class="box">
+
+        <h3>Add Medicine</h3>
+
+        <input type="text"
+               id="medicineName"
+               placeholder="Medicine Name">
+
+        <input type="number"
+               id="medicinePrice"
+               placeholder="Price">
+
+        <input type="number"
+               id="medicineStock"
+               placeholder="Stock">
+
+        <button onclick="addMedicine()">
+            Add Medicine
+        </button>
+
+    </div>
+
+    <div class="box">
+
+        <h3>Available Medicines</h3>
+
+        <table>
+
+            <tr>
+                <th>ID</th>
+                <th>Medicine</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+            </tr>
+
+            <tbody id="inventoryTable">
+
+                <tr>
+                    <td>1</td>
+                    <td>Paracetamol</td>
+                    <td>₹20</td>
+                    <td>50</td>
+                    <td>Available</td>
+                </tr>
+
+                <tr>
+                    <td>2</td>
+                    <td>Amoxicillin</td>
+                    <td>₹80</td>
+                    <td>8</td>
+                    <td>Low Stock</td>
+                </tr>
+
+                <tr>
+                    <td>3</td>
+                    <td>Cetirizine</td>
+                    <td>₹30</td>
+                    <td>25</td>
+                    <td>Available</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</main>
+
+<script src="pharmacy.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispense Medicine</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Pharmacy Management System</h1>
+    <p>Dispense Medicine</p>
+</header>
+
+<nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="prescription-queue.html">Prescription Queue</a>
+    <a href="prescription-details.html">Prescription Details</a>
+    <a href="dispense-medicine.html">Dispense Medicine</a>
+    <a href="medicine-inventory.html">Medicine Inventory</a>
+    <a href="stock.html">Stock</a>
+    <a href="pharmacy-billing.html">Billing</a>
+</nav>
+
+<main>
+
+    <h2>Dispense Medicine</h2>
+
+    <div class="box">
+
+        <label>Prescription ID</label>
+        <input type="text" id="prescriptionId"
+               placeholder="Enter prescription ID">
+
+        <br><br>
+
+        <label>Medicine</label>
+
+        <select id="medicine">
+
+            <option value="">Select Medicine</option>
+            <option value="Paracetamol">Paracetamol</option>
+            <option value="Amoxicillin">Amoxicillin</option>
+            <option value="Cetirizine">Cetirizine</option>
+            <option value="Azithromycin">Azithromycin</option>
+
+        </select>
+
+        <br><br>
+
+        <label>Quantity</label>
+
+        <input type="number" id="quantity"
+               min="1" value="1">
+
+        <br><br>
+
+        <button onclick="dispenseMedicine()">
+            Dispense Medicine
+        </button>
+
+        <p id="message"></p>
+
+    </div>
+
+</main>
+
+<script src="pharmacy.js"></script>
+
+</body>
+</html>

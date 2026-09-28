@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Queue</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Pharmacy Management System</h1>
+    <p>Prescription Queue</p>
+</header>
+
+<nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="prescription-queue.html">Prescription Queue</a>
+    <a href="prescription-details.html">Prescription Details</a>
+    <a href="dispense-medicine.html">Dispense Medicine</a>
+    <a href="medicine-inventory.html">Medicine Inventory</a>
+    <a href="stock.html">Stock</a>
+    <a href="pharmacy-billing.html">Billing</a>
+</nav>
+
+<main>
+
+    <h2>Prescription Queue</h2>
+
+    <div class="box">
+
+        <table>
+
+            <tr>
+                <th>Prescription ID</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+            <tr>
+                <td>P001</td>
+                <td>Rahul</td>
+                <td>Dr. Arun</td>
+                <td>28-09-2026</td>
+                <td>Pending</td>
+                <td>
+                    <button onclick="viewPrescription('P001')">
+                        View
+                    </button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>P002</td>
+                <td>Anu</td>
+                <td>Dr. Meera</td>
+                <td>28-09-2026</td>
+                <td>Pending</td>
+                <td>
+                    <button onclick="viewPrescription('P002')">
+                        View
+                    </button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>P003</td>
+                <td>Vishnu</td>
+                <td>Dr. Raj</td>
+                <td>28-09-2026</td>
+                <td>Dispensed</td>
+                <td>
+                    <button onclick="viewPrescription('P003')">
+                        View
+                    </button>
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</main>
+
+<script src="pharmacy.js"></script>
+
+</body>
+</html>

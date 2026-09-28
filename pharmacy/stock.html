@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Management</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Pharmacy Management System</h1>
+    <p>Stock Management</p>
+</header>
+
+<nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="prescription-queue.html">Prescription Queue</a>
+    <a href="prescription-details.html">Prescription Details</a>
+    <a href="dispense-medicine.html">Dispense Medicine</a>
+    <a href="medicine-inventory.html">Medicine Inventory</a>
+    <a href="stock.html">Stock</a>
+    <a href="pharmacy-billing.html">Billing</a>
+</nav>
+
+<main>
+
+    <h2>Stock Management</h2>
+
+    <div class="box">
+
+        <table>
+
+            <tr>
+                <th>Medicine</th>
+                <th>Current Stock</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+            <tr>
+                <td>Paracetamol</td>
+                <td>50</td>
+                <td>Available</td>
+                <td>
+                    <button onclick="addStock('Paracetamol')">
+                        Add Stock
+                    </button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Amoxicillin</td>
+                <td>8</td>
+                <td>Low Stock</td>
+                <td>
+                    <button onclick="addStock('Amoxicillin')">
+                        Add Stock
+                    </button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Cetirizine</td>
+                <td>25</td>
+                <td>Available</td>
+                <td>
+                    <button onclick="addStock('Cetirizine')">
+                        Add Stock
+                    </button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Azithromycin</td>
+                <td>5</td>
+                <td>Low Stock</td>
+                <td>
+                    <button onclick="addStock('Azithromycin')">
+                        Add Stock
+                    </button>
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</main>
+
+<script src="pharmacy.js"></script>
+
+</body>
+</html>

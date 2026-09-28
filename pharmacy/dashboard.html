@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacist Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Pharmacy Management System</h1>
+    <p>Pharmacist Dashboard</p>
+</header>
+
+<nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="prescription-queue.html">Prescription Queue</a>
+    <a href="prescription-details.html">Prescription Details</a>
+    <a href="dispense-medicine.html">Dispense Medicine</a>
+    <a href="medicine-inventory.html">Medicine Inventory</a>
+    <a href="stock.html">Stock</a>
+    <a href="pharmacy-billing.html">Billing</a>
+</nav>
+
+<main>
+
+    <h2>Dashboard</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Pending Prescriptions</h3>
+            <p id="pendingCount">3</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Medicines</h3>
+            <p id="medicineCount">25</p>
+        </div>
+
+        <div class="card">
+            <h3>Low Stock</h3>
+            <p id="lowStockCount">4</p>
+        </div>
+
+        <div class="card">
+            <h3>Today's Sales</h3>
+            <p>₹12,500</p>
+        </div>
+
+    </div>
+
+    <div class="box">
+        <h3>Pharmacist Tasks</h3>
+
+        <ul>
+            <li>Check prescription queue</li>
+            <li>Verify prescription details</li>
+            <li>Dispense medicines</li>
+            <li>Manage medicine inventory</li>
+            <li>Monitor stock</li>
+            <li>Generate pharmacy bills</li>
+        </ul>
+    </div>
+
+</main>
+
+<script src="pharmacy.js"></script>
+
+</body>
+</html>
