@@ -38,10 +38,6 @@
       <span class="nav-item-icon">🔍</span>
       <span class="nav-item-label">Search Patient</span>
     </a>
-    <a class="nav-item" href="book-appointment.html" id="nav-book">
-      <span class="nav-item-icon">📝</span>
-      <span class="nav-item-label">Book Appointment</span>
-    </a>
     <a class="nav-item" href="appointments.html" id="nav-today">
       <span class="nav-item-icon">📅</span>
       <span class="nav-item-label">Today's Appointments</span>
@@ -277,7 +273,16 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
   patients.push(patient);
   localStorage.setItem('cms_patients', JSON.stringify(patients));
 
-  showMsg('✅ Patient <strong>' + patient.name + '</strong> registered successfully! ID: <strong>' + newId + '</strong>', 'success');
+  showMsg(
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">' +
+      '<div>✅ Patient <strong>' + patient.name + '</strong> registered successfully! ID: <strong>' + newId + '</strong></div>' +
+      '<div style="display:flex;gap:8px;">' +
+        '<a href="book-appointment.html?patient=' + newId + '" class="btn btn-primary btn-sm">📅 Book Appointment Now</a>' +
+        '<a href="patient-details.html?id=' + newId + '" class="btn btn-ghost btn-sm">👁 View Profile</a>' +
+      '</div>' +
+    '</div>',
+    'success'
+  );
   showToast('Patient ' + newId + ' registered!', 'success');
   document.getElementById('registerForm').reset();
 });

@@ -111,11 +111,6 @@
     <div class="sidebar-divider"></div>
     <span class="nav-section-label">Appointments</span>
 
-    <a class="nav-item" href="book-appointment.html">
-      <span class="nav-item-icon">📝</span>
-      <span class="nav-item-label">Book Appointment</span>
-    </a>
-
     <a class="nav-item" href="appointments.html">
       <span class="nav-item-icon">📅</span>
       <span class="nav-item-label">Today's Appointments</span>
@@ -294,11 +289,6 @@
                 <div class="quick-action-label">Search Patient</div>
               </a>
 
-              <a class="quick-action-card" href="book-appointment.html">
-                <div class="quick-action-icon">📝</div>
-                <div class="quick-action-label">Book Appointment</div>
-              </a>
-
               <a class="quick-action-card" href="appointments.html">
                 <div class="quick-action-icon">📅</div>
                 <div class="quick-action-label">Today's List</div>
@@ -327,7 +317,6 @@
             </div>
             <div class="table-header-right">
               <a href="appointments.html" class="btn btn-ghost btn-sm">View All →</a>
-              <a href="book-appointment.html" class="btn btn-primary btn-sm">+ Book</a>
             </div>
           </div>
 
@@ -654,7 +643,7 @@ function renderApptTable() {
       <div class="table-empty">
         <div class="table-empty-icon">📭</div>
         <div class="table-empty-title">No appointments found</div>
-        <div class="table-empty-desc">Try a different filter or book a new appointment.</div>
+        <div class="table-empty-desc">Try a different filter or search a patient to book an appointment.</div>
       </div>
     </td></tr>`;
     return;

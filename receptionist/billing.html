@@ -10,6 +10,13 @@
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/dashboard.css" />
   <link rel="stylesheet" href="../css/tables.css" />
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #receiptPrintArea, #receiptPrintArea * { visibility: visible; }
+      #receiptPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
 </head>
 <body>
 
@@ -37,10 +44,6 @@
     <a class="nav-item" href="search-patient.html" id="nav-search">
       <span class="nav-item-icon">🔍</span>
       <span class="nav-item-label">Search Patient</span>
-    </a>
-    <a class="nav-item" href="book-appointment.html" id="nav-book">
-      <span class="nav-item-icon">📝</span>
-      <span class="nav-item-label">Book Appointment</span>
     </a>
     <a class="nav-item" href="appointments.html" id="nav-today">
       <span class="nav-item-icon">📅</span>
@@ -133,7 +136,7 @@
               <th class="col-w-120">Amount</th>
               <th class="col-w-100">Date</th>
               <th class="col-w-100">Status</th>
-              <th class="td-actions col-w-120">Actions</th>
+              <th class="td-actions col-w-140">Actions</th>
             </tr>
           </thead>
           <tbody id="billBody"></tbody>
@@ -158,22 +161,15 @@
         <label class="form-label required" for="billPatient">Patient</label>
         <select class="form-input form-select" id="billPatient" required></select>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-        <div class="form-group">
-          <label class="form-label required" for="billAmt">Amount (₹)</label>
-          <input class="form-input" type="number" id="billAmt" min="0" step="0.01" required placeholder="e.g. 500" />
-        </div>
-        <div class="form-group">
-          <label class="form-label required" for="billMethod">Payment Method</label>
-          <select class="form-input form-select" id="billMethod">
-            <option>Cash</option><option>Card</option><option>UPI</option><option>Online</option>
-          </select>
-        </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label required" for="billAmt">Amount (₹)</label>
+        <input class="form-input" type="number" id="billAmt" min="0.01" step="0.01" required placeholder="e.g. 500" />
       </div>
       <div class="form-group" style="margin-bottom:20px;">
         <label class="form-label" for="billNotes">Notes</label>
-        <input class="form-input" type="text" id="billNotes" placeholder="Optional notes…" />
+        <input class="form-input" type="text" id="billNotes" placeholder="Optional notes — reason for the charge…" />
       </div>
+      <div id="billFormErr" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:var(--radius-sm);background:var(--danger-light);color:var(--danger);font-size:var(--text-sm);"></div>
       <div style="display:flex;gap:12px;justify-content:flex-end;">
         <button type="button" class="btn btn-ghost" onclick="closeBillModal()">Cancel</button>
         <button type="submit" class="btn btn-primary">Create Invoice</button>
@@ -182,17 +178,79 @@
   </div>
 </div>
 
+<!-- Record Payment Modal -->
+<div id="payModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(61,42,37,.45);
+     backdrop-filter:blur(3px);z-index:2000;" onclick="closePayModal()"></div>
+<div id="payModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+     width:460px;max-width:95vw;background:#fff;border-radius:var(--radius-lg);
+     box-shadow:var(--shadow-xl);z-index:2001;overflow:hidden;">
+  <div style="padding:20px 24px;background:var(--clr-blush);border-bottom:1px solid var(--border-light);">
+    <div style="font-size:var(--text-lg);font-weight:700;">Record Payment</div>
+  </div>
+  <div style="padding:24px;">
+    <div id="payInvoiceSummary" style="margin-bottom:16px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--bg-soft,#f6f7f2);font-size:var(--text-sm);"></div>
+    <form id="payForm">
+      <input type="hidden" id="payInvoiceId" />
+      <div class="form-group" style="margin-bottom:16px;">
+        <label class="form-label required" for="payMethod">Mode of Payment</label>
+        <select class="form-input form-select" id="payMethod" required>
+          <option value="">Select mode of payment</option>
+          <option>Cash</option>
+          <option>Card</option>
+          <option>UPI</option>
+          <option>Online</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label class="form-label" for="payRef">Reference / Transaction ID</label>
+        <input class="form-input" type="text" id="payRef" placeholder="Optional — required for Card/UPI/Online" />
+      </div>
+      <div id="payFormErr" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:var(--radius-sm);background:var(--danger-light);color:var(--danger);font-size:var(--text-sm);"></div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button type="button" class="btn btn-ghost" onclick="closePayModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Confirm Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Receipt / Bill Modal -->
+<div id="receiptModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(61,42,37,.45);
+     backdrop-filter:blur(3px);z-index:2000;" onclick="closeReceiptModal()"></div>
+<div id="receiptModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+     width:420px;max-width:95vw;background:#fff;border-radius:var(--radius-lg);
+     box-shadow:var(--shadow-xl);z-index:2001;overflow:hidden;">
+  <div style="padding:20px 24px;background:var(--success-light);border-bottom:1px solid var(--border-light);">
+    <div style="font-size:var(--text-lg);font-weight:700;color:var(--success);">✅ Payment Recorded</div>
+  </div>
+  <div style="padding:24px;">
+    <div id="receiptPrintArea"></div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+      <button type="button" class="btn btn-ghost" onclick="closeReceiptModal()">Close</button>
+      <button type="button" class="btn btn-primary" onclick="window.print()">🖨 Print Receipt</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-container" id="toastContainer"></div>
 <script>
 
 /* ── AUTH GUARD ── */
 const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-if (!loggedInUser || (loggedInUser.role !== 'receptionist' && loggedInUser.role !== 'admin')) {
+const AUTHORISED = !!loggedInUser && (loggedInUser.role === 'receptionist' || loggedInUser.role === 'admin');
+if (!AUTHORISED) {
   window.location.href = '../index.html';
+}
+
+/* ── HELPERS ── */
+function esc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 /* ── SIDEBAR / TOPBAR INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
+  if (!AUTHORISED) return;
   const name = loggedInUser.name || loggedInUser.username || 'Receptionist';
   const ini  = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
   ['sidebarAvatar','topbarAvatar'].forEach(id => {
@@ -204,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dateEl = document.getElementById('topbarDate');
   if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-IN',
     {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  if (typeof pageInit === 'function') pageInit();
+  pageInit();
 });
 
 function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('open'); }
@@ -220,7 +278,7 @@ function showToast(msg, type='info') {
   if (!c) return;
   const el = document.createElement('div');
   el.className = 'toast toast-' + type;
-  el.innerHTML = '<span>' + (icons[type]||'ℹ️') + '</span><span>' + msg + '</span>';
+  el.innerHTML = '<span>' + (icons[type]||'ℹ️') + '</span><span>' + esc(msg) + '</span>';
   c.appendChild(el);
   setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(24px)';
     el.style.transition='all .3s ease'; setTimeout(()=>el.remove(),300); }, 3200);
@@ -228,11 +286,9 @@ function showToast(msg, type='info') {
 
 function getToday() {
   const now = new Date();
-
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-
   return `${year}-${month}-${day}`;
 }
 
@@ -243,8 +299,13 @@ function initials_(name) { return (name||'?').split(' ').map(w=>w[0]).join('').t
 
 function pageInit() { renderBills(); }
 
+/* ── DATA ── */
 function getBills() { return JSON.parse(localStorage.getItem('cms_billing') || '[]'); }
+function saveBills(bills) { localStorage.setItem('cms_billing', JSON.stringify(bills)); }
+function getReceipts() { return JSON.parse(localStorage.getItem('cms_receipts') || '[]'); }
+function saveReceipts(receipts) { localStorage.setItem('cms_receipts', JSON.stringify(receipts)); }
 
+/* ── RENDER ── */
 function renderBills() {
   let bills = getBills();
   const f   = document.getElementById('billFilter').value;
@@ -252,32 +313,35 @@ function renderBills() {
   const allB = getBills();
   document.getElementById('bTotal').textContent  = allB.length;
   document.getElementById('bUnpaid').textContent = allB.filter(b=>b.status==='Unpaid').length;
-  document.getElementById('bPaid').textContent   = allB.filter(b=>b.status==='Paid'&&b.date===TODAY).length;
+  document.getElementById('bPaid').textContent   = allB.filter(b=>b.status==='Paid'&&b.paidDate===TODAY).length;
   document.getElementById('billCount').textContent = bills.length + ' invoices';
   const tbody = document.getElementById('billBody');
   if (!bills.length) {
     tbody.innerHTML = '<tr><td colspan="6"><div class="table-empty"><div class="table-empty-icon">🧾</div><div class="table-empty-title">No invoices yet</div></div></td></tr>';
     return;
   }
-  const sc = { Unpaid:'badge-danger', Paid:'badge-success', Partial:'badge-warning' };
+  const sc = { Unpaid:'badge-danger', Paid:'badge-success' };
   tbody.innerHTML = bills.map(b => `<tr>
-    <td><span class="badge badge-neutral" style="font-size:11px;">${b.id}</span></td>
-    <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:${avatarColor(b.patientId)}">${initials_(b.patientName)}</div><div class="td-primary">${b.patientName}</div></div></td>
+    <td><span class="badge badge-neutral" style="font-size:11px;">${esc(b.id)}</span></td>
+    <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:${avatarColor(b.patientId)}">${esc(initials_(b.patientName))}</div><div class="td-primary">${esc(b.patientName)}</div></div></td>
     <td style="font-weight:700;color:var(--text-primary);">₹${Number(b.amount).toFixed(2)}</td>
-    <td style="font-size:var(--text-xs);">${b.date}</td>
-    <td><span class="badge ${sc[b.status]||'badge-neutral'}">${b.status}</span></td>
+    <td style="font-size:var(--text-xs);">${esc(b.date)}</td>
+    <td><span class="badge ${sc[b.status]||'badge-neutral'}">${esc(b.status)}</span>${b.status==='Paid'?`<div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px;">${esc(b.method||'')}</div>`:''}</td>
     <td class="td-actions"><div class="td-actions-group">
-      ${b.status==='Unpaid'?`<button class="action-btn approve" title="Mark Paid" onclick="markPaid('${b.id}')">₹ Pay</button>`:''}
+      ${b.status==='Unpaid'?`<button class="action-btn approve" title="Record Payment" onclick="openPayModal('${b.id}')">₹ Pay</button>`:''}
+      ${b.status==='Paid'?`<button class="action-btn view" title="View Receipt" onclick="viewReceipt('${b.id}')">🧾</button>`:''}
       <button class="action-btn delete" title="Delete" onclick="deleteBill('${b.id}')">🗑</button>
     </div></td>
   </tr>`).join('');
 }
 
+/* ── NEW INVOICE ── */
 function openNewBill() {
   const patients = JSON.parse(localStorage.getItem('cms_patients') || '[]');
   const sel = document.getElementById('billPatient');
   sel.innerHTML = '<option value="">Select patient</option>' +
-    patients.map(p => `<option value="${p.id}" data-name="${p.name}">${p.name} (${p.id})</option>`).join('');
+    patients.map(p => `<option value="${esc(p.id)}" data-name="${esc(p.name)}">${esc(p.name)} (${esc(p.id)})</option>`).join('');
+  document.getElementById('billFormErr').style.display = 'none';
   document.getElementById('billModal').style.display='block';
   document.getElementById('billModalOverlay').style.display='block';
 }
@@ -285,41 +349,170 @@ function openNewBill() {
 function closeBillModal() {
   document.getElementById('billModal').style.display='none';
   document.getElementById('billModalOverlay').style.display='none';
+  document.getElementById('billForm').reset();
+}
+
+function showBillErr(msg) {
+  const el = document.getElementById('billFormErr');
+  el.textContent = msg; el.style.display = 'block';
 }
 
 document.getElementById('billForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const sel = document.getElementById('billPatient');
-  if (!sel.value) { showToast('Please select a patient', 'warning'); return; }
+  const amtInput = document.getElementById('billAmt');
+  const amt = parseFloat(amtInput.value);
+
+  if (!sel.value) { showBillErr('Please select a patient.'); return; }
+  if (!amtInput.value || isNaN(amt) || amt <= 0) { showBillErr('Enter a valid amount greater than 0.'); return; }
+
   const bills = getBills();
-  bills.push({
-    id: 'BILL' + String(Date.now()).slice(-5),
+  const patientName = sel.options[sel.selectedIndex].dataset.name;
+  const newInvoice = {
+    id: 'BILL' + String(Date.now()).slice(-6),
     patientId: sel.value,
-    patientName: sel.options[sel.selectedIndex].dataset.name,
-    amount: document.getElementById('billAmt').value,
-    method: document.getElementById('billMethod').value,
-    notes: document.getElementById('billNotes').value,
+    patientName: patientName,
+    amount: amt,
+    notes: document.getElementById('billNotes').value.trim(),
     status: 'Unpaid',
     date: TODAY,
-  });
-  localStorage.setItem('cms_billing', JSON.stringify(bills));
+    method: '',
+    paidDate: '',
+  };
+  bills.push(newInvoice);
+  saveBills(bills);
   closeBillModal();
-  showToast('Invoice created', 'success');
+  showToast('Invoice ' + newInvoice.id + ' created for ' + patientName, 'success');
   renderBills();
 });
 
-function markPaid(id) {
-  const bills = getBills();
-  const idx = bills.findIndex(b => b.id === id);
-  if (idx !== -1) { bills[idx].status = 'Paid'; localStorage.setItem('cms_billing', JSON.stringify(bills)); }
-  showToast('Payment recorded ✅', 'success');
-  renderBills();
+/* ── RECORD PAYMENT (with mode of payment + confirmation) ── */
+let payingBillId = null;
+
+function openPayModal(id) {
+  const bill = getBills().find(b => b.id === id);
+  if (!bill) { showToast('Invoice not found.', 'danger'); return; }
+  payingBillId = id;
+  document.getElementById('payInvoiceId').value = id;
+  document.getElementById('payInvoiceSummary').innerHTML =
+    '<strong>' + esc(bill.id) + '</strong> — ' + esc(bill.patientName) +
+    '<br>Amount due: <strong>₹' + Number(bill.amount).toFixed(2) + '</strong>';
+  document.getElementById('payMethod').value = '';
+  document.getElementById('payRef').value = '';
+  document.getElementById('payFormErr').style.display = 'none';
+  document.getElementById('payModal').style.display='block';
+  document.getElementById('payModalOverlay').style.display='block';
 }
 
+function closePayModal() {
+  document.getElementById('payModal').style.display='none';
+  document.getElementById('payModalOverlay').style.display='none';
+  document.getElementById('payForm').reset();
+  payingBillId = null;
+}
+
+function showPayErr(msg) {
+  const el = document.getElementById('payFormErr');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+document.getElementById('payForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const id = document.getElementById('payInvoiceId').value;
+  const method = document.getElementById('payMethod').value;
+  const ref = document.getElementById('payRef').value.trim();
+
+  if (!method) { showPayErr('Please select the mode of payment.'); return; }
+  if (method !== 'Cash' && !ref) { showPayErr('Enter a reference / transaction ID for ' + method + ' payments.'); return; }
+
+  const bills = getBills();
+  const idx = bills.findIndex(b => b.id === id);
+  if (idx === -1) { showPayErr('Invoice not found.'); return; }
+  const bill = bills[idx];
+
+  // Confirmation before finalising the payment
+  const confirmMsg = 'Confirm payment of ₹' + Number(bill.amount).toFixed(2) +
+    ' for ' + bill.patientName + ' via ' + method + '?';
+  if (!confirm(confirmMsg)) return;
+
+  const now = new Date();
+  bill.status = 'Paid';
+  bill.method = method;
+  bill.reference = ref;
+  bill.paidDate = TODAY;
+  bill.paidAt = now.toISOString();
+  bills[idx] = bill;
+  saveBills(bills);
+
+  // Generate the bill / receipt and store it separately
+  const receipt = {
+    receiptNo: 'RCT' + String(Date.now()).slice(-6),
+    invoiceId: bill.id,
+    patientId: bill.patientId,
+    patientName: bill.patientName,
+    amount: bill.amount,
+    method: method,
+    reference: ref,
+    notes: bill.notes || '',
+    cashier: (loggedInUser && (loggedInUser.name || loggedInUser.username)) || 'Receptionist',
+    issuedAt: now.toISOString(),
+    issuedDate: TODAY,
+  };
+  const receipts = getReceipts();
+  receipts.push(receipt);
+  saveReceipts(receipts);
+
+  closePayModal();
+  showToast('Payment recorded — receipt ' + receipt.receiptNo + ' generated ✅', 'success');
+  renderBills();
+  showReceipt(receipt);
+});
+
+/* ── RECEIPT / BILL VIEW ── */
+function receiptHtml(r) {
+  const when = new Date(r.issuedAt);
+  return `
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:var(--text-lg);font-weight:700;">MediCare CMS</div>
+      <div style="font-size:var(--text-xs);color:var(--text-muted);">Payment Receipt</div>
+    </div>
+    <div style="font-size:var(--text-sm);line-height:1.8;">
+      <div style="display:flex;justify-content:space-between;"><span>Receipt No.</span><strong>${esc(r.receiptNo)}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Invoice No.</span><strong>${esc(r.invoiceId)}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Patient</span><strong>${esc(r.patientName)} (${esc(r.patientId)})</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Date</span><strong>${when.toLocaleString('en-IN')}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Mode of Payment</span><strong>${esc(r.method)}</strong></div>
+      ${r.reference?`<div style="display:flex;justify-content:space-between;"><span>Reference</span><strong>${esc(r.reference)}</strong></div>`:''}
+      ${r.notes?`<div style="display:flex;justify-content:space-between;"><span>Notes</span><strong>${esc(r.notes)}</strong></div>`:''}
+      <div style="display:flex;justify-content:space-between;border-top:1px dashed var(--border-light);margin-top:8px;padding-top:8px;">
+        <span>Amount Paid</span><strong style="font-size:var(--text-lg);">₹${Number(r.amount).toFixed(2)}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;"><span>Collected By</span><strong>${esc(r.cashier)}</strong></div>
+    </div>`;
+}
+
+function showReceipt(r) {
+  document.getElementById('receiptPrintArea').innerHTML = receiptHtml(r);
+  document.getElementById('receiptModal').style.display='block';
+  document.getElementById('receiptModalOverlay').style.display='block';
+}
+
+function viewReceipt(invoiceId) {
+  const r = getReceipts().slice().reverse().find(x => x.invoiceId === invoiceId);
+  if (!r) { showToast('No receipt found for this invoice.', 'warning'); return; }
+  showReceipt(r);
+}
+
+function closeReceiptModal() {
+  document.getElementById('receiptModal').style.display='none';
+  document.getElementById('receiptModalOverlay').style.display='none';
+}
+
+/* ── DELETE ── */
 function deleteBill(id) {
-  if (!confirm('Delete this invoice?')) return;
+  if (!confirm('Delete this invoice? This cannot be undone.')) return;
   let bills = getBills().filter(b => b.id !== id);
-  localStorage.setItem('cms_billing', JSON.stringify(bills));
+  saveBills(bills);
   showToast('Invoice deleted', 'danger');
   renderBills();
 }
