@@ -530,17 +530,21 @@ tfoot td {
    7. INLINE TABLE ACTIONS
    ───────────────────────────────────────── */
 .action-btn {
-  width: 30px;
+  min-width: 30px;
+  width: auto;
   height: 30px;
+  padding: 0 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xs);
-  font-size: 0.85rem;
+  font-size: 0.825rem;
   cursor: pointer;
   border: none;
   background: transparent;
   color: var(--text-muted);
+  white-space: nowrap;
+  gap: 4px;
   transition:
     background var(--transition),
     color var(--transition);

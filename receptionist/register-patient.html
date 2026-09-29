@@ -108,7 +108,7 @@
         <div class="card-body">
           <form id="registerForm">
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div class="form-grid-2">
               <div class="form-group">
                 <label class="form-label required" for="firstName">First Name</label>
                 <input class="form-input" type="text" id="firstName" data-validate="person-name" placeholder="e.g. Rahul" required />
@@ -119,7 +119,7 @@
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div class="form-grid-3">
               <div class="form-group">
                 <label class="form-label required" for="phone">Phone Number</label>
                 <input class="form-input" type="tel" id="phone" placeholder="9876543210" required />
@@ -137,7 +137,7 @@
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div class="form-grid-2">
               <div class="form-group">
                 <label class="form-label" for="blood">Blood Group</label>
                 <select class="form-input form-select" id="blood">
@@ -152,7 +152,7 @@
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div class="form-grid-2">
               <div class="form-group">
                 <label class="form-label" for="ecName">Emergency Contact Name</label>
                 <input class="form-input" type="text" id="ecName" data-validate="person-name" placeholder="Contact person name" />
@@ -175,7 +175,7 @@
             </div>
 
             <div id="formMsg" style="margin-bottom:12px;"></div>
-            <div style="display:flex;gap:12px;">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
               <button type="submit" class="btn btn-primary">➕ Register Patient</button>
               <button type="reset"  class="btn btn-ghost">Clear Form</button>
             </div>
@@ -309,8 +309,9 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
   showMsg(
     '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">' +
       '<div>✅ Patient <strong>' + patient.name + '</strong> registered successfully! ID: <strong>' + newId + '</strong><br><span style="font-size:var(--text-xs);color:var(--text-muted);">Registration bill of ₹' + REGISTRATION_FEE + ' created.</span></div>' +
-      '<div style="display:flex;gap:8px;">' +
-        '<a href="book-appointment.html?patient=' + newId + '" class="btn btn-primary btn-sm">📅 Book Appointment Now</a>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<a href="billing.html?search=' + newId + '" class="btn btn-primary btn-sm">💰 View & Pay Bill</a>' +
+        '<a href="book-appointment.html?patient=' + newId + '" class="btn btn-secondary btn-sm">📅 Book Appointment</a>' +
         '<a href="patient-details.html?id=' + newId + '" class="btn btn-ghost btn-sm">👁 View Profile</a>' +
       '</div>' +
     '</div>',

@@ -582,7 +582,7 @@ function updateStats() {
   const total     = allAppointments.length;
   const waiting   = allAppointments.filter(a => a.status === 'Waiting' || a.status === 'In Progress').length;
   const completed = allAppointments.filter(a => a.status === 'Completed').length;
-  const unpaid    = allBilling.filter(b => b.status === 'Unpaid').length;
+  const unpaid    = allBilling.filter(b => b.status === 'Unpaid' && (b.type === 'Registration' || b.type === 'Consultation')).length;
   const todayPats = allPatients.filter(p => p.registeredOn === TODAY).length;
 
   animateCount('statAppts',   total);
@@ -678,12 +678,23 @@ function renderApptTable() {
       <td><span class="badge ${statusClass}">${a.status}</span></td>
       <td class="td-actions">
         <div class="td-actions-group">
-          ${a.status === 'Booked' || a.status === 'Confirmed' ? `
-          <button class="action-btn approve" title="Check In"
-                  onclick="checkIn('${a.id}')">✓</button>` : ''}
-          ${a.status === 'Waiting' || a.status === 'In Progress' ? `
-          <button class="action-btn approve" title="Complete"
-                  onclick="completeAppt('${a.id}')">✅</button>` : ''}
+          ${(() => {
+            const bill = getConsultationBill(a.id);
+            const isBillPaid = bill && bill.status === 'Paid';
+            if (a.status === 'Booked' || a.status === 'Confirmed') {
+              return `<button class="action-btn approve" title="Confirm Patient Arrival" onclick="confirmArrival('${a.id}')">📍</button>`;
+            } else if (a.status === 'Arrived') {
+              let btns = '';
+              if (!isBillPaid) {
+                btns += `<a href="billing.html?search=${encodeURIComponent(a.id)}" class="action-btn view" title="Collect Consultation Fee" style="color:var(--clr-terracotta,#9C6B5D);font-weight:700;">💰</a>`;
+              }
+              btns += `<button class="action-btn approve" title="Issue Token" onclick="issueToken('${a.id}')">🎫</button>`;
+              return btns;
+            } else if (a.status === 'Waiting' || a.status === 'In Progress') {
+              return `<button class="action-btn approve" title="Complete" onclick="completeAppt('${a.id}')">✅</button>`;
+            }
+            return '';
+          })()}
           <button class="action-btn delete" title="Cancel"
                   onclick="cancelAppt('${a.id}')"
                   ${a.status === 'Completed' || a.status === 'Cancelled' ? 'style="display:none"' : ''}>✕</button>
@@ -693,9 +704,58 @@ function renderApptTable() {
   }).join('');
 }
 
-function checkIn(id) {
+const CONSULTATION_FEE = 500;
+
+function getConsultationBill(apptId) {
+  const bills = JSON.parse(localStorage.getItem('cms_billing') || '[]');
+  return bills.find(b => b.type === 'Consultation' && b.appointmentId === apptId);
+}
+
+function confirmArrival(id) {
+  const all = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+  const appt = all.find(a => a.id === id);
+  if (!appt) return;
+
+  const bills = JSON.parse(localStorage.getItem('cms_billing') || '[]');
+  let bill = bills.find(b => b.type === 'Consultation' && b.appointmentId === id);
+  if (!bill) {
+    bill = {
+      id: 'BILL' + String(Date.now()).slice(-6) + String(Math.floor(Math.random() * 900 + 100)),
+      type: 'Consultation',
+      patientId: appt.patientId,
+      patientName: appt.patientName,
+      doctor: appt.doctor || '',
+      appointmentId: appt.id,
+      amount: CONSULTATION_FEE,
+      status: 'Unpaid',
+      method: '',
+      reference: '',
+      notes: 'Consultation fee — ' + (appt.type || 'General OPD'),
+      date: TODAY,
+      paidDate: '',
+      paidAt: ''
+    };
+    bills.push(bill);
+    localStorage.setItem('cms_billing', JSON.stringify(bills));
+  }
+
+  updateApptStatus(id, 'Arrived');
+  showToast('Arrival confirmed for ' + appt.patientName + '. Consultation bill created.', 'success');
+}
+
+function issueToken(id) {
+  const all = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+  const appt = all.find(a => a.id === id);
+  if (!appt) return;
+
+  const bill = getConsultationBill(id);
+  if (!bill || bill.status !== 'Paid') {
+    showToast('Please collect the consultation fee before issuing the token.', 'warning');
+    return;
+  }
+
   updateApptStatus(id, 'Waiting');
-  showToast('Patient checked in — token issued ✅', 'success');
+  showToast('Token #' + String(appt.token).padStart(2,'0') + ' issued to ' + appt.patientName + ' — in queue ✅', 'success');
 }
 
 function completeAppt(id) {
@@ -871,6 +931,7 @@ function apptStatusClass(status) {
   return {
     'Booked':      'badge-info',
     'Confirmed':   'badge-primary',
+    'Arrived':     'badge-warning',
     'Waiting':     'badge-warning',
     'In Progress': 'badge-primary',
     'Completed':   'badge-success',

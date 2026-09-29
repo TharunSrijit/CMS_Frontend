@@ -17,9 +17,18 @@ const dashboardByRole = {
     PHARMACIST: 'pharmacy/dashboard.html'
 };
 
+// const localAccounts = {
+//     admin: { password: 'admin123', role: 'ADMIN', userRole: 'admin', fullName: 'Administrator' }
+// };
 const localAccounts = {
-    admin: { password: 'admin123', role: 'ADMIN', userRole: 'admin', fullName: 'Administrator' }
-};
+    admin: { password: 'admin123', role: 'ADMIN', userRole: 'admin', fullName: 'Administrator' },
+    doctor: { password: 'doctor123', role: 'DOCTOR', userRole: 'doctor', fullName: 'Dr. Arun Kumar' },
+    reception: { password: 'reception123', role: 'RECEPTIONIST', userRole: 'receptionist', fullName: 'Receptionist' },
+    receptionist: { password: ['reception123', 'receptionist123'], role: 'RECEPTIONIST', userRole: 'receptionist', fullName: 'Receptionist' },
+    pharmacy: { password: 'pharmacy123', role: 'PHARMACIST', userRole: 'pharmacist', fullName: 'Pharmacist' },
+    pharmacist: { password: 'pharmacist123', role: 'PHARMACIST', userRole: 'pharmacist', fullName: 'Pharmacist' },
+    lab: { password: 'lab123', role: 'LAB_TECHNICIAN', userRole: 'lab', fullName: 'Lab Technician' }
+}
 
 const registeredRoleDetails = {
     Admin: { role: 'ADMIN', userRole: 'admin' },
