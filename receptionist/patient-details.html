@@ -250,7 +250,57 @@ function renderPatient(p) {
           </tbody>
         </table>
       </div>
-    </div>`;
+    </div>
+
+    <!-- Billing history -->
+    ${renderPatientBills(p)}`;
+}
+
+function renderPatientBills(p) {
+  const bills = (JSON.parse(localStorage.getItem('cms_billing') || '[]')).filter(b => b.patientId === p.id);
+  const typeBadgeStyles = {
+    'Registration': 'background:#e8f5e9;color:#2e7d32;',
+    'Consultation': 'background:#e3f2fd;color:#1565c0;',
+    'Pharmacy': 'background:#fff3e0;color:#e65100;',
+    'Lab Test': 'background:#f3e5f5;color:#7b1fa2;',
+  };
+
+  return `
+    <div class="table-container" style="margin-top:20px;">
+      <div class="table-header">
+        <div class="table-title">💳 Billing History</div>
+        <div class="table-header-right">
+          <a href="billing.html?search=${encodeURIComponent(p.id)}" class="btn btn-secondary btn-sm">Manage in Billing</a>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Invoice</th><th>Date</th><th>Type</th><th>Doctor</th><th>Amount</th><th>Status</th><th>Payment Mode</th></tr>
+          </thead>
+          <tbody>
+            ${bills.length ? bills.map(b => {
+              const bType = b.type || (b.doctor ? 'Consultation' : 'General');
+              const bStatus = b.status || 'Unpaid';
+              const bAmount = Number(b.amount || 0).toFixed(2);
+              const bDoc = b.doctor || '—';
+              const bMethod = b.method || (bStatus === 'Paid' ? 'Cash' : '—');
+              const badgeStyle = typeBadgeStyles[bType] || 'background:#f5f5f5;color:#616161;';
+              return `<tr>
+                <td><span class="badge badge-neutral" style="font-family:monospace;font-size:11px;">${b.id}</span></td>
+                <td style="font-size:var(--text-sm);">${b.date || '—'}</td>
+                <td><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase;${badgeStyle}">${bType}</span></td>
+                <td style="font-size:var(--text-xs);">${bDoc}</td>
+                <td style="font-weight:700;font-size:var(--text-sm);">₹${bAmount}</td>
+                <td><span class="badge ${bStatus === 'Paid' ? 'badge-success' : 'badge-danger'}">${bStatus}</span></td>
+                <td style="font-size:var(--text-xs);">${bMethod}</td>
+              </tr>`;
+            }).join('') : '<tr><td colspan="7"><div class="table-empty"><div class="table-empty-icon">🧾</div><div class="table-empty-title">No billing records found</div></div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
 }
 </script>
   <script src="../js/validation.js"></script>

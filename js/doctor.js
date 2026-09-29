@@ -2058,19 +2058,25 @@ function completeConsultation() {
     }
 
     // 5. Auto-generate billing record for consultation
+    var CONSULTATION_FEE = 500;
     try {
         var billingList = JSON.parse(
             localStorage.getItem('cms_billing') || '[]'
         );
         billingList.unshift({
-            id:          'BILL' + String(Date.now()).slice(-5),
+            id:          'BILL' + String(Date.now()).slice(-8),
+            type:        'Consultation',
             patientId:   consultRecord.patientId,
             patientName: consultRecord.patientName,
-            amount:      '500',
-            method:      'Cash',
-            notes:       'Consultation fee — ' + (consultRecord.diagnosis || 'General OPD'),
+            doctor:      consultRecord.doctorName || '',
+            amount:      CONSULTATION_FEE,
             status:      'Unpaid',
-            date:        TODAY
+            method:      '',
+            reference:   '',
+            notes:       'Consultation fee — ' + (consultRecord.diagnosis || 'General OPD'),
+            date:        TODAY,
+            paidDate:    '',
+            paidAt:      ''
         });
         localStorage.setItem(
             'cms_billing',

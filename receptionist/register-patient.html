@@ -246,6 +246,8 @@ function initials_(name) { return (name||'?').split(' ').map(w=>w[0]).join('').t
 
 function pageInit() {}
 
+const REGISTRATION_FEE = 100;
+
 document.getElementById('registerForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const first = document.getElementById('firstName').value.trim();
@@ -257,7 +259,15 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
   }
 
   const patients = JSON.parse(localStorage.getItem('cms_patients') || '[]');
-  const newId = 'PAT' + String(patients.length + 1).padStart(3, '0');
+
+  // Generate unique patient ID based on highest existing ID
+  let maxNum = 0;
+  patients.forEach(function(p) {
+    const num = parseInt((p.id || '').replace(/\D/g, ''), 10);
+    if (!isNaN(num) && num > maxNum) maxNum = num;
+  });
+  const newId = 'PAT' + String(maxNum + 1).padStart(3, '0');
+
   const patient = {
     id: newId,
     name: first + ' ' + last,
@@ -273,9 +283,32 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
   patients.push(patient);
   localStorage.setItem('cms_patients', JSON.stringify(patients));
 
+  // Auto-create registration bill
+  try {
+    const bills = JSON.parse(localStorage.getItem('cms_billing') || '[]');
+    bills.push({
+      id: 'BILL' + String(Date.now()).slice(-8),
+      type: 'Registration',
+      patientId: patient.id,
+      patientName: patient.name,
+      doctor: '',
+      amount: REGISTRATION_FEE,
+      status: 'Unpaid',
+      method: '',
+      reference: '',
+      notes: 'Patient registration fee',
+      date: TODAY,
+      paidDate: '',
+      paidAt: ''
+    });
+    localStorage.setItem('cms_billing', JSON.stringify(bills));
+  } catch (err) {
+    console.error('Error creating registration bill:', err);
+  }
+
   showMsg(
     '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">' +
-      '<div>✅ Patient <strong>' + patient.name + '</strong> registered successfully! ID: <strong>' + newId + '</strong></div>' +
+      '<div>✅ Patient <strong>' + patient.name + '</strong> registered successfully! ID: <strong>' + newId + '</strong><br><span style="font-size:var(--text-xs);color:var(--text-muted);">Registration bill of ₹' + REGISTRATION_FEE + ' created.</span></div>' +
       '<div style="display:flex;gap:8px;">' +
         '<a href="book-appointment.html?patient=' + newId + '" class="btn btn-primary btn-sm">📅 Book Appointment Now</a>' +
         '<a href="patient-details.html?id=' + newId + '" class="btn btn-ghost btn-sm">👁 View Profile</a>' +
@@ -283,7 +316,7 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     '</div>',
     'success'
   );
-  showToast('Patient ' + newId + ' registered!', 'success');
+  showToast('Patient ' + newId + ' registered! Registration bill created.', 'success');
   document.getElementById('registerForm').reset();
 });
 

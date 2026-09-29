@@ -500,10 +500,10 @@ const SEED_APPOINTMENTS = [
 ];
 
 const SEED_BILLING = [
-  { id:'BILL001', patientId:'PAT001', patientName:'Rahul Menon', amount:500,  status:'Unpaid', date:TODAY },
-  { id:'BILL002', patientId:'PAT002', patientName:'Anu Thomas',  amount:800,  status:'Paid',   date:TODAY },
-  { id:'BILL003', patientId:'PAT005', patientName:'Suresh Babu', amount:600,  status:'Unpaid', date:TODAY },
-  { id:'BILL004', patientId:'PAT007', patientName:'Mohammed Rizwan', amount:1200, status:'Unpaid', date:TODAY },
+  { id:'BILL001', type:'Registration', patientId:'PAT001', patientName:'Rahul Menon', doctor:'', amount:100, status:'Unpaid', method:'', reference:'', notes:'Patient registration fee', date:TODAY, paidDate:'', paidAt:'' },
+  { id:'BILL002', type:'Consultation', patientId:'PAT002', patientName:'Anu Thomas', doctor:'Dr. Raj Varma', amount:500, status:'Paid', method:'Cash', reference:'', notes:'Consultation fee', date:TODAY, paidDate:TODAY, paidAt:new Date().toISOString() },
+  { id:'BILL003', type:'Consultation', patientId:'PAT005', patientName:'Suresh Babu', doctor:'Dr. Meena Pillai', amount:500, status:'Unpaid', method:'', reference:'', notes:'Consultation fee', date:TODAY, paidDate:'', paidAt:'' },
+  { id:'BILL004', type:'Registration', patientId:'PAT007', patientName:'Mohammed Rizwan', doctor:'', amount:100, status:'Unpaid', method:'', reference:'', notes:'Patient registration fee', date:TODAY, paidDate:'', paidAt:'' },
 ];
 
 const SEED_ACTIVITY = [
