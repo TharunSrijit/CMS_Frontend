@@ -474,7 +474,17 @@ if (!loggedInUser || (loggedInUser.role !== 'receptionist' && loggedInUser.role 
 /* ─────────────────────────────────────────
    1. SEED MOCK DATA
    ───────────────────────────────────────── */
-const TODAY = new Date().toISOString().split('T')[0];
+function getToday() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+const TODAY = getToday();
 
 const SEED_PATIENTS = [
   { id:'PAT001', name:'Rahul Menon',     age:24, gender:'Male',   blood:'O+',  phone:'9876543210', registeredOn: TODAY },

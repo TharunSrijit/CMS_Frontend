@@ -6,8 +6,15 @@
 // ============================================================
 
 // ============================================================
-// 1. DEFAULT SEED DATA
-// ============================================================
+function getToday() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
 
 const DEFAULT_MEDICINES = [
     {
@@ -85,7 +92,7 @@ const DEFAULT_MEDICINES = [
 const DEFAULT_PRESCRIPTIONS = [
     {
         id: "RX-98201",
-        date: new Date().toISOString().slice(0, 10),
+        date: getToday(),
         patientId: "PAT001",
         patientName: "Rahul Menon",
         doctorName: "Dr. Arun Kumar",
@@ -97,7 +104,7 @@ const DEFAULT_PRESCRIPTIONS = [
     },
     {
         id: "RX-98202",
-        date: new Date().toISOString().slice(0, 10),
+        date: getToday(),
         patientId: "PAT002",
         patientName: "Anu Thomas",
         doctorName: "Dr. Arun Kumar",
@@ -109,7 +116,7 @@ const DEFAULT_PRESCRIPTIONS = [
     },
     {
         id: "RX-98203",
-        date: new Date().toISOString().slice(0, 10),
+        date: getToday(),
         patientId: "PAT003",
         patientName: "Arjun Kumar",
         doctorName: "Dr. Arun Kumar",

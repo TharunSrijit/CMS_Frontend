@@ -23,10 +23,20 @@ if (
 
 
 // ============================================================
-// 2. COMMON CONSTANTS
+// 2. COMMON CONSTANTS & DATE HELPERS
 // ============================================================
 
-const TODAY = new Date().toISOString().split('T')[0];
+function getToday() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+const TODAY = getToday();
 
 const AVATAR_COLOURS = [
     '#9C6B5D', '#7e5249', '#5c3a32', '#2980b9', '#27ae60',
@@ -2164,7 +2174,7 @@ function startConsultFor(patientId, patientName) {
     var appts = JSON.parse(
         localStorage.getItem('cms_appointments') || '[]'
     );
-    var today = new Date().toISOString().split('T')[0];
+    var today = getToday();
 
     var appt = appts.find(function (a) {
         return a.patientId === patientId && a.date === today;
@@ -2228,8 +2238,7 @@ function exportPatientsCSV() {
     var blob = new Blob([csv], { type: 'text/csv' });
     var a    = document.createElement('a');
     a.href     = URL.createObjectURL(blob);
-    a.download = 'medicare_patients_' +
-        new Date().toISOString().slice(0, 10) + '.csv';
+    a.download = 'medicare_patients_' + getToday() + '.csv';
     a.click();
 }
 
@@ -2547,7 +2556,7 @@ function startConsultationForPatient() {
     var appts = JSON.parse(
         localStorage.getItem('cms_appointments') || '[]'
     );
-    var today = new Date().toISOString().split('T')[0];
+    var today = getToday();
 
     var appt = appts.find(function (a) {
         return a.patientId === currentPatient.id &&

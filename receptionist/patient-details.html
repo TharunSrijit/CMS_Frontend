@@ -151,7 +151,17 @@ function showToast(msg, type='info') {
     el.style.transition='all .3s ease'; setTimeout(()=>el.remove(),300); }, 3200);
 }
 
-const TODAY = new Date().toISOString().split('T')[0];
+function getToday() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+const TODAY = getToday();
 const AVATAR_COLOURS = ['#9C6B5D','#7e5249','#5c3a32','#2980b9','#27ae60','#d68910','#8e44ad','#c0392b','#16a085','#2c3e50'];
 function avatarColor(id) { const n=(id||'').replace(/\D/g,''); return AVATAR_COLOURS[parseInt(n||'0')%AVATAR_COLOURS.length]; }
 function initials_(name) { return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }

@@ -37,8 +37,17 @@ if (
 // 2. COMMON VARIABLES
 // ============================================================
 
-const LAB_TODAY =
-    new Date().toISOString().split("T")[0];
+function getToday() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+const LAB_TODAY = getToday();
 
 
 let allLabTests = [];
@@ -1423,9 +1432,7 @@ function saveLabResult() {
 
     test.completedDate =
         status === "Completed"
-            ? new Date()
-                .toISOString()
-                .split("T")[0]
+            ? getToday()
             : "";
 
 
