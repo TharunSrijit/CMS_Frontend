@@ -5,415 +5,337 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-    <title>Enter Results | Laboratory — CMS</title>
+    <title>Enter Lab Result</title>
 
-    <link rel="preconnect"
-          href="https://fonts.googleapis.com">
-
-    <link rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-          rel="stylesheet">
-
-    <link rel="stylesheet"
-          href="../css/style.css">
-
-    <link rel="stylesheet"
-          href="../css/forms.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/forms.css">
 
 </head>
 
-
 <body>
 
+<div class="app-wrapper">
 
-<div class="sidebar-overlay"
-     id="sidebarOverlay"
-     onclick="closeSidebar()">
-</div>
+    <aside class="sidebar" id="menu">
 
+        <a href="dashboard.html" class="sidebar-brand">
 
-<div class="sidebar"
-     id="sidebar">
-
-
-<a class="sidebar-brand"
-   href="dashboard.html">
-
-    <div class="sidebar-brand-icon">
-        🧪
-    </div>
-
-    <div class="sidebar-brand-text">
-
-        <span class="sidebar-brand-name">
-            MediCare CMS
-        </span>
-
-        <span class="sidebar-brand-sub">
-            Laboratory
-        </span>
-
-    </div>
-
-</a>
-
-
-<nav class="sidebar-nav">
-
-    <span class="nav-section-label">
-        Main
-    </span>
-
-    <a class="nav-item"
-       href="dashboard.html">
-
-        <span class="nav-item-icon">
-            📊
-        </span>
-
-        <span class="nav-item-label">
-            Dashboard
-        </span>
-
-    </a>
-
-
-    <div class="sidebar-divider"></div>
-
-
-    <span class="nav-section-label">
-        Laboratory
-    </span>
-
-
-    <a class="nav-item"
-       href="pending-lab-orders.html">
-
-        <span class="nav-item-icon">
-            📋
-        </span>
-
-        <span class="nav-item-label">
-            Pending Lab Orders
-        </span>
-
-    </a>
-
-
-    <a class="nav-item"
-       href="test-details.html">
-
-        <span class="nav-item-icon">
-            🔬
-        </span>
-
-        <span class="nav-item-label">
-            Test Details
-        </span>
-
-    </a>
-
-
-    <a class="nav-item active"
-       href="enter-results.html">
-
-        <span class="nav-item-icon">
-            📝
-        </span>
-
-        <span class="nav-item-label">
-            Enter Results
-        </span>
-
-    </a>
-
-
-    <a class="nav-item"
-       href="completed-tests.html">
-
-        <span class="nav-item-icon">
-            ✅
-        </span>
-
-        <span class="nav-item-label">
-            Completed Tests
-        </span>
-
-    </a>
-
-
-    <div class="sidebar-divider"></div>
-
-
-    <span class="nav-section-label">
-        Billing
-    </span>
-
-
-    <a class="nav-item"
-       href="lab-billing.html">
-
-        <span class="nav-item-icon">
-            💰
-        </span>
-
-        <span class="nav-item-label">
-            Lab Billing
-        </span>
-
-    </a>
-
-</nav>
-
-
-<div class="sidebar-user">
-
-    <div class="sidebar-avatar"
-         id="sidebarAvatar">
-        LT
-    </div>
-
-    <div class="sidebar-user-info">
-
-        <div class="sidebar-user-name"
-             id="sidebarName">
-            Lab Technician
-        </div>
-
-        <div class="sidebar-user-role">
-            Laboratory
-        </div>
-
-    </div>
-
-    <button class="sidebar-logout-btn"
-            onclick="logout()">
-        ⏏
-    </button>
-
-</div>
-
-</div>
-
-
-<div class="main-content">
-
-
-<header class="topbar">
-
-    <div class="topbar-left">
-
-        <button class="topbar-toggle"
-                onclick="openSidebar()">
-            ☰
-        </button>
-
-        <div>
-
-            <div class="topbar-page-title">
-                Enter Results
+            <div class="sidebar-brand-icon">
+                ⚕
             </div>
 
-            <div class="topbar-breadcrumb">
+            <div class="sidebar-brand-text">
 
-                <span>
+                <span class="sidebar-brand-name">
+                    Clinic Management
+                </span>
+
+                <span class="sidebar-brand-sub">
                     Laboratory
                 </span>
 
-                <span class="topbar-breadcrumb-sep">
-                    ›
-                </span>
+            </div>
 
-                <span>
-                    Enter Results
-                </span>
+        </a>
+
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-section-label">
+                Laboratory
+            </div>
+
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-item-icon">⌂</span>
+                <span class="nav-item-label">Dashboard</span>
+            </a>
+
+            <a href="enter-new-test.html" class="nav-item">
+                <span class="nav-item-icon">＋</span>
+                <span class="nav-item-label">Enter New Test</span>
+            </a>
+
+            <a href="pending-lab-orders.html" class="nav-item active">
+                <span class="nav-item-icon">◷</span>
+                <span class="nav-item-label">Pending Orders</span>
+            </a>
+
+            <a href="completed-tests.html" class="nav-item">
+                <span class="nav-item-icon">✓</span>
+                <span class="nav-item-label">Completed Tests</span>
+            </a>
+
+            <a href="lab-billing.html" class="nav-item">
+                <span class="nav-item-icon">₹</span>
+                <span class="nav-item-label">Lab Billing</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <div class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button
+                    class="topbar-toggle"
+                    type="button"
+                    onclick="toggleSidebar()">
+
+                    ☰
+
+                </button>
+
+                <div>
+
+                    <div class="topbar-page-title">
+                        Enter Result
+                    </div>
+
+                    <div class="topbar-breadcrumb">
+                        <span>Laboratory</span>
+                        <span class="topbar-breadcrumb-sep">/</span>
+                        <span>Enter Result</span>
+                    </div>
+
+                </div>
 
             </div>
 
-        </div>
+        </header>
+
+
+        <main class="page-content">
+
+            <div class="page-header">
+
+                <div class="page-header-left">
+
+                    <h1 class="page-title">
+                        Enter Laboratory Result
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Enter and save the result for this test.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form onsubmit="saveLabResult(event)">
+
+                <div class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div>
+
+                            <div class="form-section-title">
+                                Test Information
+                            </div>
+
+                            <div class="form-section-subtitle">
+                                Selected test
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-section-body">
+
+                        <div class="form-grid form-grid-2">
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="orderId">
+
+                                    Test ID
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="orderId"
+                                    class="form-control"
+                                    readonly>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="patientName">
+
+                                    Patient Name
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="patientName"
+                                    class="form-control"
+                                    readonly>
+
+                            </div>
+
+
+                            <div class="form-group col-span-2">
+
+                                <label
+                                    class="form-label"
+                                    for="testName">
+
+                                    Test Name
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="testName"
+                                    class="form-control"
+                                    readonly>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div>
+
+                            <div class="form-section-title">
+                                Result
+                            </div>
+
+                            <div class="form-section-subtitle">
+                                Enter laboratory findings
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-section-body">
+
+                        <div class="form-group">
+
+                            <label
+                                class="form-label"
+                                for="testResult">
+
+                                Test Result
+                                <span class="required">*</span>
+
+                            </label>
+
+                            <textarea
+                                id="testResult"
+                                class="form-control form-control-lg"
+                                rows="7"
+                                placeholder="Enter test result"
+                                required></textarea>
+
+                        </div>
+
+
+                        <div class="form-group mt-20">
+
+                            <label
+                                class="form-label"
+                                for="remarks">
+
+                                Remarks
+
+                            </label>
+
+                            <textarea
+                                id="remarks"
+                                class="form-control"
+                                rows="5"
+                                placeholder="Enter remarks if required"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <a
+                        href="pending-lab-orders.html"
+                        class="btn btn-secondary">
+
+                        Cancel
+
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        Save Result
+
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div
+                id="resultMessage"
+                class="mt-20">
+            </div>
+
+        </main>
 
     </div>
 
-</header>
-
-
-<main class="page-content">
-
-
-<div class="page-header">
-
-    <div class="page-header-left">
-
-        <h1 class="page-title">
-            Enter Test Results
-        </h1>
-
-        <p class="page-subtitle">
-            Record and submit laboratory test results
-        </p>
-
-    </div>
-
 </div>
 
 
-<div class="form-section">
+<script>
 
+function toggleSidebar() {
 
-<div class="form-section-header">
+    const sidebar =
+        document.getElementById("menu");
 
-    <div class="form-section-icon">
-        📝
-    </div>
+    if (sidebar) {
+        sidebar.classList.toggle("open");
+    }
 
-    <div>
+}
 
-        <div class="form-section-title">
-            Laboratory Result
-        </div>
-
-        <div class="form-section-subtitle">
-            Enter the test result and observations
-        </div>
-
-    </div>
-
-</div>
-
-
-<div class="form-section-body">
-
-
-<div class="form-grid form-grid-2">
-
-
-<div class="form-group">
-
-    <label class="form-label">
-        Test / Order ID
-        <span class="required">*</span>
-    </label>
-
-    <input
-        type="text"
-        id="resultTestId"
-        class="form-control"
-        placeholder="Example: LAB-1002">
-
-</div>
-
-
-<div class="form-group">
-
-    <label class="form-label">
-        Result Status
-        <span class="required">*</span>
-    </label>
-
-    <select
-        id="resultStatus"
-        class="form-control">
-
-        <option value="Completed">
-            Completed
-        </option>
-
-        <option value="Pending">
-            Pending
-        </option>
-
-    </select>
-
-</div>
-
-
-</div>
-
-
-<br>
-
-
-<div class="form-group">
-
-    <label class="form-label">
-        Test Result
-        <span class="required">*</span>
-    </label>
-
-    <textarea
-        id="resultValue"
-        class="form-control"
-        rows="5"
-        placeholder="Enter laboratory result..."></textarea>
-
-</div>
-
-
-<br>
-
-
-<div class="form-group">
-
-    <label class="form-label">
-        Technician Notes
-    </label>
-
-    <textarea
-        id="resultNotes"
-        class="form-control"
-        rows="4"
-        placeholder="Enter observations or notes..."></textarea>
-
-</div>
-
-
-<br>
-
-
-<div class="page-actions">
-
-    <button
-        class="btn btn-success"
-        onclick="saveLabResult()">
-
-        Save Result
-
-    </button>
-
-
-    <a href="pending-lab-orders.html"
-       class="btn btn-outline">
-
-        Cancel
-
-    </a>
-
-</div>
-
-
-<p id="resultMessage"></p>
-
-
-</div>
-
-</div>
-
-
-</main>
-
-</div>
-
-
-<script src="../js/storage.js"></script>
+</script>
 
 <script src="../js/lab.js"></script>
 
 </body>
-
 </html>

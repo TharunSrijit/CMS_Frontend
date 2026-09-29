@@ -1,1405 +1,527 @@
-// ============================================================
-// CMS — LABORATORY MODULE JAVASCRIPT
-// File: js/lab.js
-// Used by: All pages in /lab/
-// ============================================================
+/* =========================================================
+   LAB MANAGEMENT SYSTEM
+   Frontend / LocalStorage Version
+========================================================= */
 
 
-// ============================================================
-// 1. AUTHENTICATION
-// ============================================================
+/* =========================================================
+   SIDEBAR
+========================================================= */
 
-const labLoggedInUser = JSON.parse(
-    localStorage.getItem("loggedInUser") || "null"
-);
+function toggleMenu() {
 
+    const sidebar = document.getElementById("menu");
 
-// Allow lab technician and admin.
-// If your login system uses another lab role name,
-// add it here.
-
-if (
-    labLoggedInUser &&
-    labLoggedInUser.role &&
-    labLoggedInUser.role !== "lab" &&
-    labLoggedInUser.role !== "laboratory" &&
-    labLoggedInUser.role !== "lab_technician" &&
-    labLoggedInUser.role !== "lab-technician" &&
-    labLoggedInUser.role !== "admin"
-) {
-
-    window.location.href = "../index.html";
+    if (sidebar) {
+        sidebar.classList.toggle("open");
+    }
 
 }
 
 
-// ============================================================
-// 2. COMMON VARIABLES
-// ============================================================
+/* =========================================================
+   GET LAB TESTS
+========================================================= */
 
-function getToday() {
-    const now = new Date();
+function getLabTests() {
 
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const tests =
+        localStorage.getItem("labTests");
 
-    return `${year}-${month}-${day}`;
-}
+    if (!tests) {
+        return [];
+    }
 
-const LAB_TODAY = getToday();
+    try {
 
+        return JSON.parse(tests);
 
-let allLabTests = [];
+    } catch (error) {
 
-let filteredLabTests = [];
+        console.error(
+            "Error reading lab tests:",
+            error
+        );
 
-
-// ============================================================
-// 3. DEFAULT LAB DATA
-// ============================================================
-
-const DEFAULT_LAB_TESTS = [
-
-    {
-        id: "LAB-1001",
-
-        orderDate: LAB_TODAY,
-
-        patientId: "PAT001",
-
-        patientName: "Rahul Menon",
-
-        testName: "Complete Blood Count (CBC)",
-
-        priority: "Normal",
-
-        status: "Completed",
-
-        doctorName: "Dr. Arun Kumar",
-
-        summary:
-            "Hb: 14.1 g/dL, WBC: 8,200/mcL, Platelets: 230,000/mcL. All counts within normal biological reference range.",
-
-        result: "Normal CBC result",
-
-        notes: "No abnormal findings."
-
-    },
-
-
-    {
-        id: "LAB-1002",
-
-        orderDate: LAB_TODAY,
-
-        patientId: "PAT003",
-
-        patientName: "Arjun Kumar",
-
-        testName: "Lipid Profile",
-
-        priority: "Urgent",
-
-        status: "Pending",
-
-        doctorName: "Dr. Arun Kumar",
-
-        summary:
-            "Sample received at pathology lab; awaiting biochemistry autoanalyzer processing.",
-
-        result: "",
-
-        notes: ""
-
-    },
-
-
-    {
-        id: "LAB-1003",
-
-        orderDate: LAB_TODAY,
-
-        patientId: "PAT005",
-
-        patientName: "Suresh Babu",
-
-        testName: "HbA1c Glycated Hemoglobin",
-
-        priority: "Normal",
-
-        status: "Completed",
-
-        doctorName: "Dr. Arun Kumar",
-
-        summary:
-            "HbA1c: 7.2% (Fair glycemic control). Estimated average blood glucose: 160 mg/dL.",
-
-        result: "HbA1c: 7.2%",
-
-        notes: "Fair glycemic control."
-
-    },
-
-
-    {
-        id: "LAB-1004",
-
-        orderDate: LAB_TODAY,
-
-        patientId: "PAT007",
-
-        patientName: "Mohammed Rizwan",
-
-        testName: "Urine Routine Examination",
-
-        priority: "Urgent",
-
-        status: "Pending",
-
-        doctorName: "Dr. Arun Kumar",
-
-        summary:
-            "Sample collection underway in diagnostic wing.",
-
-        result: "",
-
-        notes: ""
-
-    },
-
-
-    {
-        id: "LAB-1005",
-
-        orderDate: "2026-02-14",
-
-        patientId: "PAT008",
-
-        patientName: "Divya Krishnan",
-
-        testName: "Thyroid Profile (T3, T4, TSH)",
-
-        priority: "Normal",
-
-        status: "Completed",
-
-        doctorName: "Dr. Arun Kumar",
-
-        summary:
-            "TSH: 3.14 mIU/L (Euthyroid state). Free T4: 1.2 ng/dL.",
-
-        result:
-            "TSH: 3.14 mIU/L, Free T4: 1.2 ng/dL",
-
-        notes:
-            "Euthyroid state."
+        return [];
 
     }
 
-];
+}
 
 
-// ============================================================
-// 4. INITIALIZE LAB DATA
-// ============================================================
+/* =========================================================
+   SAVE LAB TESTS
+========================================================= */
 
-function initializeLabData() {
+function saveLabTests(tests) {
 
-    let stored =
-        JSON.parse(
-            localStorage.getItem("cms_lab_tests") || "null"
-        );
+    localStorage.setItem(
+        "labTests",
+        JSON.stringify(tests)
+    );
+
+}
+
+
+/* =========================================================
+   GENERATE LAB TEST ID
+========================================================= */
+
+function generateLabTestId() {
+
+    const tests = getLabTests();
+
+    let number = tests.length + 1;
+
+    let id =
+        "LAB" +
+        String(number).padStart(3, "0");
+
+
+    /* Make sure ID is unique */
+
+    while (
+        tests.some(test => test.id === id)
+    ) {
+
+        number++;
+
+        id =
+            "LAB" +
+            String(number).padStart(3, "0");
+
+    }
+
+    return id;
+
+}
+
+
+/* =========================================================
+   ADD NEW LAB TEST
+========================================================= */
+
+function addNewLabTest(event) {
+
+    event.preventDefault();
+
+
+    const patientName =
+        document.getElementById("patientName")?.value.trim();
+
+    const patientId =
+        document.getElementById("patientId")?.value.trim();
+
+    const doctorName =
+        document.getElementById("doctorName")?.value.trim();
+
+    const testName =
+        document.getElementById("testName")?.value.trim();
+
+    const testDate =
+        document.getElementById("testDate")?.value;
+
+    const priority =
+        document.getElementById("priority")?.value;
+
+    const notes =
+        document.getElementById("notes")?.value.trim();
 
 
     if (
-        !stored ||
-        !Array.isArray(stored) ||
-        stored.length === 0
+        !patientName ||
+        !patientId ||
+        !doctorName ||
+        !testName ||
+        !testDate
     ) {
 
-        stored = DEFAULT_LAB_TESTS;
-
-        localStorage.setItem(
-            "cms_lab_tests",
-            JSON.stringify(stored)
+        alert(
+            "Please fill in all required fields."
         );
-
-    }
-
-
-    allLabTests = stored;
-
-    return allLabTests;
-
-}
-
-
-// ============================================================
-// 5. COMMON UI
-// ============================================================
-
-function getInitials(name) {
-
-    return (name || "LT")
-        .split(" ")
-        .map(function (word) {
-
-            return word.charAt(0);
-
-        })
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-
-}
-
-
-function initLabUI() {
-
-    let name =
-        labLoggedInUser &&
-        (
-            labLoggedInUser.name ||
-            labLoggedInUser.username
-        )
-        ||
-        "Lab Technician";
-
-
-    let initials =
-        getInitials(name);
-
-
-    let sidebarAvatar =
-        document.getElementById(
-            "sidebarAvatar"
-        );
-
-    let sidebarName =
-        document.getElementById(
-            "sidebarName"
-        );
-
-
-    if (sidebarAvatar) {
-
-        sidebarAvatar.textContent =
-            initials;
-
-    }
-
-
-    if (sidebarName) {
-
-        sidebarName.textContent =
-            name;
-
-    }
-
-
-    let topbarAvatar =
-        document.getElementById(
-            "topbarAvatar"
-        );
-
-    let topbarName =
-        document.getElementById(
-            "topbarName"
-        );
-
-
-    if (topbarAvatar) {
-
-        topbarAvatar.textContent =
-            initials;
-
-    }
-
-
-    if (topbarName) {
-
-        topbarName.textContent =
-            name;
-
-    }
-
-
-    let topbarDate =
-        document.getElementById(
-            "topbarDate"
-        );
-
-
-    if (topbarDate) {
-
-        topbarDate.textContent =
-            new Date().toLocaleDateString(
-                "en-IN",
-                {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                }
-            );
-
-    }
-
-
-    let timeOfDay =
-        document.getElementById(
-            "timeOfDay"
-        );
-
-
-    if (timeOfDay) {
-
-        let hour =
-            new Date().getHours();
-
-
-        timeOfDay.textContent =
-            hour < 12
-                ? "morning"
-                : hour < 17
-                    ? "afternoon"
-                    : "evening";
-
-    }
-
-
-    let welcomeName =
-        document.getElementById(
-            "welcomeName"
-        );
-
-
-    if (welcomeName) {
-
-        welcomeName.textContent =
-            "Welcome back, " + name + "!";
-
-    }
-
-}
-
-
-// ============================================================
-// 6. SIDEBAR
-// ============================================================
-
-function openSidebar() {
-
-    let sidebar =
-        document.getElementById(
-            "sidebar"
-        );
-
-    let overlay =
-        document.getElementById(
-            "sidebarOverlay"
-        );
-
-
-    if (sidebar) {
-
-        sidebar.classList.add(
-            "open"
-        );
-
-    }
-
-
-    if (overlay) {
-
-        overlay.classList.add(
-            "open"
-        );
-
-    }
-
-}
-
-
-function closeSidebar() {
-
-    let sidebar =
-        document.getElementById(
-            "sidebar"
-        );
-
-    let overlay =
-        document.getElementById(
-            "sidebarOverlay"
-        );
-
-
-    if (sidebar) {
-
-        sidebar.classList.remove(
-            "open"
-        );
-
-    }
-
-
-    if (overlay) {
-
-        overlay.classList.remove(
-            "open"
-        );
-
-    }
-
-}
-
-
-// ============================================================
-// 7. LOGOUT
-// ============================================================
-
-function logout() {
-
-    if (
-        !confirm(
-            "Are you sure you want to logout?"
-        )
-    ) {
 
         return;
 
     }
 
 
-    localStorage.removeItem(
-        "loggedInUser"
-    );
+    const tests = getLabTests();
 
 
-    window.location.href =
-        "../index.html";
+    const newTest = {
 
-}
+        id: generateLabTestId(),
 
+        patientName: patientName,
 
-// ============================================================
-// 8. BADGE HELPERS
-// ============================================================
+        patientId: patientId,
 
-function getStatusBadge(status) {
+        doctorName: doctorName,
 
-    let className =
-        "badge-neutral";
+        testName: testName,
 
+        testDate: testDate,
 
-    if (status === "Pending") {
+        priority: priority || "Normal",
 
-        className =
-            "badge-warning";
+        notes: notes || "",
 
-    }
-    else if (status === "Completed") {
+        status: "Pending",
 
-        className =
-            "badge-success";
+        result: "",
 
-    }
-    else if (status === "In Progress") {
+        remarks: "",
 
-        className =
-            "badge-info";
+        createdAt:
+            new Date().toISOString()
 
-    }
-    else if (status === "Cancelled") {
-
-        className =
-            "badge-danger";
-
-    }
+    };
 
 
-    return `
-        <span class="badge ${className}">
-            ${status}
-        </span>
-    `;
+    tests.push(newTest);
 
-}
+    saveLabTests(tests);
 
 
-function getPriorityBadge(priority) {
+    const message =
+        document.getElementById("message");
 
-    if (priority === "Urgent") {
 
-        return `
-            <span class="badge badge-danger">
-                Urgent
-            </span>
-        `;
+    if (message) {
+
+        message.innerHTML =
+            "Lab test added successfully. Test ID: " +
+            newTest.id;
 
     }
 
 
-    return `
-        <span class="badge badge-neutral">
-            Normal
-        </span>
-    `;
+    /* Reset form */
 
-}
+    const form =
+        event.target;
+
+    if (form) {
+        form.reset();
+    }
 
 
-// ============================================================
-// 9. DASHBOARD
-// ============================================================
-
-function initLabDashboard() {
-
-    initializeLabData();
-
-    initLabUI();
+    /* Update dashboard */
 
     updateLabDashboard();
 
 }
 
 
+/* =========================================================
+   UPDATE LAB DASHBOARD
+========================================================= */
+
 function updateLabDashboard() {
 
-    let total =
-        allLabTests.length;
+    const tests = getLabTests();
 
 
-    let pending =
-        allLabTests.filter(
-            function (test) {
-
-                return test.status === "Pending";
-
-            }
-        ).length;
+    const pendingTests =
+        tests.filter(
+            test =>
+                test.status === "Pending"
+        );
 
 
-    let completed =
-        allLabTests.filter(
-            function (test) {
-
-                return test.status === "Completed";
-
-            }
-        ).length;
+    const completedTests =
+        tests.filter(
+            test =>
+                test.status === "Completed"
+        );
 
 
-    let urgent =
-        allLabTests.filter(
-            function (test) {
+    const pendingCount =
+        document.getElementById(
+            "pendingCount"
+        );
 
-                return (
-                    test.priority === "Urgent" &&
-                    test.status !== "Completed"
-                );
+    const completedCount =
+        document.getElementById(
+            "completedCount"
+        );
 
-            }
-        ).length;
+    const todayTestCount =
+        document.getElementById(
+            "todayTestCount"
+        );
 
-
-    setText(
-        "statTotal",
-        total
-    );
-
-    setText(
-        "statPending",
-        pending
-    );
-
-    setText(
-        "statCompleted",
-        completed
-    );
-
-    setText(
-        "statUrgent",
-        urgent
-    );
+    const totalTestCount =
+        document.getElementById(
+            "totalTestCount"
+        );
 
 
-    setText(
-        "bannerTotal",
-        total
-    );
+    if (pendingCount) {
 
-    setText(
-        "bannerPending",
-        pending
-    );
+        pendingCount.textContent =
+            pendingTests.length;
 
-    setText(
-        "bannerCompleted",
-        completed
-    );
+    }
 
 
-    setText(
-        "pendingBadge",
-        pending
-    );
+    if (completedCount) {
 
-}
+        completedCount.textContent =
+            completedTests.length;
 
-
-// ============================================================
-// 10. SET TEXT HELPER
-// ============================================================
-
-function setText(id, value) {
-
-    let element =
-        document.getElementById(id);
+    }
 
 
-    if (element) {
+    if (totalTestCount) {
 
-        element.textContent =
-            value;
+        totalTestCount.textContent =
+            tests.length;
+
+    }
+
+
+    if (todayTestCount) {
+
+        const today =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        const todayTests =
+            tests.filter(
+                test =>
+                    test.testDate === today
+            );
+
+
+        todayTestCount.textContent =
+            todayTests.length;
 
     }
 
 }
 
 
-// ============================================================
-// 11. PENDING ORDERS
-// ============================================================
+/* =========================================================
+   LOAD PENDING LAB ORDERS
+========================================================= */
 
-function initPendingOrders() {
+function loadPendingLabOrders() {
 
-    initializeLabData();
-
-    initLabUI();
-
-    filterLabOrders();
-
-}
-
-
-function filterLabOrders() {
-
-    let searchElement =
+    const table =
         document.getElementById(
-            "labSearch"
+            "pendingTestsTable"
         );
 
-
-    let search =
-        searchElement
-            ? searchElement.value
-                .trim()
-                .toLowerCase()
-            : "";
-
-
-    filteredLabTests =
-        allLabTests.filter(
-            function (test) {
-
-                if (
-                    test.status !==
-                    "Pending"
-                ) {
-
-                    return false;
-
-                }
-
-
-                if (!search) {
-
-                    return true;
-
-                }
-
-
-                return (
-
-                    test.id
-                        .toLowerCase()
-                        .includes(search)
-
-                    ||
-
-                    test.patientName
-                        .toLowerCase()
-                        .includes(search)
-
-                    ||
-
-                    test.testName
-                        .toLowerCase()
-                        .includes(search)
-
-                    ||
-
-                    test.doctorName
-                        .toLowerCase()
-                        .includes(search)
-
-                );
-
-            }
-        );
-
-
-    renderPendingOrders();
-
-}
-
-
-function renderPendingOrders() {
-
-    let tbody =
+    const tbody =
         document.getElementById(
-            "pendingOrdersTable"
+            "pendingTestsBody"
         );
 
 
-    if (!tbody) {
+    if (!table || !tbody) {
 
         return;
 
     }
 
 
-    let count =
-        document.getElementById(
-            "pendingCountLabel"
+    /* Clear existing dynamic rows */
+
+    tbody.innerHTML = "";
+
+
+    const tests =
+        getLabTests();
+
+
+    const pendingTests =
+        tests.filter(
+            test =>
+                test.status === "Pending"
         );
 
 
-    if (count) {
+    /* No pending tests */
 
-        count.textContent =
-            filteredLabTests.length;
+    if (pendingTests.length === 0) {
 
-    }
+        const row =
+            tbody.insertRow();
 
 
-    if (
-        filteredLabTests.length === 0
-    ) {
+        const cell =
+            row.insertCell();
 
-        tbody.innerHTML = `
 
-            <tr>
+        cell.colSpan = 8;
 
-                <td colspan="7"
-                    style="text-align:center;
-                           padding:30px;">
-
-                    No pending laboratory orders found.
-
-                </td>
-
-            </tr>
-
-        `;
+        cell.textContent =
+            "No pending laboratory tests.";
 
         return;
 
     }
 
 
-    tbody.innerHTML =
-        filteredLabTests
-            .map(
-                function (test) {
+    /* Create rows */
 
-                    return `
-
-                    <tr>
-
-                        <td class="td-mono">
-                            ${test.id}
-                        </td>
-
-                        <td class="td-primary">
-                            ${test.patientName}
-                        </td>
-
-                        <td>
-                            ${test.testName}
-                        </td>
-
-                        <td>
-                            ${test.doctorName}
-                        </td>
-
-                        <td>
-                            ${getPriorityBadge(
-                                test.priority
-                            )}
-                        </td>
-
-                        <td>
-                            ${test.orderDate}
-                        </td>
-
-                        <td class="td-actions">
-
-                            <div
-                                class="td-actions-group">
-
-                                <button
-                                    class="btn btn-primary btn-sm"
-                                    onclick="openTestDetails('${test.id}')">
-
-                                    View
-
-                                </button>
+    pendingTests.forEach(
+        function (test) {
 
 
-                                <button
-                                    class="btn btn-success btn-sm"
-                                    onclick="enterResultForTest('${test.id}')">
+            const row =
+                tbody.insertRow();
 
-                                    Result
 
-                                </button>
+            row.classList.add(
+                "dynamic-lab-row"
+            );
 
-                            </div>
 
-                        </td>
+            /* Test ID */
 
-                    </tr>
+            row.insertCell(0)
+                .textContent =
+                test.id;
 
-                    `;
+
+            /* Patient */
+
+            row.insertCell(1)
+                .textContent =
+                test.patientName;
+
+
+            /* Doctor */
+
+            row.insertCell(2)
+                .textContent =
+                test.doctorName;
+
+
+            /* Test */
+
+            row.insertCell(3)
+                .textContent =
+                test.testName;
+
+
+            /* Date */
+
+            row.insertCell(4)
+                .textContent =
+                test.testDate;
+
+
+            /* Priority */
+
+            row.insertCell(5)
+                .textContent =
+                test.priority;
+
+
+            /* Status */
+
+            row.insertCell(6)
+                .textContent =
+                test.status;
+
+
+            /* Action */
+
+            const actionCell =
+                row.insertCell(7);
+
+
+            const viewButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            viewButton.type =
+                "button";
+
+
+            viewButton.textContent =
+                "View";
+
+
+            viewButton.className =
+                "btn btn-secondary";
+
+
+            viewButton.addEventListener(
+                "click",
+                function () {
+
+                    viewLabTest(
+                        test.id
+                    );
 
                 }
-            )
-            .join("");
+            );
+
+
+            actionCell.appendChild(
+                viewButton
+            );
+
+        }
+    );
 
 }
 
 
-// ============================================================
-// 12. OPEN TEST DETAILS
-// ============================================================
+/* =========================================================
+   VIEW LAB TEST
+========================================================= */
 
-function openTestDetails(id) {
+function viewLabTest(testId) {
 
     window.location.href =
         "test-details.html?id=" +
-        encodeURIComponent(id);
+        encodeURIComponent(testId);
 
 }
 
 
-// ============================================================
-// 13. ENTER RESULT FOR TEST
-// ============================================================
+/* =========================================================
+   LOAD TEST DETAILS
+========================================================= */
 
-function enterResultForTest(id) {
+function loadTestDetails() {
 
-    window.location.href =
-        "enter-results.html?id=" +
-        encodeURIComponent(id);
-
-}
-
-
-// ============================================================
-// 14. GET URL PARAMETER
-// ============================================================
-
-function getQueryParameter(name) {
-
-    let params =
+    const params =
         new URLSearchParams(
             window.location.search
         );
 
 
-    return params.get(name);
-
-}
-
-
-// ============================================================
-// 15. TEST DETAILS PAGE
-// ============================================================
-
-function initTestDetails() {
-
-    initializeLabData();
-
-    initLabUI();
+    const testId =
+        params.get("id") ||
+        params.get("orderId");
 
 
-    let id =
-        getQueryParameter("id");
-
-
-    let container =
-        document.getElementById(
-            "testDetailsContainer"
-        );
-
-
-    if (!container) {
+    if (!testId) {
 
         return;
 
     }
 
 
-    if (!id) {
+    const tests =
+        getLabTests();
 
-        container.innerHTML = `
 
-            <div class="card">
-
-                <div class="card-body">
-
-                    <p>
-                        No test ID was provided.
-                    </p>
-
-                    <a
-                        href="pending-lab-orders.html"
-                        class="btn btn-primary">
-
-                        Back to Orders
-
-                    </a>
-
-                </div>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    let test =
-        allLabTests.find(
-            function (item) {
-
-                return item.id === id;
-
-            }
-        );
-
-
-    if (!test) {
-
-        container.innerHTML = `
-
-            <div class="card">
-
-                <div class="card-body">
-
-                    <p>
-                        Laboratory test not found.
-                    </p>
-
-                </div>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML = `
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <div>
-
-                    <div class="card-title">
-                        ${test.testName}
-                    </div>
-
-                    <div class="card-subtitle">
-                        Test ID: ${test.id}
-                    </div>
-
-                </div>
-
-                ${getStatusBadge(
-                    test.status
-                )}
-
-            </div>
-
-
-            <div class="card-body">
-
-
-                <div class="form-grid form-grid-2">
-
-
-                    <div>
-
-                        <strong>
-                            Patient
-                        </strong>
-
-                        <p>
-                            ${test.patientName}
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-                            Patient ID
-                        </strong>
-
-                        <p>
-                            ${test.patientId}
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-                            Doctor
-                        </strong>
-
-                        <p>
-                            ${test.doctorName}
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-                            Order Date
-                        </strong>
-
-                        <p>
-                            ${test.orderDate}
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-                            Priority
-                        </strong>
-
-                        <p>
-                            ${getPriorityBadge(
-                                test.priority
-                            )}
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-                            Status
-                        </strong>
-
-                        <p>
-                            ${getStatusBadge(
-                                test.status
-                            )}
-                        </p>
-
-                    </div>
-
-
-                </div>
-
-
-                <br>
-
-
-                <div>
-
-                    <strong>
-                        Test Summary
-                    </strong>
-
-                    <p>
-                        ${test.summary || "No summary available."}
-                    </p>
-
-                </div>
-
-
-                ${
-                    test.result
-                    ? `
-
-                    <div>
-
-                        <strong>
-                            Result
-                        </strong>
-
-                        <p>
-                            ${test.result}
-                        </p>
-
-                    </div>
-
-                    `
-                    : ""
-                }
-
-
-                ${
-                    test.notes
-                    ? `
-
-                    <div>
-
-                        <strong>
-                            Technician Notes
-                        </strong>
-
-                        <p>
-                            ${test.notes}
-                        </p>
-
-                    </div>
-
-                    `
-                    : ""
-                }
-
-
-                <br>
-
-
-                <div class="page-actions">
-
-                    ${
-                        test.status === "Pending"
-
-                        ? `
-
-                        <a
-                            href="enter-results.html?id=${test.id}"
-                            class="btn btn-success">
-
-                            Enter Result
-
-                        </a>
-
-                        `
-
-                        : ""
-
-                    }
-
-
-                    <a
-                        href="pending-lab-orders.html"
-                        class="btn btn-outline">
-
-                        Back
-
-                    </a>
-
-                </div>
-
-
-            </div>
-
-        </div>
-
-    `;
-
-}
-
-
-// ============================================================
-// 16. ENTER RESULTS PAGE
-// ============================================================
-
-function initEnterResults() {
-
-    initializeLabData();
-
-    initLabUI();
-
-
-    let id =
-        getQueryParameter("id");
-
-
-    let idField =
-        document.getElementById(
-            "resultTestId"
-        );
-
-
-    if (
-        id &&
-        idField
-    ) {
-
-        idField.value =
-            id;
-
-    }
-
-
-    if (
-        id &&
-        allLabTests.find(
-            function (test) {
-
-                return test.id === id;
-
-            }
-        )
-    ) {
-
-        let test =
-            allLabTests.find(
-                function (item) {
-
-                    return item.id === id;
-
-                }
-            );
-
-
-        let resultValue =
-            document.getElementById(
-                "resultValue"
-            );
-
-
-        let notes =
-            document.getElementById(
-                "resultNotes"
-            );
-
-
-        if (
-            resultValue &&
-            test.result
-        ) {
-
-            resultValue.value =
-                test.result;
-
-        }
-
-
-        if (
-            notes &&
-            test.notes
-        ) {
-
-            notes.value =
-                test.notes;
-
-        }
-
-    }
-
-}
-
-
-// ============================================================
-// 17. SAVE LAB RESULT
-// ============================================================
-
-function saveLabResult() {
-
-    let id =
-        document.getElementById(
-            "resultTestId"
-        ).value.trim();
-
-
-    let status =
-        document.getElementById(
-            "resultStatus"
-        ).value;
-
-
-    let result =
-        document.getElementById(
-            "resultValue"
-        ).value.trim();
-
-
-    let notes =
-        document.getElementById(
-            "resultNotes"
-        ).value.trim();
-
-
-    let message =
-        document.getElementById(
-            "resultMessage"
-        );
-
-
-    if (!id) {
-
-        alert(
-            "Please enter the Test / Order ID."
-        );
-
-        return;
-
-    }
-
-
-    if (!result) {
-
-        alert(
-            "Please enter the test result."
-        );
-
-        return;
-
-    }
-
-
-    let tests =
-        JSON.parse(
-            localStorage.getItem(
-                "cms_lab_tests"
-            ) || "[]"
-        );
-
-
-    let test =
+    const test =
         tests.find(
-            function (item) {
-
-                return item.id === id;
-
-            }
+            item =>
+                item.id === testId
         );
 
 
@@ -1414,159 +536,404 @@ function saveLabResult() {
     }
 
 
-    test.status =
-        status;
+    const orderId =
+        document.getElementById(
+            "orderId"
+        );
+
+    const patientName =
+        document.getElementById(
+            "patientName"
+        );
+
+    const patientId =
+        document.getElementById(
+            "patientId"
+        );
+
+    const doctorName =
+        document.getElementById(
+            "doctorName"
+        );
+
+    const testName =
+        document.getElementById(
+            "testName"
+        );
+
+    const testDate =
+        document.getElementById(
+            "testDate"
+        );
+
+    const testStatus =
+        document.getElementById(
+            "testStatus"
+        );
+
+    const testPriority =
+        document.getElementById(
+            "testPriority"
+        );
+
+    const testNotes =
+        document.getElementById(
+            "testNotes"
+        );
 
 
-    test.result =
-        result;
+    if (orderId)
+        orderId.textContent =
+            test.id;
 
 
-    test.notes =
-        notes;
+    if (patientName)
+        patientName.textContent =
+            test.patientName;
 
 
-    test.summary =
-        result;
+    if (patientId)
+        patientId.textContent =
+            test.patientId;
 
 
-    test.completedDate =
-        status === "Completed"
-            ? getToday()
-            : "";
+    if (doctorName)
+        doctorName.textContent =
+            test.doctorName;
 
 
-    localStorage.setItem(
-        "cms_lab_tests",
-        JSON.stringify(tests)
-    );
+    if (testName)
+        testName.textContent =
+            test.testName;
 
 
-    allLabTests =
-        tests;
+    if (testDate)
+        testDate.textContent =
+            test.testDate;
 
 
-    if (message) {
+    if (testStatus)
+        testStatus.textContent =
+            test.status;
 
-        message.innerHTML = `
 
-            <br>
+    if (testPriority)
+        testPriority.textContent =
+            test.priority;
 
-            <span class="badge badge-success">
 
-                Result saved successfully.
+    if (testNotes)
+        testNotes.textContent =
+            test.notes || "No notes";
 
-            </span>
+}
 
-        `;
+
+/* =========================================================
+   GO TO RESULTS
+========================================================= */
+
+function goToResults() {
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const testId =
+        params.get("id") ||
+        params.get("orderId");
+
+
+    if (!testId) {
+
+        alert(
+            "Test ID not found."
+        );
+
+        return;
 
     }
 
 
-    setTimeout(
-        function () {
-
-            window.location.href =
-                "completed-tests.html";
-
-        },
-        900
-    );
+    window.location.href =
+        "enter-results.html?orderId=" +
+        encodeURIComponent(testId);
 
 }
 
 
-// ============================================================
-// 18. COMPLETED TESTS
-// ============================================================
+/* =========================================================
+   LOAD RESULT TEST
+========================================================= */
 
-function initCompletedTests() {
+function loadResultTest() {
 
-    initializeLabData();
-
-    initLabUI();
-
-    filterCompletedTests();
-
-}
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
 
 
-function filterCompletedTests() {
+    const orderId =
+        params.get("orderId") ||
+        params.get("id");
 
-    let searchElement =
+
+    if (!orderId) {
+
+        return;
+
+    }
+
+
+    const tests =
+        getLabTests();
+
+
+    const test =
+        tests.find(
+            item =>
+                item.id === orderId
+        );
+
+
+    if (!test) {
+
+        return;
+
+    }
+
+
+    const orderIdElement =
         document.getElementById(
-            "completedSearch"
+            "orderId"
+        );
+
+    const patientName =
+        document.getElementById(
+            "patientName"
+        );
+
+    const testName =
+        document.getElementById(
+            "testName"
         );
 
 
-    let search =
-        searchElement
-            ? searchElement.value
-                .trim()
-                .toLowerCase()
-            : "";
+    if (orderIdElement) {
+
+        orderIdElement.value =
+            test.id;
+
+        orderIdElement.textContent =
+            test.id;
+
+    }
 
 
-    let completed =
-        allLabTests.filter(
-            function (test) {
+    if (patientName) {
 
-                if (
-                    test.status !==
-                    "Completed"
-                ) {
+        patientName.value =
+            test.patientName;
 
-                    return false;
+        patientName.textContent =
+            test.patientName;
 
-                }
+    }
 
 
-                if (!search) {
+    if (testName) {
 
-                    return true;
+        testName.value =
+            test.testName;
 
-                }
+        testName.textContent =
+            test.testName;
 
-
-                return (
-
-                    test.id
-                        .toLowerCase()
-                        .includes(search)
-
-                    ||
-
-                    test.patientName
-                        .toLowerCase()
-                        .includes(search)
-
-                    ||
-
-                    test.testName
-                        .toLowerCase()
-                        .includes(search)
-
-                );
-
-            }
-        );
-
-
-    renderCompletedTests(
-        completed
-    );
+    }
 
 }
 
 
-function renderCompletedTests(
-    tests
-) {
+/* =========================================================
+   SAVE LAB RESULT
+========================================================= */
 
-    let tbody =
+function saveLabResult(event) {
+
+    event.preventDefault();
+
+
+    const orderIdElement =
+        document.getElementById(
+            "orderId"
+        );
+
+
+    const patientNameElement =
+        document.getElementById(
+            "patientName"
+        );
+
+
+    const testNameElement =
+        document.getElementById(
+            "testName"
+        );
+
+
+    const testResultElement =
+        document.getElementById(
+            "testResult"
+        );
+
+
+    const remarksElement =
+        document.getElementById(
+            "remarks"
+        );
+
+
+    const orderId =
+        orderIdElement?.value ||
+        orderIdElement?.textContent.trim();
+
+
+    const patientName =
+        patientNameElement?.value ||
+        patientNameElement?.textContent.trim();
+
+
+    const testName =
+        testNameElement?.value ||
+        testNameElement?.textContent.trim();
+
+
+    const testResult =
+        testResultElement?.value.trim();
+
+
+    const remarks =
+        remarksElement?.value.trim() ||
+        "";
+
+
+    if (
+        !orderId ||
+        !testResult
+    ) {
+
+        alert(
+            "Please enter the test result."
+        );
+
+        return;
+
+    }
+
+
+    const tests =
+        getLabTests();
+
+
+    const index =
+        tests.findIndex(
+            test =>
+                test.id === orderId
+        );
+
+
+    if (index === -1) {
+
+        alert(
+            "Laboratory test not found."
+        );
+
+        return;
+
+    }
+
+
+    tests[index].patientName =
+        patientName ||
+        tests[index].patientName;
+
+
+    tests[index].testName =
+        testName ||
+        tests[index].testName;
+
+
+    tests[index].result =
+        testResult;
+
+
+    tests[index].remarks =
+        remarks;
+
+
+    tests[index].status =
+        "Completed";
+
+
+    tests[index].completedAt =
+        new Date().toISOString();
+
+
+    saveLabTests(tests);
+
+
+    alert(
+        "Lab result saved successfully."
+    );
+
+
+    window.location.href =
+        "completed-tests.html";
+
+}
+
+
+/* =========================================================
+   LOAD COMPLETED TESTS
+========================================================= */
+
+function loadCompletedTests() {
+
+    const table =
         document.getElementById(
             "completedTestsTable"
         );
+
+
+    if (!table) {
+
+        return;
+
+    }
+
+
+    let tbody =
+        document.getElementById(
+            "completedTestsBody"
+        );
+
+
+    /*
+       If the completed page does not
+       have an ID on tbody, find it.
+    */
+
+    if (!tbody) {
+
+        tbody =
+            table.querySelector(
+                "tbody"
+            );
+
+    }
 
 
     if (!tbody) {
@@ -1576,349 +943,346 @@ function renderCompletedTests(
     }
 
 
-    let count =
-        document.getElementById(
-            "completedCountLabel"
+    tbody.innerHTML = "";
+
+
+    const tests =
+        getLabTests();
+
+
+    const completedTests =
+        tests.filter(
+            test =>
+                test.status === "Completed"
         );
 
 
-    if (count) {
+    if (completedTests.length === 0) {
 
-        count.textContent =
-            tests.length;
-
-    }
+        const row =
+            tbody.insertRow();
 
 
-    if (tests.length === 0) {
+        const cell =
+            row.insertCell();
 
-        tbody.innerHTML = `
 
-            <tr>
+        cell.colSpan = 7;
 
-                <td
-                    colspan="7"
-                    style="text-align:center;
-                           padding:30px;">
-
-                    No completed tests found.
-
-                </td>
-
-            </tr>
-
-        `;
+        cell.textContent =
+            "No completed laboratory tests.";
 
         return;
 
     }
 
 
-    tbody.innerHTML =
-        tests.map(
-            function (test) {
+    completedTests.forEach(
+        function (test) {
 
-                return `
 
-                <tr>
+            const row =
+                tbody.insertRow();
 
-                    <td class="td-mono">
-                        ${test.id}
-                    </td>
 
-                    <td class="td-primary">
-                        ${test.patientName}
-                    </td>
+            row.classList.add(
+                "dynamic-lab-row"
+            );
 
-                    <td>
-                        ${test.testName}
-                    </td>
 
-                    <td>
-                        ${test.doctorName}
-                    </td>
+            row.insertCell(0)
+                .textContent =
+                test.id;
 
-                    <td>
-                        ${
-                            test.completedDate ||
-                            test.orderDate
-                        }
-                    </td>
 
-                    <td>
-                        ${getStatusBadge(
-                            test.status
-                        )}
-                    </td>
+            row.insertCell(1)
+                .textContent =
+                test.patientName;
 
-                    <td class="td-actions">
 
-                        <a
-                            href="test-details.html?id=${test.id}"
-                            class="btn btn-outline btn-sm">
+            row.insertCell(2)
+                .textContent =
+                test.testName;
 
-                            View
 
-                        </a>
+            row.insertCell(3)
+                .textContent =
+                test.testDate;
 
-                    </td>
 
-                </tr>
+            row.insertCell(4)
+                .textContent =
+                test.result;
 
-                `;
 
-            }
-        )
-        .join("");
+            row.insertCell(5)
+                .textContent =
+                test.status;
+
+
+            const actionCell =
+                row.insertCell(6);
+
+
+            const viewButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            viewButton.type =
+                "button";
+
+
+            viewButton.textContent =
+                "View";
+
+
+            viewButton.className =
+                "btn btn-secondary";
+
+
+            viewButton.addEventListener(
+                "click",
+                function () {
+
+                    viewLabTest(
+                        test.id
+                    );
+
+                }
+            );
+
+
+            actionCell.appendChild(
+                viewButton
+            );
+
+        }
+    );
 
 }
 
 
-// ============================================================
-// 19. LAB BILLING
-// ============================================================
+/* =========================================================
+   LAB BILL CALCULATION
+========================================================= */
 
 function calculateLabBill() {
 
-    let test =
+    const testElement =
         document.getElementById(
-            "billingTest"
+            "labTest"
         );
 
 
-    let quantity =
-        Number(
-            document.getElementById(
-                "billingQuantity"
-            ).value
+    const quantityElement =
+        document.getElementById(
+            "labQuantity"
         );
 
 
-    let price =
-        Number(
-            test.value
+    const totalElement =
+        document.getElementById(
+            "labTotal"
         );
 
 
-    if (!quantity || quantity < 1) {
+    if (
+        !testElement ||
+        !quantityElement ||
+        !totalElement
+    ) {
 
-        quantity = 1;
+        return;
 
     }
 
 
-    let total =
+    /*
+       Example prices.
+       You can change these according
+       to your project requirements.
+    */
+
+    const prices = {
+
+        "Blood Sugar": 150,
+
+        "CBC": 300,
+
+        "Urine Test": 200,
+
+        "Lipid Profile": 500,
+
+        "Liver Function Test": 600,
+
+        "Kidney Function Test": 550,
+
+        "Thyroid Test": 450
+
+    };
+
+
+    const testName =
+        testElement.value;
+
+
+    const quantity =
+        Number(
+            quantityElement.value
+        ) || 0;
+
+
+    const price =
+        prices[testName] || 0;
+
+
+    const total =
         price * quantity;
 
 
-    setText(
-        "labBillTotal",
-        total
-    );
-
-
-    return total;
+    totalElement.value =
+        total.toFixed(2);
 
 }
 
 
-function generateLabBill() {
+/* =========================================================
+   GENERATE LAB BILL
+========================================================= */
 
-    let patient =
+function generateLabBill(event) {
+
+    event.preventDefault();
+
+
+    const patientName =
         document.getElementById(
-            "billingPatient"
-        ).value.trim();
+            "patientName"
+        )?.value.trim();
 
 
-    let test =
+    const labTest =
         document.getElementById(
-            "billingTest"
+            "labTest"
+        )?.value;
+
+
+    const quantity =
+        document.getElementById(
+            "labQuantity"
+        )?.value;
+
+
+    const labTotal =
+        document.getElementById(
+            "labTotal"
+        )?.value;
+
+
+    const message =
+        document.getElementById(
+            "billMessage"
         );
 
 
-    let quantity =
-        Number(
-            document.getElementById(
-                "billingQuantity"
-            ).value
-        );
-
-
-    let message =
-        document.getElementById(
-            "billingMessage"
-        );
-
-
-    if (!patient) {
+    if (
+        !patientName ||
+        !labTest ||
+        !quantity
+    ) {
 
         alert(
-            "Please enter the patient name."
+            "Please fill in all billing details."
         );
 
         return;
 
     }
-
-
-    if (!test.value) {
-
-        alert(
-            "Please select a laboratory test."
-        );
-
-        return;
-
-    }
-
-
-    if (!quantity || quantity < 1) {
-
-        alert(
-            "Please enter a valid quantity."
-        );
-
-        return;
-
-    }
-
-
-    let total =
-        calculateLabBill();
-
-
-    message.innerHTML = `
-
-        <br>
-
-        <span class="badge badge-success">
-
-            Bill generated successfully!
-
-        </span>
-
-        <br><br>
-
-        Patient:
-        <strong>
-            ${patient}
-        </strong>
-
-        <br>
-
-        Test:
-        <strong>
-            ${test.options[
-                test.selectedIndex
-            ].text}
-        </strong>
-
-        <br>
-
-        Quantity:
-        <strong>
-            ${quantity}
-        </strong>
-
-        <br>
-
-        Total:
-        <strong>
-            ₹${total}
-        </strong>
-
-    `;
-
-}
-
-
-function clearLabBill() {
-
-    let patient =
-        document.getElementById(
-            "billingPatient"
-        );
-
-
-    let test =
-        document.getElementById(
-            "billingTest"
-        );
-
-
-    let quantity =
-        document.getElementById(
-            "billingQuantity"
-        );
-
-
-    let message =
-        document.getElementById(
-            "billingMessage"
-        );
-
-
-    if (patient) {
-
-        patient.value = "";
-
-    }
-
-
-    if (test) {
-
-        test.value = "";
-
-    }
-
-
-    if (quantity) {
-
-        quantity.value = 1;
-
-    }
-
-
-    setText(
-        "labBillTotal",
-        0
-    );
 
 
     if (message) {
 
-        message.innerHTML = "";
+        message.innerHTML =
+
+            "<strong>Bill Generated Successfully</strong><br>" +
+
+            "Patient: " +
+            patientName +
+
+            "<br>Test: " +
+            labTest +
+
+            "<br>Quantity: " +
+            quantity +
+
+            "<br>Total: ₹" +
+            labTotal;
 
     }
 
 }
 
 
-// ============================================================
-// 20. PAGE AUTO INITIALIZATION
-// ============================================================
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function goToCompletedTests() {
+
+    window.location.href =
+        "completed-tests.html";
+
+}
+
+
+function goToBilling() {
+
+    window.location.href =
+        "lab-billing.html";
+
+}
+
+
+/* =========================================================
+   PAGE INITIALIZATION
+========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-        initLabUI();
+
+        /* Dashboard */
+
+        updateLabDashboard();
 
 
-        let path =
-            window.location.pathname
-                .toLowerCase();
+        /* Pending Tests */
+
+        loadPendingLabOrders();
 
 
-        if (
-            path.includes(
-                "enter-results.html"
-            )
-        ) {
+        /* Completed Tests */
 
-            initEnterResults();
+        loadCompletedTests();
 
-        }
+
+        /* Test Details */
+
+        loadTestDetails();
+
+
+        /* Enter Results */
+
+        loadResultTest();
+
+
+        /* Billing */
+
+        calculateLabBill();
+
 
     }
 );

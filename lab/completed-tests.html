@@ -5,373 +5,230 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-    <title>Completed Tests | Laboratory — CMS</title>
+    <title>Completed Lab Tests</title>
 
-    <link rel="preconnect"
-          href="https://fonts.googleapis.com">
-
-    <link rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-          rel="stylesheet">
-
-    <link rel="stylesheet"
-          href="../css/style.css">
-
-    <link rel="stylesheet"
-          href="../css/dashboard.css">
-
-    <link rel="stylesheet"
-          href="../css/tables.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/tables.css">
 
 </head>
 
-
 <body>
 
+<div class="app-wrapper">
 
-<div class="sidebar-overlay"
-     id="sidebarOverlay"
-     onclick="closeSidebar()">
-</div>
+    <aside class="sidebar" id="menu">
 
+        <a href="dashboard.html" class="sidebar-brand">
 
-<div class="sidebar"
-     id="sidebar">
-
-
-<a class="sidebar-brand"
-   href="dashboard.html">
-
-    <div class="sidebar-brand-icon">
-        🧪
-    </div>
-
-    <div class="sidebar-brand-text">
-
-        <span class="sidebar-brand-name">
-            MediCare CMS
-        </span>
-
-        <span class="sidebar-brand-sub">
-            Laboratory
-        </span>
-
-    </div>
-
-</a>
-
-
-<nav class="sidebar-nav">
-
-    <span class="nav-section-label">
-        Main
-    </span>
-
-
-    <a class="nav-item"
-       href="dashboard.html">
-
-        <span class="nav-item-icon">
-            📊
-        </span>
-
-        <span class="nav-item-label">
-            Dashboard
-        </span>
-
-    </a>
-
-
-    <div class="sidebar-divider"></div>
-
-
-    <span class="nav-section-label">
-        Laboratory
-    </span>
-
-
-    <a class="nav-item"
-       href="pending-lab-orders.html">
-
-        <span class="nav-item-icon">
-            📋
-        </span>
-
-        <span class="nav-item-label">
-            Pending Lab Orders
-        </span>
-
-    </a>
-
-
-    <a class="nav-item"
-       href="test-details.html">
-
-        <span class="nav-item-icon">
-            🔬
-        </span>
-
-        <span class="nav-item-label">
-            Test Details
-        </span>
-
-    </a>
-
-
-    <a class="nav-item"
-       href="enter-results.html">
-
-        <span class="nav-item-icon">
-            📝
-        </span>
-
-        <span class="nav-item-label">
-            Enter Results
-        </span>
-
-    </a>
-
-
-    <a class="nav-item active"
-       href="completed-tests.html">
-
-        <span class="nav-item-icon">
-            ✅
-        </span>
-
-        <span class="nav-item-label">
-            Completed Tests
-        </span>
-
-    </a>
-
-
-    <div class="sidebar-divider"></div>
-
-
-    <span class="nav-section-label">
-        Billing
-    </span>
-
-
-    <a class="nav-item"
-       href="lab-billing.html">
-
-        <span class="nav-item-icon">
-            💰
-        </span>
-
-        <span class="nav-item-label">
-            Lab Billing
-        </span>
-
-    </a>
-
-</nav>
-
-
-<div class="sidebar-user">
-
-    <div class="sidebar-avatar"
-         id="sidebarAvatar">
-        LT
-    </div>
-
-    <div class="sidebar-user-info">
-
-        <div class="sidebar-user-name"
-             id="sidebarName">
-            Lab Technician
-        </div>
-
-        <div class="sidebar-user-role">
-            Laboratory
-        </div>
-
-    </div>
-
-    <button class="sidebar-logout-btn"
-            onclick="logout()">
-        ⏏
-    </button>
-
-</div>
-
-</div>
-
-
-<div class="main-content">
-
-
-<header class="topbar">
-
-    <div class="topbar-left">
-
-        <button class="topbar-toggle"
-                onclick="openSidebar()">
-            ☰
-        </button>
-
-        <div>
-
-            <div class="topbar-page-title">
-                Completed Tests
+            <div class="sidebar-brand-icon">
+                ⚕
             </div>
 
-            <div class="topbar-breadcrumb">
+            <div class="sidebar-brand-text">
 
-                <span>
+                <span class="sidebar-brand-name">
+                    Clinic Management
+                </span>
+
+                <span class="sidebar-brand-sub">
                     Laboratory
                 </span>
 
-                <span class="topbar-breadcrumb-sep">
-                    ›
-                </span>
+            </div>
 
-                <span>
-                    Completed Tests
-                </span>
+        </a>
+
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-section-label">
+                Laboratory
+            </div>
+
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-item-icon">⌂</span>
+                <span class="nav-item-label">Dashboard</span>
+            </a>
+
+            <a href="enter-new-test.html" class="nav-item">
+                <span class="nav-item-icon">＋</span>
+                <span class="nav-item-label">Enter New Test</span>
+            </a>
+
+            <a href="pending-lab-orders.html" class="nav-item">
+                <span class="nav-item-icon">◷</span>
+                <span class="nav-item-label">Pending Orders</span>
+            </a>
+
+            <a
+                href="completed-tests.html"
+                class="nav-item active">
+
+                <span class="nav-item-icon">✓</span>
+                <span class="nav-item-label">Completed Tests</span>
+
+            </a>
+
+            <a href="lab-billing.html" class="nav-item">
+                <span class="nav-item-icon">₹</span>
+                <span class="nav-item-label">Lab Billing</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <div class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button
+                    class="topbar-toggle"
+                    type="button"
+                    onclick="toggleSidebar()">
+
+                    ☰
+
+                </button>
+
+                <div>
+
+                    <div class="topbar-page-title">
+                        Completed Tests
+                    </div>
+
+                    <div class="topbar-breadcrumb">
+                        <span>Laboratory</span>
+                        <span class="topbar-breadcrumb-sep">/</span>
+                        <span>Completed Tests</span>
+                    </div>
+
+                </div>
 
             </div>
 
-        </div>
+        </header>
+
+
+        <main class="page-content">
+
+            <div class="page-header">
+
+                <div class="page-header-left">
+
+                    <h1 class="page-title">
+                        Completed Laboratory Tests
+                    </h1>
+
+                    <p class="page-subtitle">
+                        View tests for which results have been entered.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <div class="table-header">
+
+                    <div class="table-header-left">
+
+                        <div class="table-title">
+                            Completed Tests
+                        </div>
+
+                        <div class="table-count">
+                            Completed
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-scroll">
+
+                    <table id="completedTestsTable">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Test ID</th>
+                                <th>Patient</th>
+                                <th>Test</th>
+                                <th>Date</th>
+                                <th>Result</th>
+                                <th>Status</th>
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <div class="page-actions mt-20">
+
+                <a
+                    href="pending-lab-orders.html"
+                    class="btn btn-secondary">
+
+                    Pending Orders
+
+                </a>
+
+                <a
+                    href="dashboard.html"
+                    class="btn btn-outline">
+
+                    Dashboard
+
+                </a>
+
+            </div>
+
+        </main>
 
     </div>
 
-</header>
-
-
-<main class="page-content">
-
-
-<div class="page-header">
-
-    <div class="page-header-left">
-
-        <h1 class="page-title">
-            Completed Tests
-        </h1>
-
-        <p class="page-subtitle">
-            Laboratory tests with completed results
-        </p>
-
-    </div>
-
 </div>
 
 
-<div class="table-container">
+<script>
 
+function toggleSidebar() {
 
-<div class="table-header">
+    const sidebar =
+        document.getElementById("menu");
 
-    <div class="table-header-left">
+    if (sidebar) {
+        sidebar.classList.toggle("open");
+    }
 
-        <div class="table-title">
-            Completed Tests
-        </div>
+}
 
-        <span class="table-count"
-              id="completedCountLabel">
-            0
-        </span>
-
-    </div>
-
-
-    <div class="table-header-right">
-
-        <input
-            type="text"
-            id="completedSearch"
-            class="form-control form-control-sm"
-            placeholder="Search..."
-            oninput="filterCompletedTests()"
-            style="width:220px;">
-
-    </div>
-
-</div>
-
-
-<div class="table-scroll">
-
-<table>
-
-<thead>
-
-<tr>
-
-    <th>
-        Test ID
-    </th>
-
-    <th>
-        Patient
-    </th>
-
-    <th>
-        Test
-    </th>
-
-    <th>
-        Doctor
-    </th>
-
-    <th>
-        Date
-    </th>
-
-    <th>
-        Status
-    </th>
-
-    <th>
-        Action
-    </th>
-
-</tr>
-
-</thead>
-
-
-<tbody id="completedTestsTable">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-
-</main>
-
-</div>
-
-
-<script src="../js/storage.js"></script>
+</script>
 
 <script src="../js/lab.js"></script>
 
-<script>
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        initCompletedTests();
-
-    }
-);
-</script>
-
 </body>
-
 </html>
