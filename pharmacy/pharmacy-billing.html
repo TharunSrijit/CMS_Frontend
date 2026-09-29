@@ -1,17 +1,20 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
 
-    <meta charset="UTF-8">
+```
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Pharmacy Billing</title>
+<title>Pharmacy Billing</title>
 
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/forms.css">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/forms.css">
+```
 
 </head>
 
@@ -19,270 +22,167 @@
 
 <div class="app-wrapper">
 
-    <aside class="sidebar">
+```
+<!-- =========================================================
+     SIDEBAR
+========================================================== -->
 
-        <a href="dashboard.html" class="sidebar-brand">
+<aside class="sidebar">
 
-            <div class="sidebar-brand-icon">
-                💊
-            </div>
+    <a href="dashboard.html" class="sidebar-brand">
 
-            <div class="sidebar-brand-text">
+        <div class="sidebar-brand-icon">
+            💊
+        </div>
 
-                <span class="sidebar-brand-name">
-                    Clinic Management
-                </span>
+        <div class="sidebar-brand-text">
 
-                <span class="sidebar-brand-sub">
-                    Pharmacy
-                </span>
+            <span class="sidebar-brand-name">
+                Clinic Management
+            </span>
 
-            </div>
+            <span class="sidebar-brand-sub">
+                Pharmacy
+            </span>
+
+        </div>
+
+    </a>
+
+
+    <nav class="sidebar-nav">
+
+        <div class="nav-section-label">
+            PHARMACY
+        </div>
+
+
+        <a href="dashboard.html" class="nav-item">
+
+            <span class="nav-item-icon">
+                📊
+            </span>
+
+            <span class="nav-item-label">
+                Dashboard
+            </span>
 
         </a>
 
 
-        <nav class="sidebar-nav">
+        <a href="prescription-queue.html" class="nav-item">
 
-            <div class="nav-section-label">
-                PHARMACY
-            </div>
+            <span class="nav-item-icon">
+                📋
+            </span>
 
-            <a href="dashboard.html" class="nav-item">
-                <span class="nav-item-icon">📊</span>
-                <span class="nav-item-label">Dashboard</span>
-            </a>
+            <span class="nav-item-label">
+                Prescription Queue
+            </span>
 
-            <a href="prescription-queue.html" class="nav-item">
-                <span class="nav-item-icon">📋</span>
-                <span class="nav-item-label">
-                    Prescription Queue
-                </span>
-            </a>
-
-            <a href="prescription-details.html" class="nav-item">
-                <span class="nav-item-icon">📄</span>
-                <span class="nav-item-label">
-                    Prescription Details
-                </span>
-            </a>
-
-            <a href="dispense-medicine.html" class="nav-item">
-                <span class="nav-item-icon">💊</span>
-                <span class="nav-item-label">
-                    Dispense Medicine
-                </span>
-            </a>
-
-            <a href="medicine-inventory.html" class="nav-item">
-                <span class="nav-item-icon">📦</span>
-                <span class="nav-item-label">
-                    Medicine Inventory
-                </span>
-            </a>
-
-            <a href="stock.html" class="nav-item">
-                <span class="nav-item-icon">📈</span>
-                <span class="nav-item-label">
-                    Stock
-                </span>
-            </a>
-
-            <a href="pharmacy-billing.html"
-               class="nav-item active">
-
-                <span class="nav-item-icon">💰</span>
-
-                <span class="nav-item-label">
-                    Billing
-                </span>
-
-            </a>
-
-        </nav>
-
-    </aside>
+        </a>
 
 
-    <main class="main-content">
+        <a href="prescription-details.html" class="nav-item">
 
-        <header class="topbar">
+            <span class="nav-item-icon">
+                📄
+            </span>
 
-            <div class="topbar-left">
+            <span class="nav-item-label">
+                Prescription Details
+            </span>
 
-                <div>
+        </a>
 
-                    <div class="topbar-page-title">
-                        Pharmacy Billing
-                    </div>
 
-                    <div class="topbar-breadcrumb">
+        <a href="dispense-medicine.html" class="nav-item">
 
-                        Pharmacy
+            <span class="nav-item-icon">
+                💊
+            </span>
 
-                        <span class="topbar-breadcrumb-sep">
-                            /
-                        </span>
+            <span class="nav-item-label">
+                Dispense Medicine
+            </span>
 
-                        <span>
-                            Billing
-                        </span>
+        </a>
 
-                    </div>
 
+        <a href="medicine-inventory.html" class="nav-item">
+
+            <span class="nav-item-icon">
+                📦
+            </span>
+
+            <span class="nav-item-label">
+                Medicine Inventory
+            </span>
+
+        </a>
+
+
+        <a href="stock.html" class="nav-item">
+
+            <span class="nav-item-icon">
+                📈
+            </span>
+
+            <span class="nav-item-label">
+                Stock
+            </span>
+
+        </a>
+
+
+        <a href="pharmacy-billing.html"
+           class="nav-item active">
+
+            <span class="nav-item-icon">
+                💰
+            </span>
+
+            <span class="nav-item-label">
+                Billing
+            </span>
+
+        </a>
+
+    </nav>
+
+</aside>
+
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================== -->
+
+<main class="main-content">
+
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+        <div class="topbar-left">
+
+            <div>
+
+                <div class="topbar-page-title">
+                    Pharmacy Billing
                 </div>
 
-            </div>
+                <div class="topbar-breadcrumb">
 
-        </header>
+                    Pharmacy
 
+                    <span class="topbar-breadcrumb-sep">
+                        /
+                    </span>
 
-        <div class="page-content">
-
-            <div class="page-header">
-
-                <div class="page-header-left">
-
-                    <h1 class="page-title">
-                        Pharmacy Billing
-                    </h1>
-
-                    <p class="page-subtitle">
-                        Generate medicine bills
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="form-section">
-
-                <div class="form-section-header">
-
-                    <div class="form-section-icon">
-                        ₹
-                    </div>
-
-                    <div>
-
-                        <div class="form-section-title">
-                            Create Bill
-                        </div>
-
-                        <div class="form-section-subtitle">
-                            Enter patient and medicine details
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="form-section-body">
-
-                    <div class="form-grid form-grid-2">
-
-                        <div class="form-group">
-
-                            <label class="form-label">
-                                Patient Name
-                            </label>
-
-                            <input
-                                type="text"
-                                id="patientName"
-                                class="form-control"
-                                placeholder="Enter patient name">
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label class="form-label">
-                                Medicine
-                            </label>
-
-                            <select
-                                id="billMedicine"
-                                class="form-control"
-                                onchange="calculateBill()">
-
-                                <option value="">
-                                    Select Medicine
-                                </option>
-
-                                <option value="20">
-                                    Paracetamol - ₹20
-                                </option>
-
-                                <option value="80">
-                                    Amoxicillin - ₹80
-                                </option>
-
-                                <option value="30">
-                                    Cetirizine - ₹30
-                                </option>
-
-                                <option value="60">
-                                    Azithromycin - ₹60
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label class="form-label">
-                                Quantity
-                            </label>
-
-                            <input
-                                type="number"
-                                id="billQuantity"
-                                class="form-control"
-                                value="1"
-                                min="1"
-                                oninput="calculateBill()">
-
-                        </div>
-
-                    </div>
-
-
-                    <br>
-
-
-                    <div class="card">
-
-                        <div class="card-body">
-
-                            <h3>
-                                Total:
-                                ₹<span id="total">0</span>
-                            </h3>
-
-                        </div>
-
-                    </div>
-
-
-                    <br>
-
-
-                    <button
-                        class="btn btn-success"
-                        onclick="generateBill()">
-
-                        Generate Bill
-
-                    </button>
-
-
-                    <p id="billMessage"></p>
+                    <span>
+                        Billing
+                    </span>
 
                 </div>
 
@@ -290,12 +190,570 @@
 
         </div>
 
-    </main>
+    </header>
+
+
+    <!-- =====================================================
+         PAGE CONTENT
+    ====================================================== -->
+
+    <div class="page-content">
+
+
+        <!-- PAGE HEADER -->
+
+        <div class="page-header">
+
+            <div class="page-header-left">
+
+                <h1 class="page-title">
+                    Pharmacy Billing
+                </h1>
+
+                <p class="page-subtitle">
+                    Generate medicine bills from the Admin Medicine Master
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CREATE BILL
+        ================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <div class="form-section-icon">
+                    ₹
+                </div>
+
+                <div>
+
+                    <div class="form-section-title">
+                        Create Bill
+                    </div>
+
+                    <div class="form-section-subtitle">
+                        Select medicines and quantities
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-section-body">
+
+
+                <!-- PATIENT -->
+
+                <div class="form-grid form-grid-2">
+
+                    <div class="form-group">
+
+                        <label
+                            for="patientName"
+                            class="form-label">
+
+                            Patient Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="patientName"
+                            class="form-control"
+                            placeholder="Enter patient name">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label
+                            for="patientId"
+                            class="form-label">
+
+                            Patient ID
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="patientId"
+                            class="form-control"
+                            placeholder="Enter patient ID">
+
+                    </div>
+
+                </div>
+
+
+                <br>
+
+
+                <!-- MEDICINE SELECTION -->
+
+                <div class="form-grid form-grid-3">
+
+
+                    <div class="form-group">
+
+                        <label
+                            for="billMedicine"
+                            class="form-label">
+
+                            Medicine
+
+                        </label>
+
+                        <select
+                            id="billMedicine"
+                            class="form-control"
+                            onchange="calculateBill()">
+
+                            <option value="">
+                                Select Medicine
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label
+                            for="billQuantity"
+                            class="form-label">
+
+                            Quantity
+
+                        </label>
+
+                        <input
+                            type="number"
+                            id="billQuantity"
+                            class="form-control"
+                            value="1"
+                            min="1"
+                            step="1"
+                            oninput="calculateBill()">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label
+                            class="form-label">
+
+                            Price
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="billPrice"
+                            class="form-control"
+                            value="₹0.00"
+                            readonly>
+
+                    </div>
+
+
+                </div>
+
+
+                <br>
+
+
+                <!-- STOCK INFORMATION -->
+
+                <div class="card">
+
+                    <div class="card-body">
+
+                        <p>
+                            <strong>Available Stock:</strong>
+                            <span id="billStock">0</span>
+                        </p>
+
+                        <p>
+                            <strong>Reorder Level:</strong>
+                            <span id="billReorderLevel">0</span>
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <br>
+
+
+                <!-- ADD TO CART -->
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="addMedicineToBill()">
+
+                    Add Medicine
+
+                </button>
+
+
+                <p id="billMessage"></p>
+
+
+                <br>
+
+
+                <!-- =================================================
+                     BILL CART
+                ================================================== -->
+
+                <div class="card">
+
+                    <div class="card-body">
+
+                        <h3>
+                            Bill Items
+                        </h3>
+
+
+                        <div style="overflow-x:auto;">
+
+                            <table style="width:100%;">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Medicine
+                                        </th>
+
+                                        <th>
+                                            Quantity
+                                        </th>
+
+                                        <th>
+                                            Unit Price
+                                        </th>
+
+                                        <th>
+                                            Total
+                                        </th>
+
+                                        <th>
+                                            Action
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody id="billingCart">
+
+                                    <tr>
+
+                                        <td colspan="5"
+                                            style="text-align:center;">
+
+                                            No medicines added
+
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <br>
+
+
+                <!-- =================================================
+                     TOTAL
+                ================================================== -->
+
+                <div class="card">
+
+                    <div class="card-body">
+
+                        <h3>
+
+                            Total:
+                            ₹<span id="total">0.00</span>
+
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <br>
+
+
+                <!-- =================================================
+                     PAYMENT
+                ================================================== -->
+
+                <div class="form-grid form-grid-2">
+
+
+                    <div class="form-group">
+
+                        <label
+                            for="paymentMethod"
+                            class="form-label">
+
+                            Payment Method
+
+                        </label>
+
+                        <select
+                            id="paymentMethod"
+                            class="form-control">
+
+                            <option value="">
+                                Select Payment Method
+                            </option>
+
+                            <option value="Cash">
+                                Cash
+                            </option>
+
+                            <option value="UPI">
+                                UPI
+                            </option>
+
+                            <option value="Card">
+                                Card
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label
+                            for="paymentReference"
+                            class="form-label">
+
+                            Payment Reference
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="paymentReference"
+                            class="form-control"
+                            placeholder="Required for UPI/Card">
+
+                    </div>
+
+
+                </div>
+
+
+                <br>
+
+
+                <!-- =================================================
+                     ACTION BUTTONS
+                ================================================== -->
+
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    onclick="generateBill()">
+
+                    Generate Bill
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="processPharmacyPayment()">
+
+                    Process Payment
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="printPharmacyBill()">
+
+                    Print Bill
+
+                </button>
+
+
+                <p id="paymentMessage"></p>
+
+
+                <!-- RECEIPT / BILL OUTPUT -->
+
+                <div
+                    id="pharmacyBillReceipt"
+                    style="display:none;">
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</main>
+```
 
 </div>
 
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+
 <script src="../js/pharmacy.js"></script>
 
-    <script src="../js/validation.js"></script>
+<script src="../js/validation.js"></script>
+
+<!-- =========================================================
+     BILLING UI HELPERS
+========================================================== -->
+
+<script>
+
+function updateBillingMedicineDetails() {
+
+    const select =
+        document.getElementById("billMedicine");
+
+    const priceField =
+        document.getElementById("billPrice");
+
+    const stockField =
+        document.getElementById("billStock");
+
+    const reorderField =
+        document.getElementById("billReorderLevel");
+
+
+    if (!select) {
+        return;
+    }
+
+
+    const medicineId =
+        select.value;
+
+
+    const medicines =
+        JSON.parse(
+            localStorage.getItem("cms_medicines") || "[]"
+        );
+
+
+    const medicine =
+        medicines.find(function (item) {
+
+            return String(item.id) === String(medicineId);
+
+        });
+
+
+    if (!medicine) {
+
+        if (priceField) {
+            priceField.value = "₹0.00";
+        }
+
+        if (stockField) {
+            stockField.textContent = "0";
+        }
+
+        if (reorderField) {
+            reorderField.textContent = "0";
+        }
+
+        return;
+    }
+
+
+    if (priceField) {
+
+        priceField.value =
+            "₹" +
+            Number(medicine.price || 0).toFixed(2);
+
+    }
+
+
+    if (stockField) {
+
+        stockField.textContent =
+            Number(medicine.stock || 0);
+
+    }
+
+
+    if (reorderField) {
+
+        reorderField.textContent =
+            Number(medicine.reorderLevel || 0);
+
+    }
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const medicineSelect =
+            document.getElementById("billMedicine");
+
+
+        if (medicineSelect) {
+
+            medicineSelect.addEventListener(
+                "change",
+                updateBillingMedicineDetails
+            );
+
+        }
+
+    }
+);
+
+</script>
+
 </body>
+
 </html>

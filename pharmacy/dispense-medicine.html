@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -18,6 +19,8 @@
 <body>
 
 <div class="app-wrapper">
+
+    <!-- ================= SIDEBAR ================= -->
 
     <aside class="sidebar">
 
@@ -48,25 +51,46 @@
                 PHARMACY
             </div>
 
+
             <a href="dashboard.html" class="nav-item">
+
                 <span class="nav-item-icon">📊</span>
-                <span class="nav-item-label">Dashboard</span>
+
+                <span class="nav-item-label">
+                    Dashboard
+                </span>
+
             </a>
+
 
             <a href="prescription-queue.html" class="nav-item">
+
                 <span class="nav-item-icon">📋</span>
-                <span class="nav-item-label">Prescription Queue</span>
+
+                <span class="nav-item-label">
+                    Prescription Queue
+                </span>
+
             </a>
 
+
             <a href="prescription-details.html" class="nav-item">
+
                 <span class="nav-item-icon">📄</span>
-                <span class="nav-item-label">Prescription Details</span>
+
+                <span class="nav-item-label">
+                    Prescription Details
+                </span>
+
             </a>
+
 
             <a href="dispense-medicine.html"
                class="nav-item active">
 
-                <span class="nav-item-icon">💊</span>
+                <span class="nav-item-icon">
+                    💊
+                </span>
 
                 <span class="nav-item-label">
                     Dispense Medicine
@@ -74,21 +98,43 @@
 
             </a>
 
+
             <a href="medicine-inventory.html" class="nav-item">
-                <span class="nav-item-icon">📦</span>
+
+                <span class="nav-item-icon">
+                    📦
+                </span>
+
                 <span class="nav-item-label">
                     Medicine Inventory
                 </span>
+
             </a>
+
 
             <a href="stock.html" class="nav-item">
-                <span class="nav-item-icon">📈</span>
-                <span class="nav-item-label">Stock</span>
+
+                <span class="nav-item-icon">
+                    📈
+                </span>
+
+                <span class="nav-item-label">
+                    Stock
+                </span>
+
             </a>
 
+
             <a href="pharmacy-billing.html" class="nav-item">
-                <span class="nav-item-icon">💰</span>
-                <span class="nav-item-label">Billing</span>
+
+                <span class="nav-item-icon">
+                    💰
+                </span>
+
+                <span class="nav-item-label">
+                    Billing
+                </span>
+
             </a>
 
         </nav>
@@ -96,7 +142,12 @@
     </aside>
 
 
+    <!-- ================= MAIN CONTENT ================= -->
+
     <main class="main-content">
+
+
+        <!-- TOP BAR -->
 
         <header class="topbar">
 
@@ -109,13 +160,17 @@
                     </div>
 
                     <div class="topbar-breadcrumb">
+
                         Pharmacy
+
                         <span class="topbar-breadcrumb-sep">
                             /
                         </span>
+
                         <span>
                             Dispense Medicine
                         </span>
+
                     </div>
 
                 </div>
@@ -125,7 +180,12 @@
         </header>
 
 
+        <!-- PAGE CONTENT -->
+
         <div class="page-content">
+
+
+            <!-- PAGE HEADER -->
 
             <div class="page-header">
 
@@ -144,7 +204,12 @@
             </div>
 
 
+            <!-- DISPENSING FORM -->
+
             <div class="form-section">
+
+
+                <!-- FORM HEADER -->
 
                 <div class="form-section-header">
 
@@ -159,7 +224,7 @@
                         </div>
 
                         <div class="form-section-subtitle">
-                            Enter prescription and medicine details
+                            Select medicine from the Admin Medicine Master
                         </div>
 
                     </div>
@@ -167,14 +232,24 @@
                 </div>
 
 
+                <!-- FORM BODY -->
+
                 <div class="form-section-body">
+
 
                     <div class="form-grid form-grid-2">
 
+
+                        <!-- PRESCRIPTION ID -->
+
                         <div class="form-group">
 
-                            <label class="form-label">
+                            <label
+                                class="form-label"
+                                for="prescriptionId">
+
                                 Prescription ID
+
                             </label>
 
                             <input
@@ -186,33 +261,29 @@
                         </div>
 
 
+                        <!-- MEDICINE -->
+
                         <div class="form-group">
 
-                            <label class="form-label">
+                            <label
+                                class="form-label"
+                                for="medicine">
+
                                 Medicine
+
                             </label>
 
-                            <select id="medicine"
-                                    class="form-control">
+                            <!--
+                                Medicine options are loaded automatically
+                                from cms_medicines by pharmacy.js.
+                            -->
+
+                            <select
+                                id="medicine"
+                                class="form-control">
 
                                 <option value="">
                                     Select Medicine
-                                </option>
-
-                                <option value="Paracetamol">
-                                    Paracetamol
-                                </option>
-
-                                <option value="Amoxicillin">
-                                    Amoxicillin
-                                </option>
-
-                                <option value="Cetirizine">
-                                    Cetirizine
-                                </option>
-
-                                <option value="Azithromycin">
-                                    Azithromycin
                                 </option>
 
                             </select>
@@ -220,10 +291,16 @@
                         </div>
 
 
+                        <!-- QUANTITY -->
+
                         <div class="form-group">
 
-                            <label class="form-label">
+                            <label
+                                class="form-label"
+                                for="quantity">
+
                                 Quantity
+
                             </label>
 
                             <input
@@ -231,24 +308,39 @@
                                 id="quantity"
                                 class="form-control"
                                 min="1"
-                                value="1">
+                                step="1"
+                                value="1"
+                                placeholder="Enter quantity">
 
                         </div>
+
 
                     </div>
 
 
                     <br>
 
+
+                    <!-- DISPENSE BUTTON -->
+
                     <button
+                        type="button"
                         class="btn btn-success"
                         onclick="dispenseMedicine()">
 
-                        Dispense Medicine
+                        💊 Dispense Medicine
 
                     </button>
 
-                    <p id="dispenseMessage"></p>
+
+                    <!-- RESULT MESSAGE -->
+
+                    <div
+                        id="dispenseMessage"
+                        style="margin-top: 15px;">
+
+                    </div>
+
 
                 </div>
 
@@ -260,8 +352,15 @@
 
 </div>
 
+
+<!-- ================= JAVASCRIPT ================= -->
+
 <script src="../js/pharmacy.js"></script>
 
-    <script src="../js/validation.js"></script>
+<script src="../js/validation.js"></script>
+
+
 </body>
+
 </html>
+```

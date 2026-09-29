@@ -1,325 +1,169 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Medicine Inventory</title>
+```
+<title>Medicine Inventory</title>
 
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/forms.css">
-    <link rel="stylesheet" href="../css/tables.css">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/forms.css">
+<link rel="stylesheet" href="../css/tables.css">
+```
+
 </head>
 
 <body>
 
 <div class="app-wrapper">
 
-    <!-- SIDEBAR -->
+```
+<!-- =========================================================
+     SIDEBAR
+========================================================== -->
 
-    <aside class="sidebar">
+<aside class="sidebar">
 
-        <a href="dashboard.html" class="sidebar-brand">
+    <a href="dashboard.html" class="sidebar-brand">
 
-            <div class="sidebar-brand-icon">💊</div>
+        <div class="sidebar-brand-icon">💊</div>
 
-            <div class="sidebar-brand-text">
+        <div class="sidebar-brand-text">
 
-                <span class="sidebar-brand-name">
-                    Clinic Management
-                </span>
+            <span class="sidebar-brand-name">
+                Clinic Management
+            </span>
 
-                <span class="sidebar-brand-sub">
-                    Pharmacy
-                </span>
+            <span class="sidebar-brand-sub">
+                Pharmacy
+            </span>
 
-            </div>
+        </div>
+
+    </a>
+
+
+    <nav class="sidebar-nav">
+
+        <div class="nav-section-label">
+            PHARMACY
+        </div>
+
+
+        <a href="dashboard.html" class="nav-item">
+
+            <span class="nav-item-icon">📊</span>
+
+            <span class="nav-item-label">
+                Dashboard
+            </span>
 
         </a>
 
-        <nav class="sidebar-nav">
 
-            <div class="nav-section-label">
-                PHARMACY
-            </div>
+        <a href="prescription-queue.html" class="nav-item">
 
-            <a href="dashboard.html" class="nav-item">
-                <span class="nav-item-icon">📊</span>
-                <span class="nav-item-label">Dashboard</span>
-            </a>
+            <span class="nav-item-icon">📋</span>
 
-            <a href="prescription-queue.html" class="nav-item">
-                <span class="nav-item-icon">📋</span>
-                <span class="nav-item-label">
-                    Prescription Queue
-                </span>
-            </a>
+            <span class="nav-item-label">
+                Prescription Queue
+            </span>
 
-            <a href="prescription-details.html" class="nav-item">
-                <span class="nav-item-icon">📄</span>
-                <span class="nav-item-label">
-                    Prescription Details
-                </span>
-            </a>
+        </a>
 
-            <a href="dispense-medicine.html" class="nav-item">
-                <span class="nav-item-icon">💊</span>
-                <span class="nav-item-label">
-                    Dispense Medicine
-                </span>
-            </a>
 
-            <a href="medicine-inventory.html"
-               class="nav-item active">
+        <a href="prescription-details.html" class="nav-item">
 
-                <span class="nav-item-icon">📦</span>
+            <span class="nav-item-icon">📄</span>
 
-                <span class="nav-item-label">
+            <span class="nav-item-label">
+                Prescription Details
+            </span>
+
+        </a>
+
+
+        <a href="dispense-medicine.html" class="nav-item">
+
+            <span class="nav-item-icon">💊</span>
+
+            <span class="nav-item-label">
+                Dispense Medicine
+            </span>
+
+        </a>
+
+
+        <a href="medicine-inventory.html"
+           class="nav-item active">
+
+            <span class="nav-item-icon">📦</span>
+
+            <span class="nav-item-label">
+                Medicine Inventory
+            </span>
+
+        </a>
+
+
+        <a href="stock.html" class="nav-item">
+
+            <span class="nav-item-icon">📈</span>
+
+            <span class="nav-item-label">
+                Stock
+            </span>
+
+        </a>
+
+
+        <a href="pharmacy-billing.html" class="nav-item">
+
+            <span class="nav-item-icon">💰</span>
+
+            <span class="nav-item-label">
+                Billing
+            </span>
+
+        </a>
+
+    </nav>
+
+</aside>
+
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================== -->
+
+<main class="main-content">
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+        <div class="topbar-left">
+
+            <div>
+
+                <div class="topbar-page-title">
                     Medicine Inventory
-                </span>
+                </div>
 
-            </a>
+                <div class="topbar-breadcrumb">
 
-            <a href="stock.html" class="nav-item">
+                    Pharmacy
 
-                <span class="nav-item-icon">📈</span>
+                    <span class="topbar-breadcrumb-sep">
+                        /
+                    </span>
 
-                <span class="nav-item-label">
-                    Stock
-                </span>
-
-            </a>
-
-            <a href="pharmacy-billing.html" class="nav-item">
-
-                <span class="nav-item-icon">💰</span>
-
-                <span class="nav-item-label">
-                    Billing
-                </span>
-
-            </a>
-
-        </nav>
-
-    </aside>
-
-
-    <!-- MAIN CONTENT -->
-
-    <main class="main-content">
-
-        <header class="topbar">
-
-            <div class="topbar-left">
-
-                <div>
-
-                    <div class="topbar-page-title">
+                    <span>
                         Medicine Inventory
-                    </div>
-
-                    <div class="topbar-breadcrumb">
-
-                        Pharmacy
-
-                        <span class="topbar-breadcrumb-sep">
-                            /
-                        </span>
-
-                        <span>
-                            Medicine Inventory
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <div class="page-content">
-
-            <div class="page-header">
-
-                <div class="page-header-left">
-
-                    <h1 class="page-title">
-                        Medicine Inventory
-                    </h1>
-
-                    <p class="page-subtitle">
-                        Manage medicines, stock and expiry dates
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <!-- ADD MEDICINE -->
-
-            <div class="form-section">
-
-                <div class="form-section-header">
-
-                    <div class="form-section-icon">
-                        +
-                    </div>
-
-                    <div>
-
-                        <div class="form-section-title">
-                            Add Medicine
-                        </div>
-
-                        <div class="form-section-subtitle">
-                            Add a new medicine to inventory
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="form-section-body">
-
-                    <div class="form-grid form-grid-3">
-
-                        <div class="form-group">
-
-                            <label class="form-label">
-                                Medicine Name
-                            </label>
-
-                            <input
-                                id="medicineName"
-                                class="form-control"
-                                type="text"
-                                placeholder="Medicine name">
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label class="form-label">
-                                Price
-                            </label>
-
-                            <input
-                                id="medicinePrice"
-                                class="form-control"
-                                type="number"
-                                min="0"
-                                placeholder="Price">
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label class="form-label">
-                                Initial Stock
-                            </label>
-
-                            <input
-                                id="medicineStock"
-                                class="form-control"
-                                type="number"
-                                min="0"
-                                placeholder="Quantity">
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label class="form-label">
-                                Expiry Date
-                            </label>
-
-                            <input
-                                id="medicineExpiry"
-                                class="form-control"
-                                type="date">
-
-                        </div>
-
-                    </div>
-
-
-                    <br>
-
-
-                    <button
-                        class="btn btn-primary"
-                        onclick="addMedicine()">
-
-                        Add Medicine
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <br>
-
-
-            <!-- INVENTORY TABLE -->
-
-            <div class="table-container">
-
-                <div class="table-header">
-
-                    <div class="table-header-left">
-
-                        <div class="table-title">
-                            Medicine Inventory
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="table-scroll">
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-
-                                <th>ID</th>
-
-                                <th>Medicine</th>
-
-                                <th>Price</th>
-
-                                <th>Stock</th>
-
-                                <th>Expiry Date</th>
-
-                                <th>Status</th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody id="inventoryTable">
-
-                            <!-- JavaScript loads medicines -->
-
-                        </tbody>
-
-                    </table>
+                    </span>
 
                 </div>
 
@@ -327,14 +171,369 @@
 
         </div>
 
-    </main>
+    </header>
+
+
+    <!-- =====================================================
+         PAGE CONTENT
+    ====================================================== -->
+
+    <div class="page-content">
+
+
+        <!-- PAGE HEADER -->
+
+        <div class="page-header">
+
+            <div class="page-header-left">
+
+                <h1 class="page-title">
+                    Medicine Inventory
+                </h1>
+
+                <p class="page-subtitle">
+                    View medicines, stock, pricing and expiry information
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             SEARCH / FILTER
+        ================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <div class="form-section-icon">
+                    🔎
+                </div>
+
+                <div>
+
+                    <div class="form-section-title">
+                        Search Medicine
+                    </div>
+
+                    <div class="form-section-subtitle">
+                        Search the Admin Medicine Master by ID, name or category
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-section-body">
+
+                <div class="form-grid form-grid-3">
+
+                    <div class="form-group">
+
+                        <label
+                            for="inventorySearch"
+                            class="form-label">
+
+                            Search
+
+                        </label>
+
+                        <input
+                            id="inventorySearch"
+                            class="form-control"
+                            type="text"
+                            placeholder="Search by ID, name or category"
+                            oninput="filterInventory()">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <br>
+
+
+        <!-- =================================================
+             INVENTORY TABLE
+        ================================================== -->
+
+        <div class="table-container">
+
+            <div class="table-header">
+
+                <div class="table-header-left">
+
+                    <div class="table-title">
+                        Medicine Inventory
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-scroll">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Medicine</th>
+
+                            <th>Category</th>
+
+                            <th>Unit</th>
+
+                            <th>Price</th>
+
+                            <th>Stock</th>
+
+                            <th>Reorder Level</th>
+
+                            <th>Batch No</th>
+
+                            <th>Expiry Date</th>
+
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="inventoryTable">
+
+                        <!--
+                            JavaScript loads medicines
+                            from cms_medicines
+                        -->
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</main>
+```
 
 </div>
 
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
 
 <script src="../js/pharmacy.js"></script>
 
-    <script src="../js/validation.js"></script>
+<script src="../js/validation.js"></script>
+
+<!-- =========================================================
+     INVENTORY SEARCH
+========================================================== -->
+
+<script>
+
+function filterInventory() {
+
+    const searchInput =
+        document.getElementById("inventorySearch");
+
+    const tableBody =
+        document.getElementById("inventoryTable");
+
+    if (!searchInput || !tableBody) {
+        return;
+    }
+
+    const searchValue =
+        searchInput.value.trim().toLowerCase();
+
+    const medicines =
+        JSON.parse(
+            localStorage.getItem("cms_medicines") || "[]"
+        );
+
+    const filteredMedicines =
+        medicines.filter(function (medicine) {
+
+            return (
+
+                String(medicine.id || "")
+                    .toLowerCase()
+                    .includes(searchValue)
+
+                ||
+
+                String(medicine.name || "")
+                    .toLowerCase()
+                    .includes(searchValue)
+
+                ||
+
+                String(medicine.category || "")
+                    .toLowerCase()
+                    .includes(searchValue)
+
+            );
+
+        });
+
+
+    tableBody.innerHTML = "";
+
+
+    if (filteredMedicines.length === 0) {
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="10" style="text-align:center;">
+                    No medicines found
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    filteredMedicines.forEach(function (medicine) {
+
+        const stock =
+            Number(medicine.stock || 0);
+
+        const reorderLevel =
+            Number(medicine.reorderLevel || 0);
+
+
+        let stockStatus = "Normal";
+
+        if (stock === 0) {
+
+            stockStatus = "Out of Stock";
+
+        } else if (stock <= reorderLevel) {
+
+            stockStatus = "Low Stock";
+
+        }
+
+
+        let status =
+            medicine.status || "Active";
+
+
+        if (
+            medicine.expiryDate &&
+            new Date(medicine.expiryDate) < new Date()
+        ) {
+
+            status = "Expired";
+
+        }
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                ${medicine.id || "-"}
+            </td>
+
+            <td>
+                ${medicine.name || "-"}
+            </td>
+
+            <td>
+                ${medicine.category || "-"}
+            </td>
+
+            <td>
+                ${medicine.unit || "-"}
+            </td>
+
+            <td>
+                ₹${Number(medicine.price || 0).toFixed(2)}
+            </td>
+
+            <td>
+                ${stock}
+            </td>
+
+            <td>
+                ${reorderLevel}
+            </td>
+
+            <td>
+                ${medicine.batchNo || "-"}
+            </td>
+
+            <td>
+                ${medicine.expiryDate || "-"}
+            </td>
+
+            <td>
+                ${status}
+                ${
+                    stockStatus !== "Normal"
+                        ? ` - ${stockStatus}`
+                        : ""
+                }
+            </td>
+
+        `;
+
+
+        tableBody.appendChild(row);
+
+    });
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        /*
+         * pharmacy.js normally loads the inventory.
+         * This search/filter function is also initialized
+         * so the table can be filtered without modifying
+         * cms_medicines.
+         */
+
+        const searchInput =
+            document.getElementById("inventorySearch");
+
+        if (searchInput) {
+
+            searchInput.value = "";
+
+        }
+
+    }
+);
+
+</script>
+
 </body>
 
 </html>

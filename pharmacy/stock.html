@@ -1,17 +1,20 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
 
-    <meta charset="UTF-8">
+```
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Stock Management</title>
+<title>Stock Management</title>
 
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/tables.css">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/tables.css">
+```
 
 </head>
 
@@ -19,229 +22,166 @@
 
 <div class="app-wrapper">
 
-    <!-- SIDEBAR -->
+```
+<!-- =========================================================
+     SIDEBAR
+========================================================== -->
 
-    <aside class="sidebar">
+<aside class="sidebar">
 
-        <a href="dashboard.html" class="sidebar-brand">
+    <a href="dashboard.html" class="sidebar-brand">
 
-            <div class="sidebar-brand-icon">
-                💊
-            </div>
+        <div class="sidebar-brand-icon">
+            💊
+        </div>
 
-            <div class="sidebar-brand-text">
+        <div class="sidebar-brand-text">
 
-                <span class="sidebar-brand-name">
-                    Clinic Management
-                </span>
+            <span class="sidebar-brand-name">
+                Clinic Management
+            </span>
 
-                <span class="sidebar-brand-sub">
-                    Pharmacy
-                </span>
+            <span class="sidebar-brand-sub">
+                Pharmacy
+            </span>
 
-            </div>
+        </div>
+
+    </a>
+
+
+    <nav class="sidebar-nav">
+
+        <div class="nav-section-label">
+            PHARMACY
+        </div>
+
+
+        <a href="dashboard.html" class="nav-item">
+
+            <span class="nav-item-icon">
+                📊
+            </span>
+
+            <span class="nav-item-label">
+                Dashboard
+            </span>
 
         </a>
 
 
-        <nav class="sidebar-nav">
+        <a href="prescription-queue.html" class="nav-item">
 
-            <div class="nav-section-label">
-                PHARMACY
-            </div>
+            <span class="nav-item-icon">
+                📋
+            </span>
 
-            <a href="dashboard.html" class="nav-item">
+            <span class="nav-item-label">
+                Prescription Queue
+            </span>
 
-                <span class="nav-item-icon">📊</span>
-
-                <span class="nav-item-label">
-                    Dashboard
-                </span>
-
-            </a>
+        </a>
 
 
-            <a href="prescription-queue.html" class="nav-item">
+        <a href="prescription-details.html" class="nav-item">
 
-                <span class="nav-item-icon">📋</span>
+            <span class="nav-item-icon">
+                📄
+            </span>
 
-                <span class="nav-item-label">
-                    Prescription Queue
-                </span>
+            <span class="nav-item-label">
+                Prescription Details
+            </span>
 
-            </a>
-
-
-            <a href="prescription-details.html" class="nav-item">
-
-                <span class="nav-item-icon">📄</span>
-
-                <span class="nav-item-label">
-                    Prescription Details
-                </span>
-
-            </a>
+        </a>
 
 
-            <a href="dispense-medicine.html" class="nav-item">
+        <a href="dispense-medicine.html" class="nav-item">
 
-                <span class="nav-item-icon">💊</span>
+            <span class="nav-item-icon">
+                💊
+            </span>
 
-                <span class="nav-item-label">
-                    Dispense Medicine
-                </span>
+            <span class="nav-item-label">
+                Dispense Medicine
+            </span>
 
-            </a>
-
-
-            <a href="medicine-inventory.html" class="nav-item">
-
-                <span class="nav-item-icon">📦</span>
-
-                <span class="nav-item-label">
-                    Medicine Inventory
-                </span>
-
-            </a>
+        </a>
 
 
-            <a href="stock.html" class="nav-item active">
+        <a href="medicine-inventory.html" class="nav-item">
 
-                <span class="nav-item-icon">📈</span>
+            <span class="nav-item-icon">
+                📦
+            </span>
 
-                <span class="nav-item-label">
-                    Stock
-                </span>
+            <span class="nav-item-label">
+                Medicine Inventory
+            </span>
 
-            </a>
-
-
-            <a href="pharmacy-billing.html" class="nav-item">
-
-                <span class="nav-item-icon">💰</span>
-
-                <span class="nav-item-label">
-                    Billing
-                </span>
-
-            </a>
-
-        </nav>
-
-    </aside>
+        </a>
 
 
-    <!-- MAIN CONTENT -->
+        <a href="stock.html" class="nav-item active">
 
-    <main class="main-content">
+            <span class="nav-item-icon">
+                📈
+            </span>
 
-        <header class="topbar">
+            <span class="nav-item-label">
+                Stock
+            </span>
 
-            <div class="topbar-left">
+        </a>
 
-                <div>
 
-                    <div class="topbar-page-title">
-                        Stock Management
-                    </div>
+        <a href="pharmacy-billing.html" class="nav-item">
 
-                    <div class="topbar-breadcrumb">
+            <span class="nav-item-icon">
+                💰
+            </span>
 
-                        Pharmacy
+            <span class="nav-item-label">
+                Billing
+            </span>
 
-                        <span class="topbar-breadcrumb-sep">
-                            /
-                        </span>
+        </a>
 
-                        <span>
-                            Stock
-                        </span>
+    </nav>
 
-                    </div>
+</aside>
 
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================== -->
+
+<main class="main-content">
+
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+        <div class="topbar-left">
+
+            <div>
+
+                <div class="topbar-page-title">
+                    Stock Management
                 </div>
 
-            </div>
+                <div class="topbar-breadcrumb">
 
-        </header>
+                    Pharmacy
 
+                    <span class="topbar-breadcrumb-sep">
+                        /
+                    </span>
 
-        <div class="page-content">
-
-            <div class="page-header">
-
-                <div class="page-header-left">
-
-                    <h1 class="page-title">
-                        Stock Management
-                    </h1>
-
-                    <p class="page-subtitle">
-                        Monitor, restock and manage medicine expiry
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <!-- STOCK TABLE -->
-
-            <div class="table-container">
-
-                <div class="table-header">
-
-                    <div class="table-header-left">
-
-                        <div class="table-title">
-                            Current Stock
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="table-scroll">
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    Medicine
-                                </th>
-
-                                <th>
-                                    Current Stock
-                                </th>
-
-                                <th>
-                                    Expiry Date
-                                </th>
-
-                                <th>
-                                    Status
-                                </th>
-
-                                <th>
-                                    Action
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody id="stockTable">
-
-                            <!-- JavaScript loads stock -->
-
-                        </tbody>
-
-                    </table>
+                    <span>
+                        Stock
+                    </span>
 
                 </div>
 
@@ -249,14 +189,131 @@
 
         </div>
 
-    </main>
+    </header>
+
+
+    <!-- =====================================================
+         PAGE CONTENT
+    ====================================================== -->
+
+    <div class="page-content">
+
+
+        <!-- PAGE HEADER -->
+
+        <div class="page-header">
+
+            <div class="page-header-left">
+
+                <h1 class="page-title">
+                    Stock Management
+                </h1>
+
+                <p class="page-subtitle">
+                    Monitor current medicine stock and expiry status
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             STOCK TABLE
+        ================================================== -->
+
+        <div class="table-container">
+
+
+            <div class="table-header">
+
+                <div class="table-header-left">
+
+                    <div class="table-title">
+                        Current Stock
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-scroll">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                ID
+                            </th>
+
+                            <th>
+                                Medicine
+                            </th>
+
+                            <th>
+                                Current Stock
+                            </th>
+
+                            <th>
+                                Reorder Level
+                            </th>
+
+                            <th>
+                                Unit
+                            </th>
+
+                            <th>
+                                Batch No
+                            </th>
+
+                            <th>
+                                Expiry Date
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="stockTable">
+
+                        <!--
+                            JavaScript loads stock from
+                            cms_medicines
+                        -->
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</main>
+```
 
 </div>
 
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
 
 <script src="../js/pharmacy.js"></script>
 
-    <script src="../js/validation.js"></script>
+<script src="../js/validation.js"></script>
+
 </body>
 
 </html>

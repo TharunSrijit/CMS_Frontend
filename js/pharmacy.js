@@ -1,93 +1,254 @@
+```javascript
 // ============================================================
 // CMS - PHARMACY JAVASCRIPT
 // File: js/pharmacy.js
-// Handles medicine inventory, prescription queue, dispensing,
-// and pharmacy billing with localStorage persistence.
+//
+// Pharmacy module only.
+// Medicine master source: cms_medicines
+// Billing source: cms_billing
+// Receipt source: cms_receipts
+//
+// Pharmacy can:
+//   - View medicines
+//   - Search medicines
+//   - Dispense medicines
+//   - Create pharmacy bills
+//   - Process payments
+//   - Print receipts
+//
+// Pharmacy cannot:
+//   - Add medicines
+//   - Edit medicines
+//   - Change master prices
+//   - Change reorder levels
+//   - Restock medicines
 // ============================================================
 
+
 // ============================================================
+// 1. COMMON HELPERS
+// ============================================================
+
 function getToday() {
+
     const now = new Date();
 
     const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 }
 
-const DEFAULT_MEDICINES = [
-    {
-        id: 1,
-        name: "Paracetamol 650mg",
-        price: 20,
-        stock: 120,
-        expiry: "2027-12-31"
-    },
-    {
-        id: 2,
-        name: "Amoxicillin 500mg",
-        price: 80,
-        stock: 45,
-        expiry: "2027-05-15"
-    },
-    {
-        id: 3,
-        name: "Cetirizine 10mg",
-        price: 30,
-        stock: 25,
-        expiry: "2028-01-20"
-    },
-    {
-        id: 4,
-        name: "Azithromycin 500mg",
-        price: 60,
-        stock: 8,
-        expiry: "2026-10-15"
-    },
-    {
-        id: 5,
-        name: "Pantoprazole 40mg",
-        price: 45,
-        stock: 60,
-        expiry: "2027-08-10"
-    },
-    {
-        id: 6,
-        name: "Amlodipine 5mg",
-        price: 35,
-        stock: 50,
-        expiry: "2027-11-20"
-    },
-    {
-        id: 7,
-        name: "Aspirin 75mg",
-        price: 25,
-        stock: 75,
-        expiry: "2028-03-15"
-    },
-    {
-        id: 8,
-        name: "Metformin 500mg",
-        price: 40,
-        stock: 90,
-        expiry: "2027-09-30"
-    },
-    {
-        id: 9,
-        name: "Glimepiride 1mg",
-        price: 55,
-        stock: 6,
-        expiry: "2026-12-05"
-    },
-    {
-        id: 10,
-        name: "Ibuprofen 400mg",
-        price: 25,
-        stock: 35,
-        expiry: "2027-07-22"
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
     }
-];
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function showMessage(elementId, message, type = "success") {
+
+    const element = document.getElementById(elementId);
+
+    if (!element) {
+        return;
+    }
+
+    const className =
+        type === "error"
+            ? "badge badge-danger"
+            : "badge badge-success";
+
+    element.innerHTML = `
+        <span class="${className}">
+            ${escapeHtml(message)}
+        </span>
+    `;
+}
+
+
+function getExpiryDate(medicine) {
+
+    return medicine?.expiryDate || medicine?.expiry || "";
+}
+
+
+function isMedicineExpired(medicine) {
+
+    const expiry = getExpiryDate(medicine);
+
+    if (!expiry) {
+        return false;
+    }
+
+    const today = new Date();
+    const expiryDate = new Date(expiry);
+
+    today.setHours(0, 0, 0, 0);
+    expiryDate.setHours(0, 0, 0, 0);
+
+    return expiryDate < today;
+}
+
+
+function isMedicineActive(medicine) {
+
+    return String(medicine?.status || "Active").toLowerCase() === "active";
+}
+
+
+function isMedicineAvailable(medicine) {
+
+    return (
+        medicine &&
+        isMedicineActive(medicine) &&
+        Number(medicine.stock) > 0 &&
+        !isMedicineExpired(medicine)
+    );
+}
+
+
+// ============================================================
+// 2. MEDICINE MASTER - SINGLE SOURCE OF TRUTH
+// ============================================================
+
+function getStoredMedicines() {
+
+    try {
+
+        const raw =
+            localStorage.getItem("cms_medicines");
+
+        if (!raw) {
+            return [];
+        }
+
+        const parsed =
+            JSON.parse(raw);
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+
+    } catch (error) {
+
+        console.error(
+            "Error reading cms_medicines:",
+            error
+        );
+
+        return [];
+    }
+}
+
+
+function saveStoredMedicines(data) {
+
+    if (!Array.isArray(data)) {
+        return false;
+    }
+
+    try {
+
+        localStorage.setItem(
+            "cms_medicines",
+            JSON.stringify(data)
+        );
+
+        medicines = data;
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Error saving cms_medicines:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+let medicines = getStoredMedicines();
+
+
+function findMedicineById(id, source = medicines) {
+
+    if (!id) {
+        return null;
+    }
+
+    return source.find(function (medicine) {
+
+        return String(medicine.id) === String(id);
+
+    }) || null;
+}
+
+
+function findMedicineByName(name, source = medicines) {
+
+    if (!name) {
+        return null;
+    }
+
+    const cleanName =
+        String(name).trim().toLowerCase();
+
+
+    // Exact match
+    let medicine =
+        source.find(function (item) {
+
+            return String(item.name || "")
+                .trim()
+                .toLowerCase() === cleanName;
+
+        });
+
+
+    if (medicine) {
+        return medicine;
+    }
+
+
+    // Partial compatibility for existing prescriptions
+    medicine =
+        source.find(function (item) {
+
+            const itemName =
+                String(item.name || "")
+                    .trim()
+                    .toLowerCase();
+
+            return (
+                itemName.startsWith(cleanName) ||
+                cleanName.startsWith(itemName) ||
+                itemName.includes(cleanName)
+            );
+
+        });
+
+
+    return medicine || null;
+}
+
+
+// ============================================================
+// 3. PRESCRIPTIONS
+// ============================================================
 
 const DEFAULT_PRESCRIPTIONS = [
     {
@@ -98,10 +259,25 @@ const DEFAULT_PRESCRIPTIONS = [
         doctorName: "Dr. Arun Kumar",
         status: "Pending Dispensation",
         medicines: [
-            { medicine: "Paracetamol 650mg", dosage: "1 Tab", frequency: "1-0-1", duration: "3 Days", instructions: "After food", quantity: 6 },
-            { medicine: "Pantoprazole 40mg", dosage: "1 Tab", frequency: "1-0-0", duration: "5 Days", instructions: "Before food", quantity: 5 }
+            {
+                medicine: "Paracetamol 650mg",
+                dosage: "1 Tab",
+                frequency: "1-0-1",
+                duration: "3 Days",
+                instructions: "After food",
+                quantity: 6
+            },
+            {
+                medicine: "Pantoprazole 40mg",
+                dosage: "1 Tab",
+                frequency: "1-0-0",
+                duration: "5 Days",
+                instructions: "Before food",
+                quantity: 5
+            }
         ]
     },
+
     {
         id: "RX-98202",
         date: getToday(),
@@ -110,10 +286,25 @@ const DEFAULT_PRESCRIPTIONS = [
         doctorName: "Dr. Arun Kumar",
         status: "Dispensed",
         medicines: [
-            { medicine: "Amoxicillin 500mg", dosage: "1 Cap", frequency: "1-0-1", duration: "5 Days", instructions: "After food", quantity: 10 },
-            { medicine: "Cetirizine 10mg",   dosage: "1 Tab", frequency: "0-0-1", duration: "5 Days", instructions: "Bedtime", quantity: 5 }
+            {
+                medicine: "Amoxicillin 500mg",
+                dosage: "1 Cap",
+                frequency: "1-0-1",
+                duration: "5 Days",
+                instructions: "After food",
+                quantity: 10
+            },
+            {
+                medicine: "Cetirizine 10mg",
+                dosage: "1 Tab",
+                frequency: "0-0-1",
+                duration: "5 Days",
+                instructions: "Bedtime",
+                quantity: 5
+            }
         ]
     },
+
     {
         id: "RX-98203",
         date: getToday(),
@@ -122,10 +313,25 @@ const DEFAULT_PRESCRIPTIONS = [
         doctorName: "Dr. Arun Kumar",
         status: "Pending Dispensation",
         medicines: [
-            { medicine: "Amlodipine 5mg", dosage: "1 Tab", frequency: "1-0-0", duration: "30 Days", instructions: "Morning after food", quantity: 30 },
-            { medicine: "Aspirin 75mg",   dosage: "1 Tab", frequency: "0-1-0", duration: "30 Days", instructions: "Lunch", quantity: 30 }
+            {
+                medicine: "Amlodipine 5mg",
+                dosage: "1 Tab",
+                frequency: "1-0-0",
+                duration: "30 Days",
+                instructions: "Morning after food",
+                quantity: 30
+            },
+            {
+                medicine: "Aspirin 75mg",
+                dosage: "1 Tab",
+                frequency: "0-1-0",
+                duration: "30 Days",
+                instructions: "Lunch",
+                quantity: 30
+            }
         ]
     },
+
     {
         id: "RX-98190",
         date: "2026-02-14",
@@ -134,401 +340,861 @@ const DEFAULT_PRESCRIPTIONS = [
         doctorName: "Dr. Arun Kumar",
         status: "Dispensed",
         medicines: [
-            { medicine: "Metformin 500mg",  dosage: "1 Tab", frequency: "1-0-1", duration: "30 Days", instructions: "With meals", quantity: 60 },
-            { medicine: "Glimepiride 1mg",  dosage: "1 Tab", frequency: "1-0-0", duration: "30 Days", instructions: "Before breakfast", quantity: 30 }
+            {
+                medicine: "Metformin 500mg",
+                dosage: "1 Tab",
+                frequency: "1-0-1",
+                duration: "30 Days",
+                instructions: "With meals",
+                quantity: 60
+            },
+            {
+                medicine: "Glimepiride 1mg",
+                dosage: "1 Tab",
+                frequency: "1-0-0",
+                duration: "30 Days",
+                instructions: "Before breakfast",
+                quantity: 30
+            }
         ]
     }
 ];
 
 
-// ============================================================
-// 2. LOCALSTORAGE HELPERS
-// ============================================================
-
-function getStoredMedicines() {
-    try {
-        const raw = localStorage.getItem("cms_medicines");
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                return parsed;
-            }
-        }
-    } catch (e) {
-        console.error("Error reading cms_medicines from localStorage:", e);
-    }
-
-    localStorage.setItem("cms_medicines", JSON.stringify(DEFAULT_MEDICINES));
-    return DEFAULT_MEDICINES.slice();
-}
-
-function saveStoredMedicines(data) {
-    medicines = data;
-    try {
-        localStorage.setItem("cms_medicines", JSON.stringify(data));
-    } catch (e) {
-        console.error("Error saving cms_medicines to localStorage:", e);
-    }
-}
-
 function getStoredPrescriptions() {
+
     try {
-        const raw = localStorage.getItem("cms_prescriptions");
+
+        const raw =
+            localStorage.getItem("cms_prescriptions");
+
         if (raw) {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.length > 0) {
+
+            const parsed =
+                JSON.parse(raw);
+
+            if (Array.isArray(parsed)) {
                 return parsed;
             }
         }
-    } catch (e) {
-        console.error("Error reading cms_prescriptions from localStorage:", e);
+
+    } catch (error) {
+
+        console.error(
+            "Error reading cms_prescriptions:",
+            error
+        );
     }
 
-    localStorage.setItem("cms_prescriptions", JSON.stringify(DEFAULT_PRESCRIPTIONS));
+
+    // Preserve existing prescription integration.
+    // This does NOT create medicines in cms_medicines.
+    localStorage.setItem(
+        "cms_prescriptions",
+        JSON.stringify(DEFAULT_PRESCRIPTIONS)
+    );
+
     return DEFAULT_PRESCRIPTIONS.slice();
 }
 
+
 function saveStoredPrescriptions(data) {
+
     try {
-        localStorage.setItem("cms_prescriptions", JSON.stringify(data));
-    } catch (e) {
-        console.error("Error saving cms_prescriptions to localStorage:", e);
+
+        localStorage.setItem(
+            "cms_prescriptions",
+            JSON.stringify(data)
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Error saving prescriptions:",
+            error
+        );
+
+        return false;
     }
 }
 
-// Active in-memory reference synced with localStorage
-let medicines = getStoredMedicines();
-
-
-// Helper to find medicine by exact or partial/brand name
-function findMedicineByName(name) {
-    if (!name) return null;
-    const clean = name.trim().toLowerCase();
-
-    // 1. Exact match
-    let found = medicines.find(function (m) {
-        return m.name.toLowerCase() === clean;
-    });
-    if (found) return found;
-
-    // 2. Starts with / includes match (e.g. 'Paracetamol' matches 'Paracetamol 650mg')
-    found = medicines.find(function (m) {
-        const mLower = m.name.toLowerCase();
-        return mLower.startsWith(clean) || clean.startsWith(mLower) || mLower.includes(clean);
-    });
-
-    return found || null;
-}
-
 
 // ============================================================
-// 3. PRESCRIPTION QUEUE
+// 4. PRESCRIPTION QUEUE
 // ============================================================
 
 function viewPrescription(id) {
-    window.location.href = "prescription-details.html?id=" + encodeURIComponent(id);
+
+    window.location.href =
+        "prescription-details.html?id=" +
+        encodeURIComponent(id);
 }
 
+
 function loadPrescriptionQueue() {
-    const tableBody = document.getElementById("prescriptionQueue");
-    if (!tableBody) return;
 
-    const rxList = getStoredPrescriptions();
-    const countElement = document.getElementById("queueCount") || document.querySelector(".table-count");
+    const tableBody =
+        document.getElementById("prescriptionQueue");
 
-    const pendingCount = rxList.filter(function (rx) {
-        return rx.status === "Pending" || rx.status === "Pending Dispensation";
-    }).length;
+    if (!tableBody) {
+        return;
+    }
+
+
+    const prescriptions =
+        getStoredPrescriptions();
+
+
+    const countElement =
+        document.getElementById("queueCount") ||
+        document.querySelector(".table-count");
+
+
+    const pendingCount =
+        prescriptions.filter(function (rx) {
+
+            return (
+                rx.status === "Pending" ||
+                rx.status === "Pending Dispensation"
+            );
+
+        }).length;
+
 
     if (countElement) {
         countElement.innerText = pendingCount;
     }
 
-    if (rxList.length === 0) {
+
+    if (prescriptions.length === 0) {
+
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">
+                <td colspan="6"
+                    style="text-align:center;padding:24px;">
                     No prescriptions in queue.
                 </td>
             </tr>
         `;
+
         return;
     }
 
-    tableBody.innerHTML = rxList.map(function (rx) {
-        const isPending = rx.status === "Pending" || rx.status === "Pending Dispensation";
-        const statusBadgeClass = isPending ? "badge-warning" : "badge-success";
-        const statusText = isPending ? "Pending" : "Dispensed";
-        const btnClass = isPending ? "btn-primary" : "btn-outline";
 
-        return `
-            <tr>
-                <td class="td-mono">${rx.id}</td>
-                <td class="td-primary">${rx.patientName || rx.patientId || "—"}</td>
-                <td>${rx.doctorName || "Dr. Arun Kumar"}</td>
-                <td>${rx.date || "—"}</td>
-                <td>
-                    <span class="badge ${statusBadgeClass}">
-                        ${statusText}
-                    </span>
-                </td>
-                <td class="td-actions">
-                    <a href="prescription-details.html?id=${encodeURIComponent(rx.id)}"
-                       class="btn ${btnClass} btn-sm">
-                        View
-                    </a>
-                </td>
-            </tr>
-        `;
-    }).join("");
+    tableBody.innerHTML =
+        prescriptions.map(function (rx) {
+
+            const isPending =
+                rx.status === "Pending" ||
+                rx.status === "Pending Dispensation";
+
+
+            return `
+                <tr>
+
+                    <td class="td-mono">
+                        ${escapeHtml(rx.id)}
+                    </td>
+
+                    <td class="td-primary">
+                        ${escapeHtml(
+                            rx.patientName ||
+                            rx.patientId ||
+                            "—"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            rx.doctorName ||
+                            "—"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(rx.date || "—")}
+                    </td>
+
+                    <td>
+
+                        <span class="badge ${
+                            isPending
+                                ? "badge-warning"
+                                : "badge-success"
+                        }">
+
+                            ${
+                                isPending
+                                    ? "Pending"
+                                    : "Dispensed"
+                            }
+
+                        </span>
+
+                    </td>
+
+                    <td class="td-actions">
+
+                        <a
+                            href="prescription-details.html?id=${encodeURIComponent(rx.id)}"
+                            class="btn btn-primary btn-sm">
+
+                            View
+
+                        </a>
+
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
 }
 
 
 // ============================================================
-// 4. PRESCRIPTION DETAILS
+// 5. PRESCRIPTION DETAILS
 // ============================================================
 
 function loadPrescriptionDetails() {
-    const tableBody = document.getElementById("rxMedicinesTable");
-    if (!tableBody) return;
 
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
-    const rxList = getStoredPrescriptions();
+    const tableBody =
+        document.getElementById("rxMedicinesTable");
 
-    let rx = null;
-    if (id) {
-        rx = rxList.find(function (item) {
-            return String(item.id).toLowerCase() === String(id).toLowerCase();
-        });
+    if (!tableBody) {
+        return;
     }
 
-    if (!rx && rxList.length > 0) {
-        rx = rxList[0];
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const prescriptionId =
+        params.get("id");
+
+
+    const prescriptions =
+        getStoredPrescriptions();
+
+
+    let prescription = null;
+
+
+    if (prescriptionId) {
+
+        prescription =
+            prescriptions.find(function (item) {
+
+                return String(item.id).toLowerCase() ===
+                       String(prescriptionId).toLowerCase();
+
+            });
+
     }
 
-    if (!rx) {
-        const titleEl = document.getElementById("rxTitle");
-        if (titleEl) titleEl.innerText = "No Prescription Found";
+
+    if (!prescription &&
+        prescriptions.length > 0) {
+
+        prescription =
+            prescriptions[0];
+
+    }
+
+
+    if (!prescription) {
+
+        const title =
+            document.getElementById("rxTitle");
+
+        if (title) {
+            title.innerText =
+                "No Prescription Found";
+        }
+
         tableBody.innerHTML = `
             <tr>
-                <td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted);">
+                <td colspan="4"
+                    style="text-align:center;padding:24px;">
                     Prescription not found.
                 </td>
             </tr>
         `;
+
         return;
     }
 
-    // Set Header & Fields
-    const titleEl = document.getElementById("rxTitle");
-    if (titleEl) titleEl.innerText = "Prescription " + rx.id;
 
-    const isPending = rx.status === "Pending" || rx.status === "Pending Dispensation";
-    const statusEl = document.getElementById("rxStatusBadge");
-    if (statusEl) {
-        statusEl.className = "badge " + (isPending ? "badge-warning" : "badge-success");
-        statusEl.innerText = isPending ? "Pending" : "Dispensed";
+    const isPending =
+        prescription.status === "Pending" ||
+        prescription.status === "Pending Dispensation";
+
+
+    const title =
+        document.getElementById("rxTitle");
+
+    if (title) {
+        title.innerText =
+            "Prescription " +
+            prescription.id;
     }
 
-    const patientEl = document.getElementById("rxPatient");
-    if (patientEl) {
-        patientEl.innerText = (rx.patientName || "—") + (rx.patientId ? " (" + rx.patientId + ")" : "");
+
+    const status =
+        document.getElementById("rxStatusBadge");
+
+    if (status) {
+
+        status.className =
+            "badge " +
+            (
+                isPending
+                    ? "badge-warning"
+                    : "badge-success"
+            );
+
+        status.innerText =
+            isPending
+                ? "Pending"
+                : "Dispensed";
     }
 
-    const doctorEl = document.getElementById("rxDoctor");
-    if (doctorEl) doctorEl.innerText = rx.doctorName || "Dr. Arun Kumar";
 
-    const dateEl = document.getElementById("rxDate");
-    if (dateEl) dateEl.innerText = rx.date || "—";
+    const patient =
+        document.getElementById("rxPatient");
 
-    const idEl = document.getElementById("rxId");
-    if (idEl) idEl.innerText = rx.id;
+    if (patient) {
 
-    // Set Top button
-    const topDispenseBtn = document.getElementById("rxTopDispenseBtn");
-    if (topDispenseBtn) {
-        topDispenseBtn.href = "dispense-medicine.html?id=" + encodeURIComponent(rx.id);
-        if (!isPending) {
-            topDispenseBtn.style.display = "none";
-        } else {
-            topDispenseBtn.style.display = "inline-flex";
-        }
+        patient.innerText =
+            (prescription.patientName || "—") +
+            (
+                prescription.patientId
+                    ? " (" +
+                      prescription.patientId +
+                      ")"
+                    : ""
+            );
     }
 
-    // Populate Medicines Table
-    const meds = rx.medicines || [];
-    if (meds.length === 0) {
+
+    const doctor =
+        document.getElementById("rxDoctor");
+
+    if (doctor) {
+
+        doctor.innerText =
+            prescription.doctorName || "—";
+    }
+
+
+    const date =
+        document.getElementById("rxDate");
+
+    if (date) {
+
+        date.innerText =
+            prescription.date || "—";
+    }
+
+
+    const rxId =
+        document.getElementById("rxId");
+
+    if (rxId) {
+
+        rxId.innerText =
+            prescription.id;
+    }
+
+
+    const topButton =
+        document.getElementById("rxTopDispenseBtn");
+
+
+    if (topButton) {
+
+        topButton.href =
+            "dispense-medicine.html?id=" +
+            encodeURIComponent(
+                prescription.id
+            );
+
+        topButton.style.display =
+            isPending
+                ? "inline-flex"
+                : "none";
+    }
+
+
+    const prescriptionMedicines =
+        prescription.medicines || [];
+
+
+    if (prescriptionMedicines.length === 0) {
+
         tableBody.innerHTML = `
             <tr>
-                <td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">
-                    No medicines listed for this prescription.
+                <td colspan="4"
+                    style="text-align:center;padding:20px;">
+                    No medicines listed.
                 </td>
             </tr>
         `;
-    } else {
-        tableBody.innerHTML = meds.map(function (m) {
-            const medName = m.medicine || m.name || "—";
-            const dosage = m.dosage || "—";
-            const duration = [m.frequency, m.duration].filter(Boolean).join(" · ") || "—";
-            const instr = m.instructions || (m.quantity ? "Qty: " + m.quantity : "—");
 
-            return `
-                <tr>
-                    <td class="td-primary">${medName}</td>
-                    <td>${dosage}</td>
-                    <td>${duration}</td>
-                    <td>${instr}</td>
-                </tr>
-            `;
-        }).join("");
+    } else {
+
+        tableBody.innerHTML =
+            prescriptionMedicines.map(
+                function (medicine) {
+
+                    const name =
+                        medicine.medicine ||
+                        medicine.name ||
+                        "—";
+
+                    const dosage =
+                        medicine.dosage ||
+                        "—";
+
+                    const duration =
+                        [
+                            medicine.frequency,
+                            medicine.duration
+                        ]
+                        .filter(Boolean)
+                        .join(" · ") ||
+                        "—";
+
+                    const instructions =
+                        medicine.instructions ||
+                        (
+                            medicine.quantity
+                                ? "Qty: " +
+                                  medicine.quantity
+                                : "—"
+                        );
+
+
+                    return `
+                        <tr>
+
+                            <td class="td-primary">
+                                ${escapeHtml(name)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(dosage)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(duration)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(instructions)}
+                            </td>
+
+                        </tr>
+                    `;
+
+                }
+            ).join("");
     }
 
-    // Action container
-    const actionContainer = document.getElementById("rxActionContainer");
+
+    const actionContainer =
+        document.getElementById(
+            "rxActionContainer"
+        );
+
+
     if (actionContainer) {
+
         if (isPending) {
+
             actionContainer.innerHTML = `
-                <button class="btn btn-success" onclick="dispenseCurrentPrescription('${rx.id}')">
+
+                <button
+                    class="btn btn-success"
+                    onclick="dispenseCurrentPrescription('${escapeHtml(prescription.id)}')">
+
                     ✅ Dispense All Prescribed Medicines
+
                 </button>
-                <a href="dispense-medicine.html?id=${encodeURIComponent(rx.id)}" class="btn btn-outline">
+
+                <a
+                    href="dispense-medicine.html?id=${encodeURIComponent(prescription.id)}"
+                    class="btn btn-outline">
+
                     Manual Item Dispense
+
                 </a>
+
             `;
+
         } else {
+
             actionContainer.innerHTML = `
-                <div style="padding:10px 16px;background:var(--success-light, #e8f8f0);color:var(--success, #27ae60);border-radius:6px;font-weight:600;display:flex;align-items:center;gap:8px;">
-                    <span>✓</span> All prescribed medicines have been dispensed.
+
+                <div style="
+                    padding:10px 16px;
+                    background:var(--success-light,#e8f8f0);
+                    color:var(--success,#27ae60);
+                    border-radius:6px;
+                    font-weight:600;
+                ">
+
+                    ✓ All prescribed medicines have been dispensed.
+
                 </div>
+
             `;
         }
     }
 }
 
-// Dispense all medicines directly from the prescription details page
+
+// ============================================================
+// 6. ATOMIC PRESCRIPTION DISPENSING
+// ============================================================
+
 function dispenseCurrentPrescription(rxId) {
-    const rxList = getStoredPrescriptions();
-    const rx = rxList.find(function (item) {
-        return item.id === rxId;
-    });
 
-    if (!rx) {
+    const prescriptions =
+        getStoredPrescriptions();
+
+
+    const prescription =
+        prescriptions.find(function (rx) {
+
+            return String(rx.id) ===
+                   String(rxId);
+
+        });
+
+
+    if (!prescription) {
+
         alert("Prescription not found.");
+
         return;
     }
 
-    if (rx.status === "Dispensed") {
-        alert("This prescription is already marked as dispensed.");
+
+    if (prescription.status === "Dispensed") {
+
+        alert(
+            "This prescription is already marked as dispensed."
+        );
+
         return;
     }
 
-    let deductedDetails = [];
-    const meds = rx.medicines || [];
 
-    meds.forEach(function (m) {
-        const medName = m.medicine || m.name;
-        const targetMed = findMedicineByName(medName);
-        const qty = m.quantity || 1;
+    const currentMedicines =
+        getStoredMedicines();
 
-        if (targetMed) {
-            targetMed.stock = Math.max(0, targetMed.stock - qty);
-            deductedDetails.push(targetMed.name + " (-" + qty + ", stock left: " + targetMed.stock + ")");
+
+    const requiredMap = new Map();
+
+
+    // --------------------------------------------------------
+    // FIRST PASS:
+    // Resolve every prescribed medicine.
+    // No stock is changed here.
+    // --------------------------------------------------------
+
+    for (const prescribed of
+         prescription.medicines || []) {
+
+        const medicineId =
+            prescribed.medicineId ||
+            prescribed.id;
+
+
+        let masterMedicine = null;
+
+
+        if (medicineId) {
+
+            masterMedicine =
+                findMedicineById(
+                    medicineId,
+                    currentMedicines
+                );
         }
-    });
 
-    rx.status = "Dispensed";
-    saveStoredPrescriptions(rxList);
-    saveStoredMedicines(medicines);
 
-    alert("Prescription " + rx.id + " dispensed successfully!\n" +
-          (deductedDetails.length > 0 ? "\nStock updated:\n• " + deductedDetails.join("\n• ") : ""));
+        if (!masterMedicine) {
+
+            masterMedicine =
+                findMedicineByName(
+                    prescribed.medicine ||
+                    prescribed.name,
+                    currentMedicines
+                );
+        }
+
+
+        if (!masterMedicine) {
+
+            alert(
+                "Medicine not found in Admin Medicine Master: " +
+                (
+                    prescribed.medicine ||
+                    prescribed.name ||
+                    "Unknown"
+                )
+            );
+
+            return;
+        }
+
+
+        if (!isMedicineActive(masterMedicine)) {
+
+            alert(
+                masterMedicine.name +
+                " is not Active and cannot be dispensed."
+            );
+
+            return;
+        }
+
+
+        if (isMedicineExpired(masterMedicine)) {
+
+            alert(
+                masterMedicine.name +
+                " is expired and cannot be dispensed."
+            );
+
+            return;
+        }
+
+
+        const quantity =
+            Number(prescribed.quantity);
+
+
+        if (!Number.isInteger(quantity) ||
+            quantity <= 0) {
+
+            alert(
+                "Invalid quantity for " +
+                masterMedicine.name
+            );
+
+            return;
+        }
+
+
+        const existing =
+            requiredMap.get(
+                String(masterMedicine.id)
+            );
+
+
+        if (existing) {
+
+            existing.quantity += quantity;
+
+        } else {
+
+            requiredMap.set(
+                String(masterMedicine.id),
+                {
+                    medicine: masterMedicine,
+                    quantity: quantity
+                }
+            );
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // SECOND PASS:
+    // Validate ALL stock before changing anything.
+    // --------------------------------------------------------
+
+    for (const item of requiredMap.values()) {
+
+        const medicine =
+            findMedicineById(
+                item.medicine.id,
+                currentMedicines
+            );
+
+
+        if (!medicine) {
+
+            alert(
+                "Medicine no longer exists in the master."
+            );
+
+            return;
+        }
+
+
+        const stock =
+            Number(medicine.stock);
+
+
+        if (!Number.isInteger(stock) ||
+            stock < item.quantity) {
+
+            alert(
+                "Insufficient stock for " +
+                medicine.name +
+                ". Available: " +
+                stock +
+                ", Required: " +
+                item.quantity
+            );
+
+            return;
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // THIRD PASS:
+    // All validation succeeded.
+    // Now deduct stock.
+    // --------------------------------------------------------
+
+    const deductedDetails = [];
+
+
+    for (const item of requiredMap.values()) {
+
+        const medicine =
+            findMedicineById(
+                item.medicine.id,
+                currentMedicines
+            );
+
+
+        medicine.stock =
+            Number(medicine.stock) -
+            item.quantity;
+
+
+        deductedDetails.push(
+            medicine.name +
+            " (-" +
+            item.quantity +
+            ", stock left: " +
+            medicine.stock +
+            ")"
+        );
+    }
+
+
+    // Save only after all validation succeeded.
+    if (!saveStoredMedicines(currentMedicines)) {
+
+        alert(
+            "Unable to save stock changes."
+        );
+
+        return;
+    }
+
+
+    prescription.status =
+        "Dispensed";
+
+
+    if (!saveStoredPrescriptions(
+        prescriptions
+    )) {
+
+        alert(
+            "Stock was updated, but prescription status could not be saved."
+        );
+
+        return;
+    }
+
+
+    alert(
+        "Prescription " +
+        prescription.id +
+        " dispensed successfully!\n\n" +
+        "Stock updated:\n• " +
+        deductedDetails.join("\n• ")
+    );
+
 
     loadPrescriptionDetails();
     loadStock();
     loadInventory();
-    updateDashboard();
-}
-
-
-// ============================================================
-// 5. MEDICINE INVENTORY
-// ============================================================
-
-function addMedicine() {
-    const nameInput = document.getElementById("medicineName");
-    const priceInput = document.getElementById("medicinePrice");
-    const stockInput = document.getElementById("medicineStock");
-    const expiryInput = document.getElementById("medicineExpiry");
-
-    if (!nameInput || !priceInput || !stockInput || !expiryInput) return;
-
-    const name = nameInput.value.trim();
-    const price = Number(priceInput.value);
-    const stock = Number(stockInput.value);
-    const expiry = expiryInput.value;
-
-    if (!name || price <= 0 || stock < 0 || !expiry) {
-        alert("Please enter medicine name, price, stock and expiry date.");
-        return;
-    }
-
-    const nextId = medicines.reduce(function (max, m) {
-        return Math.max(max, m.id || 0);
-    }, 0) + 1;
-
-    const newMedicine = {
-        id: nextId,
-        name: name,
-        price: price,
-        stock: stock,
-        expiry: expiry
-    };
-
-    medicines.push(newMedicine);
-    saveStoredMedicines(medicines);
-
-    alert("Medicine '" + name + "' added successfully to inventory.");
-
-    nameInput.value = "";
-    priceInput.value = "";
-    stockInput.value = "";
-    expiryInput.value = "";
-
-    loadInventory();
-    loadStock();
     updateDashboard();
     populateMedicineDropdowns();
 }
 
 
 // ============================================================
-// 6. EXPIRY & STOCK STATUS
+// 7. EXPIRY STATUS
 // ============================================================
 
 function getExpiryStatus(expiry) {
-    const today = new Date();
-    const expiryDate = new Date(expiry);
+
+    if (!expiry) {
+
+        return {
+            text: "No Expiry",
+            className: "badge-warning"
+        };
+    }
+
+
+    const today =
+        new Date();
+
+
+    const expiryDate =
+        new Date(expiry);
+
 
     today.setHours(0, 0, 0, 0);
     expiryDate.setHours(0, 0, 0, 0);
 
+
     if (expiryDate < today) {
+
         return {
             text: "Expired",
             className: "badge-danger"
         };
     }
 
-    const difference = expiryDate - today;
-    const days = Math.ceil(difference / (1000 * 60 * 60 * 24));
+
+    const difference =
+        expiryDate - today;
+
+
+    const days =
+        Math.ceil(
+            difference /
+            (1000 * 60 * 60 * 24)
+        );
+
 
     if (days <= 30) {
+
         return {
             text: "Expiring Soon",
             className: "badge-warning"
         };
     }
+
 
     return {
         text: "Valid",
@@ -536,20 +1202,40 @@ function getExpiryStatus(expiry) {
     };
 }
 
-function getStockStatus(stock) {
-    if (stock <= 0) {
+
+// ============================================================
+// 8. STOCK STATUS
+// ============================================================
+
+function getStockStatus(
+    stock,
+    reorderLevel = 0
+) {
+
+    stock =
+        Number(stock || 0);
+
+    reorderLevel =
+        Number(reorderLevel || 0);
+
+
+    if (stock === 0) {
+
         return {
             text: "Out of Stock",
             className: "badge-danger"
         };
     }
 
-    if (stock <= 10) {
+
+    if (stock <= reorderLevel) {
+
         return {
             text: "Low Stock",
             className: "badge-warning"
         };
     }
+
 
     return {
         text: "Available",
@@ -559,343 +1245,2836 @@ function getStockStatus(stock) {
 
 
 // ============================================================
-// 7. LOAD INVENTORY TABLE
+// 9. MEDICINE INVENTORY
 // ============================================================
 
 function loadInventory() {
-    const table = document.getElementById("inventoryTable");
-    if (!table) return;
 
-    table.innerHTML = "";
+    const table =
+        document.getElementById(
+            "inventoryTable"
+        );
 
-    if (medicines.length === 0) {
-        table.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">
-                    No medicines in inventory.
-                </td>
-            </tr>
-        `;
+
+    if (!table) {
         return;
     }
 
-    medicines.forEach(function (medicine) {
-        const stockStatus = getStockStatus(medicine.stock);
-        const expiryStatus = getExpiryStatus(medicine.expiry);
 
-        table.innerHTML += `
+    const currentMedicines =
+        getStoredMedicines();
+
+
+    medicines =
+        currentMedicines;
+
+
+    table.innerHTML = "";
+
+
+    if (currentMedicines.length === 0) {
+
+        table.innerHTML = `
+
             <tr>
-                <td class="td-mono">${medicine.id}</td>
-                <td class="td-primary">${medicine.name}</td>
-                <td>₹${medicine.price}</td>
-                <td>${medicine.stock}</td>
-                <td>${medicine.expiry}</td>
-                <td>
-                    <span class="badge ${expiryStatus.className}">
-                        ${expiryStatus.text}
-                    </span>
-                    <br>
-                    <span class="badge ${stockStatus.className}">
-                        ${stockStatus.text}
-                    </span>
+
+                <td colspan="10"
+                    style="text-align:center;padding:24px;">
+
+                    No medicines found in Admin Medicine Master.
+
                 </td>
+
             </tr>
+
         `;
-    });
+
+        return;
+    }
+
+
+    currentMedicines.forEach(
+        function (medicine) {
+
+            const stockStatus =
+                getStockStatus(
+                    medicine.stock,
+                    medicine.reorderLevel
+                );
+
+
+            const expiryStatus =
+                getExpiryStatus(
+                    getExpiryDate(medicine)
+                );
+
+
+            const masterStatus =
+                medicine.status ||
+                "Active";
+
+
+            table.innerHTML += `
+
+                <tr>
+
+                    <td class="td-mono">
+                        ${escapeHtml(medicine.id)}
+                    </td>
+
+                    <td class="td-primary">
+                        ${escapeHtml(medicine.name)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            medicine.category || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            medicine.unit || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ₹${Number(
+                            medicine.price || 0
+                        ).toFixed(2)}
+                    </td>
+
+                    <td>
+                        ${Number(
+                            medicine.stock || 0
+                        )}
+                    </td>
+
+                    <td>
+                        ${Number(
+                            medicine.reorderLevel || 0
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            medicine.batchNo || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            getExpiryDate(medicine) ||
+                            "-"
+                        )}
+                    </td>
+
+                    <td>
+
+                        <span class="badge ${
+                            String(masterStatus).toLowerCase() === "active"
+                                ? "badge-success"
+                                : "badge-danger"
+                        }">
+
+                            ${escapeHtml(masterStatus)}
+
+                        </span>
+
+                        <br>
+
+                        <span class="badge ${
+                            expiryStatus.className
+                        }">
+
+                            ${expiryStatus.text}
+
+                        </span>
+
+                        <br>
+
+                        <span class="badge ${
+                            stockStatus.className
+                        }">
+
+                            ${stockStatus.text}
+
+                        </span>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
 }
 
 
 // ============================================================
-// 8. LOAD STOCK TABLE
+// 10. STOCK PAGE
 // ============================================================
 
 function loadStock() {
-    const table = document.getElementById("stockTable");
-    if (!table) return;
+
+    const table =
+        document.getElementById(
+            "stockTable"
+        );
+
+
+    if (!table) {
+        return;
+    }
+
+
+    const currentMedicines =
+        getStoredMedicines();
+
+
+    medicines =
+        currentMedicines;
+
 
     table.innerHTML = "";
 
-    if (medicines.length === 0) {
+
+    if (currentMedicines.length === 0) {
+
         table.innerHTML = `
+
             <tr>
-                <td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">
+
+                <td colspan="8"
+                    style="text-align:center;padding:24px;">
+
                     No stock records found.
+
                 </td>
+
             </tr>
+
         `;
+
         return;
     }
 
-    medicines.forEach(function (medicine) {
-        const stockStatus = getStockStatus(medicine.stock);
-        const expiryStatus = getExpiryStatus(medicine.expiry);
 
-        table.innerHTML += `
-            <tr>
-                <td class="td-primary">${medicine.name}</td>
-                <td>${medicine.stock}</td>
-                <td>${medicine.expiry}</td>
-                <td>
-                    <span class="badge ${stockStatus.className}">
-                        ${stockStatus.text}
-                    </span>
-                    <br>
-                    <span class="badge ${expiryStatus.className}">
-                        ${expiryStatus.text}
-                    </span>
-                </td>
-                <td class="td-actions">
-                    <button class="btn btn-primary btn-sm"
-                            onclick="restockMedicine(${medicine.id})">
-                        Restock
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
+    currentMedicines.forEach(
+        function (medicine) {
+
+            const stockStatus =
+                getStockStatus(
+                    medicine.stock,
+                    medicine.reorderLevel
+                );
+
+
+            const expiryStatus =
+                getExpiryStatus(
+                    getExpiryDate(medicine)
+                );
+
+
+            table.innerHTML += `
+
+                <tr>
+
+                    <td class="td-mono">
+                        ${escapeHtml(medicine.id)}
+                    </td>
+
+                    <td class="td-primary">
+                        ${escapeHtml(medicine.name)}
+                    </td>
+
+                    <td>
+                        ${Number(
+                            medicine.stock || 0
+                        )}
+                    </td>
+
+                    <td>
+                        ${Number(
+                            medicine.reorderLevel || 0
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            medicine.unit || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            medicine.batchNo || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            getExpiryDate(medicine) ||
+                            "-"
+                        )}
+                    </td>
+
+                    <td>
+
+                        <span class="badge ${
+                            stockStatus.className
+                        }">
+
+                            ${stockStatus.text}
+
+                        </span>
+
+                        <br>
+
+                        <span class="badge ${
+                            expiryStatus.className
+                        }">
+
+                            ${expiryStatus.text}
+
+                        </span>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
 }
 
 
 // ============================================================
-// 9. RESTOCK MEDICINE
-// ============================================================
-
-function restockMedicine(id) {
-    const medicine = medicines.find(function (item) {
-        return item.id === id;
-    });
-
-    if (!medicine) {
-        alert("Medicine not found.");
-        return;
-    }
-
-    const quantity = prompt("Enter quantity to restock " + medicine.name + ":");
-
-    if (quantity === null || quantity.trim() === "" || Number(quantity) <= 0 || isNaN(Number(quantity))) {
-        if (quantity !== null) alert("Please enter a valid quantity.");
-        return;
-    }
-
-    medicine.stock += Number(quantity);
-    saveStoredMedicines(medicines);
-
-    alert(medicine.name + " restocked successfully.\n" +
-          "Added: " + quantity + "\n" +
-          "New Stock: " + medicine.stock);
-
-    loadStock();
-    loadInventory();
-    updateDashboard();
-    populateMedicineDropdowns();
-}
-
-
-// ============================================================
-// 10. DISPENSE MEDICINE (Single Item Form)
+// 11. PHARMACY DISPENSING
 // ============================================================
 
 function dispenseMedicine() {
-    const rxInput = document.getElementById("prescriptionId");
-    const medInput = document.getElementById("medicine");
-    const qtyInput = document.getElementById("quantity");
 
-    const prescriptionId = rxInput ? rxInput.value.trim() : "";
-    const medicineName = medInput ? medInput.value.trim() : "";
-    const quantity = Number(qtyInput ? qtyInput.value : 0);
+    const prescriptionInput =
+        document.getElementById(
+            "prescriptionId"
+        );
 
-    if (!medicineName || quantity <= 0) {
-        alert("Please select a medicine and enter a valid quantity.");
+
+    const medicineInput =
+        document.getElementById(
+            "medicine"
+        );
+
+
+    const quantityInput =
+        document.getElementById(
+            "quantity"
+        );
+
+
+    const prescriptionId =
+        prescriptionInput
+            ? prescriptionInput.value.trim()
+            : "";
+
+
+    const medicineId =
+        medicineInput
+            ? medicineInput.value
+            : "";
+
+
+    const quantity =
+        Number(
+            quantityInput
+                ? quantityInput.value
+                : 0
+        );
+
+
+    if (!medicineId) {
+
+        showMessage(
+            "dispenseMessage",
+            "Please select a medicine.",
+            "error"
+        );
+
         return;
     }
 
-    const medicine = findMedicineByName(medicineName);
+
+    if (
+        !Number.isInteger(quantity) ||
+        quantity <= 0
+    ) {
+
+        showMessage(
+            "dispenseMessage",
+            "Quantity must be a whole number greater than zero.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const currentMedicines =
+        getStoredMedicines();
+
+
+    const medicine =
+        findMedicineById(
+            medicineId,
+            currentMedicines
+        );
+
 
     if (!medicine) {
-        alert("Medicine '" + medicineName + "' not found in inventory.");
+
+        showMessage(
+            "dispenseMessage",
+            "Medicine was not found in the Admin Medicine Master.",
+            "error"
+        );
+
         return;
     }
 
-    // Check expiry
-    const expiryStatus = getExpiryStatus(medicine.expiry);
-    if (expiryStatus.text === "Expired") {
-        alert("Cannot dispense expired medicine (" + medicine.name + ").");
+
+    if (!isMedicineActive(medicine)) {
+
+        showMessage(
+            "dispenseMessage",
+            "This medicine is not Active.",
+            "error"
+        );
+
         return;
     }
 
-    // Check stock
-    if (medicine.stock < quantity) {
-        alert("Insufficient stock for " + medicine.name + ". Available: " + medicine.stock);
+
+    if (isMedicineExpired(medicine)) {
+
+        showMessage(
+            "dispenseMessage",
+            "Expired medicines cannot be dispensed.",
+            "error"
+        );
+
         return;
     }
 
-    // Deduct stock
-    medicine.stock -= quantity;
-    saveStoredMedicines(medicines);
 
-    // If prescription ID is entered, update status in cms_prescriptions
-    let rxUpdated = false;
+    const stock =
+        Number(medicine.stock || 0);
+
+
+    if (stock === 0) {
+
+        showMessage(
+            "dispenseMessage",
+            "This medicine is out of stock.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (quantity > stock) {
+
+        showMessage(
+            "dispenseMessage",
+            "Insufficient stock. Available: " +
+            stock,
+            "error"
+        );
+
+        return;
+    }
+
+
+    // Fresh read before deduction.
+    const freshMedicines =
+        getStoredMedicines();
+
+
+    const freshMedicine =
+        findMedicineById(
+            medicine.id,
+            freshMedicines
+        );
+
+
+    if (!freshMedicine ||
+        Number(freshMedicine.stock) < quantity) {
+
+        showMessage(
+            "dispenseMessage",
+            "Stock changed. Please refresh and try again.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    freshMedicine.stock =
+        Number(freshMedicine.stock) -
+        quantity;
+
+
+    if (!saveStoredMedicines(
+        freshMedicines
+    )) {
+
+        showMessage(
+            "dispenseMessage",
+            "Unable to save stock changes.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    // Update prescription only after stock validation/deduction.
+    let prescriptionUpdated = false;
+
+
     if (prescriptionId) {
-        const rxList = getStoredPrescriptions();
-        const rx = rxList.find(function (item) {
-            return String(item.id).toLowerCase() === prescriptionId.toLowerCase();
-        });
 
-        if (rx) {
-            rx.status = "Dispensed";
-            saveStoredPrescriptions(rxList);
-            rxUpdated = true;
+        const prescriptions =
+            getStoredPrescriptions();
+
+
+        const prescription =
+            prescriptions.find(
+                function (rx) {
+
+                    return String(rx.id)
+                        .toLowerCase() ===
+                        prescriptionId
+                            .toLowerCase();
+
+                }
+            );
+
+
+        if (prescription) {
+
+            prescription.status =
+                "Dispensed";
+
+
+            saveStoredPrescriptions(
+                prescriptions
+            );
+
+
+            prescriptionUpdated =
+                true;
         }
     }
 
-    const message = document.getElementById("dispenseMessage");
+
+    const message =
+        document.getElementById(
+            "dispenseMessage"
+        );
+
+
     if (message) {
+
         message.innerHTML = `
+
             <span class="badge badge-success">
                 Medicine dispensed successfully.
             </span>
+
             <br><br>
-            Medicine: <strong>${medicine.name}</strong><br>
-            Quantity Dispensed: <strong>${quantity}</strong><br>
-            Remaining Stock: <strong>${medicine.stock}</strong>
-            ${rxUpdated ? `<br>Prescription <strong>${prescriptionId}</strong> status updated to: <span class="badge badge-success">Dispensed</span>` : ""}
+
+            Medicine:
+            <strong>
+                ${escapeHtml(freshMedicine.name)}
+            </strong>
+
+            <br>
+
+            Quantity:
+            <strong>
+                ${quantity}
+            </strong>
+
+            <br>
+
+            Remaining Stock:
+            <strong>
+                ${freshMedicine.stock}
+            </strong>
+
+            ${
+                prescriptionUpdated
+                    ? `
+                        <br>
+
+                        Prescription
+                        <strong>
+                            ${escapeHtml(prescriptionId)}
+                        </strong>
+
+                        updated to
+                        <strong>Dispensed</strong>.
+                    `
+                    : ""
+            }
+
         `;
     }
 
-    loadStock();
+
     loadInventory();
+    loadStock();
     updateDashboard();
     populateMedicineDropdowns();
 }
 
 
 // ============================================================
-// 11. MEDICINE DROPDOWNS
+// 12. MEDICINE DROPDOWNS
 // ============================================================
 
 function populateMedicineDropdowns() {
-    const medSelect = document.getElementById("medicine");
-    if (medSelect) {
-        const currentVal = medSelect.value;
-        medSelect.innerHTML = '<option value="">Select Medicine</option>' +
-            medicines.map(function (m) {
-                return `<option value="${m.name}">${m.name} (Stock: ${m.stock})</option>`;
-            }).join("");
-        if (currentVal) medSelect.value = currentVal;
+
+    const currentMedicines =
+        getStoredMedicines();
+
+
+    medicines =
+        currentMedicines;
+
+
+    // --------------------------------------------------------
+    // DISPENSE MEDICINE
+    // --------------------------------------------------------
+
+    const medicineSelect =
+        document.getElementById(
+            "medicine"
+        );
+
+
+    if (medicineSelect) {
+
+        const currentValue =
+            medicineSelect.value;
+
+
+        medicineSelect.innerHTML =
+            `<option value="">
+                Select Medicine
+            </option>`;
+
+
+        currentMedicines
+            .filter(function (medicine) {
+
+                return isMedicineAvailable(
+                    medicine
+                );
+
+            })
+            .forEach(function (medicine) {
+
+                medicineSelect.innerHTML += `
+
+                    <option value="${escapeHtml(medicine.id)}">
+
+                        ${escapeHtml(medicine.name)}
+
+                        -
+                        Stock:
+                        ${Number(medicine.stock)}
+
+                    </option>
+
+                `;
+
+            });
+
+
+        if (
+            currentValue &&
+            currentMedicines.some(
+                function (medicine) {
+
+                    return String(medicine.id) ===
+                           String(currentValue) &&
+                           isMedicineAvailable(
+                               medicine
+                           );
+
+                }
+            )
+        ) {
+
+            medicineSelect.value =
+                currentValue;
+        }
     }
 
-    const billSelect = document.getElementById("billMedicine");
+
+    // --------------------------------------------------------
+    // BILLING MEDICINE
+    // --------------------------------------------------------
+
+    const billSelect =
+        document.getElementById(
+            "billMedicine"
+        );
+
+
     if (billSelect) {
-        const currentVal = billSelect.value;
-        billSelect.innerHTML = '<option value="">Select Medicine</option>' +
-            medicines.map(function (m) {
-                return `<option value="${m.price}">${m.name} - ₹${m.price}</option>`;
-            }).join("");
-        if (currentVal) billSelect.value = currentVal;
+
+        const currentValue =
+            billSelect.value;
+
+
+        billSelect.innerHTML =
+            `<option value="">
+                Select Medicine
+            </option>`;
+
+
+        currentMedicines
+            .filter(function (medicine) {
+
+                return isMedicineAvailable(
+                    medicine
+                );
+
+            })
+            .forEach(function (medicine) {
+
+                billSelect.innerHTML += `
+
+                    <option value="${escapeHtml(medicine.id)}">
+
+                        ${escapeHtml(medicine.name)}
+
+                        -
+                        ₹${Number(
+                            medicine.price || 0
+                        ).toFixed(2)}
+
+                    </option>
+
+                `;
+
+            });
+
+
+        if (
+            currentValue &&
+            currentMedicines.some(
+                function (medicine) {
+
+                    return String(medicine.id) ===
+                           String(currentValue) &&
+                           isMedicineAvailable(
+                               medicine
+                           );
+
+                }
+            )
+        ) {
+
+            billSelect.value =
+                currentValue;
+        }
     }
+
+
+    updateBillingMedicineDetails();
 }
 
 
 // ============================================================
-// 12. DASHBOARD
+// 13. BILLING CART
 // ============================================================
 
-function updateDashboard() {
-    const pending = document.getElementById("pendingPrescriptions");
-    const medicineCount = document.getElementById("medicineCount");
-    const lowStock = document.getElementById("lowStock");
+let pharmacyCart = [];
 
-    if (medicineCount) {
-        medicineCount.innerText = medicines.length;
+
+function getBillingMedicine() {
+
+    const select =
+        document.getElementById(
+            "billMedicine"
+        );
+
+
+    if (!select ||
+        !select.value) {
+
+        return null;
     }
 
-    if (lowStock) {
-        lowStock.innerText = medicines.filter(function (m) {
-            return m.stock <= 10;
-        }).length;
-    }
 
-    if (pending) {
-        const rxList = getStoredPrescriptions();
-        const pendingCount = rxList.filter(function (rx) {
-            return rx.status === "Pending" || rx.status === "Pending Dispensation";
-        }).length;
-        pending.innerText = pendingCount;
-    }
+    const currentMedicines =
+        getStoredMedicines();
+
+
+    return findMedicineById(
+        select.value,
+        currentMedicines
+    );
 }
 
 
-// ============================================================
-// 13. BILLING
-// ============================================================
+function updateBillingMedicineDetails() {
 
-function calculateBill() {
-    const medSelect = document.getElementById("billMedicine");
-    const qtyInput = document.getElementById("billQuantity");
-    const totalElement = document.getElementById("total");
+    const medicine =
+        getBillingMedicine();
 
-    const price = Number(medSelect ? medSelect.value : 0);
-    const quantity = Number(qtyInput ? qtyInput.value : 1);
 
-    const total = price * quantity;
+    const priceField =
+        document.getElementById(
+            "billPrice"
+        );
 
-    if (totalElement) {
-        totalElement.innerText = total;
-    }
-}
 
-function generateBill() {
-    const patientInput = document.getElementById("patientName");
-    const totalElement = document.getElementById("total");
-    const medSelect = document.getElementById("billMedicine");
+    const stockField =
+        document.getElementById(
+            "billStock"
+        );
 
-    const patient = patientInput ? patientInput.value.trim() : "";
-    const total = totalElement ? totalElement.innerText : "0";
 
-    if (!patient || total === "0" || !medSelect || !medSelect.value) {
-        alert("Please enter patient name and select a valid medicine.");
+    const reorderField =
+        document.getElementById(
+            "billReorderLevel"
+        );
+
+
+    if (!medicine) {
+
+        if (priceField) {
+            priceField.value = "₹0.00";
+        }
+
+        if (stockField) {
+            stockField.innerText = "0";
+        }
+
+        if (reorderField) {
+            reorderField.innerText = "0";
+        }
+
+        calculateBill();
+
         return;
     }
 
-    const medName = medSelect.options[medSelect.selectedIndex] ? medSelect.options[medSelect.selectedIndex].text : "Medicine";
 
-    const billMsg = document.getElementById("billMessage");
-    if (billMsg) {
-        billMsg.innerHTML = `
-            <br>
-            <span class="badge badge-success">
-                Bill generated successfully!
-            </span>
-            <br><br>
-            Patient: <strong>${patient}</strong><br>
-            Item: <strong>${medName}</strong><br>
-            Total Amount: <strong>₹${total}</strong>
+    if (priceField) {
+
+        priceField.value =
+            "₹" +
+            Number(
+                medicine.price || 0
+            ).toFixed(2);
+    }
+
+
+    if (stockField) {
+
+        stockField.innerText =
+            Number(
+                medicine.stock || 0
+            );
+    }
+
+
+    if (reorderField) {
+
+        reorderField.innerText =
+            Number(
+                medicine.reorderLevel || 0
+            );
+    }
+
+
+    calculateBill();
+}
+
+
+function calculateBill() {
+
+    const select =
+        document.getElementById(
+            "billMedicine"
+        );
+
+
+    const quantityInput =
+        document.getElementById(
+            "billQuantity"
+        );
+
+
+    const totalElement =
+        document.getElementById(
+            "total"
+        );
+
+
+    if (!totalElement) {
+        return;
+    }
+
+
+    const medicine =
+        select && select.value
+            ? findMedicineById(
+                select.value,
+                getStoredMedicines()
+              )
+            : null;
+
+
+    const quantity =
+        Number(
+            quantityInput
+                ? quantityInput.value
+                : 0
+        );
+
+
+    if (!medicine ||
+        !Number.isFinite(quantity) ||
+        quantity <= 0) {
+
+        totalElement.innerText =
+            pharmacyCart
+                .reduce(
+                    function (sum, item) {
+
+                        return sum +
+                            item.quantity *
+                            item.price;
+
+                    },
+                    0
+                )
+                .toFixed(2);
+
+        return;
+    }
+
+
+    const selectedTotal =
+        Number(medicine.price || 0) *
+        quantity;
+
+
+    const cartTotal =
+        pharmacyCart
+            .reduce(
+                function (sum, item) {
+
+                    return sum +
+                        item.quantity *
+                        item.price;
+
+                },
+                0
+            );
+
+
+    totalElement.innerText =
+        (
+            cartTotal +
+            selectedTotal
+        ).toFixed(2);
+}
+
+
+// ------------------------------------------------------------
+// ADD MEDICINE TO BILL
+// ------------------------------------------------------------
+
+function addMedicineToBill() {
+
+    const medicine =
+        getBillingMedicine();
+
+
+    const quantityInput =
+        document.getElementById(
+            "billQuantity"
+        );
+
+
+    const quantity =
+        Number(
+            quantityInput
+                ? quantityInput.value
+                : 0
+        );
+
+
+    if (!medicine) {
+
+        showMessage(
+            "billMessage",
+            "Please select a medicine.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (!isMedicineActive(medicine)) {
+
+        showMessage(
+            "billMessage",
+            "This medicine is not Active.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (isMedicineExpired(medicine)) {
+
+        showMessage(
+            "billMessage",
+            "Expired medicines cannot be billed.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        !Number.isInteger(quantity) ||
+        quantity <= 0
+    ) {
+
+        showMessage(
+            "billMessage",
+            "Quantity must be a whole number greater than zero.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const currentMedicines =
+        getStoredMedicines();
+
+
+    const freshMedicine =
+        findMedicineById(
+            medicine.id,
+            currentMedicines
+        );
+
+
+    if (!freshMedicine) {
+
+        showMessage(
+            "billMessage",
+            "Medicine no longer exists in the master.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const existing =
+        pharmacyCart.find(
+            function (item) {
+
+                return String(item.medicineId) ===
+                       String(freshMedicine.id);
+
+            }
+        );
+
+
+    const existingQuantity =
+        existing
+            ? existing.quantity
+            : 0;
+
+
+    const requestedTotal =
+        existingQuantity +
+        quantity;
+
+
+    if (
+        requestedTotal >
+        Number(freshMedicine.stock || 0)
+    ) {
+
+        showMessage(
+            "billMessage",
+            "Insufficient stock. Available: " +
+            Number(freshMedicine.stock || 0),
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (existing) {
+
+        existing.quantity =
+            requestedTotal;
+
+        existing.price =
+            Number(freshMedicine.price || 0);
+
+    } else {
+
+        pharmacyCart.push({
+
+            medicineId:
+                freshMedicine.id,
+
+            name:
+                freshMedicine.name,
+
+            category:
+                freshMedicine.category || "",
+
+            unit:
+                freshMedicine.unit || "",
+
+            price:
+                Number(
+                    freshMedicine.price || 0
+                ),
+
+            quantity:
+                quantity
+
+        });
+    }
+
+
+    renderPharmacyCart();
+
+
+    if (quantityInput) {
+
+        quantityInput.value =
+            "1";
+    }
+
+
+    showMessage(
+        "billMessage",
+        "Medicine added to bill."
+    );
+}
+
+
+// ------------------------------------------------------------
+// REMOVE MEDICINE FROM BILL
+// ------------------------------------------------------------
+
+function removeMedicineFromBill(
+    medicineId
+) {
+
+    pharmacyCart =
+        pharmacyCart.filter(
+            function (item) {
+
+                return String(
+                    item.medicineId
+                ) !== String(medicineId);
+
+            }
+        );
+
+
+    renderPharmacyCart();
+}
+
+
+// ------------------------------------------------------------
+// RENDER BILL CART
+// ------------------------------------------------------------
+
+function renderPharmacyCart() {
+
+    const tableBody =
+        document.getElementById(
+            "billingCart"
+        );
+
+
+    if (!tableBody) {
+
+        calculateBill();
+
+        return;
+    }
+
+
+    tableBody.innerHTML = "";
+
+
+    if (pharmacyCart.length === 0) {
+
+        tableBody.innerHTML = `
+
+            <tr>
+
+                <td colspan="5"
+                    style="text-align:center;">
+
+                    No medicines added
+
+                </td>
+
+            </tr>
+
         `;
+
+
+        const total =
+            document.getElementById(
+                "total"
+            );
+
+
+        if (total) {
+            total.innerText =
+                "0.00";
+        }
+
+
+        return;
+    }
+
+
+    let grandTotal = 0;
+
+
+    pharmacyCart.forEach(
+        function (item) {
+
+            const lineTotal =
+                item.price *
+                item.quantity;
+
+
+            grandTotal +=
+                lineTotal;
+
+
+            tableBody.innerHTML += `
+
+                <tr>
+
+                    <td>
+                        ${escapeHtml(item.name)}
+                    </td>
+
+                    <td>
+                        ${item.quantity}
+                    </td>
+
+                    <td>
+                        ₹${item.price.toFixed(2)}
+                    </td>
+
+                    <td>
+                        ₹${lineTotal.toFixed(2)}
+                    </td>
+
+                    <td>
+
+                        <button
+                            type="button"
+                            class="btn btn-danger btn-sm"
+                            onclick="removeMedicineFromBill('${escapeHtml(item.medicineId)}')">
+
+                            Remove
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
+
+
+    const total =
+        document.getElementById(
+            "total"
+        );
+
+
+    if (total) {
+
+        total.innerText =
+            grandTotal.toFixed(2);
     }
 }
 
 
 // ============================================================
-// 14. INITIALIZATION
+// 14. BILL STORAGE
 // ============================================================
 
-document.addEventListener("DOMContentLoaded", function () {
-    // Sync with localStorage
-    medicines = getStoredMedicines();
+function getStoredBills() {
 
-    // Populate UI elements across pages
+    try {
+
+        const raw =
+            localStorage.getItem(
+                "cms_billing"
+            );
+
+
+        if (!raw) {
+            return [];
+        }
+
+
+        const parsed =
+            JSON.parse(raw);
+
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+
+    } catch (error) {
+
+        console.error(
+            "Error reading cms_billing:",
+            error
+        );
+
+        return [];
+    }
+}
+
+
+function saveStoredBills(bills) {
+
+    try {
+
+        localStorage.setItem(
+            "cms_billing",
+            JSON.stringify(bills)
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Error saving cms_billing:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+function generateBillId() {
+
+    const bills =
+        getStoredBills();
+
+
+    const timestamp =
+        Date.now();
+
+
+    return (
+        "PHB-" +
+        timestamp +
+        "-" +
+        String(
+            bills.length + 1
+        ).padStart(3, "0")
+    );
+}
+
+
+function getCartTotal() {
+
+    return pharmacyCart.reduce(
+        function (sum, item) {
+
+            return sum +
+                (
+                    Number(item.price) *
+                    Number(item.quantity)
+                );
+
+        },
+        0
+    );
+}
+
+
+// ============================================================
+// 15. GENERATE PHARMACY BILL
+// ============================================================
+
+function generateBill() {
+
+    const patientNameInput =
+        document.getElementById(
+            "patientName"
+        );
+
+
+    const patientIdInput =
+        document.getElementById(
+            "patientId"
+        );
+
+
+    const patientName =
+        patientNameInput
+            ? patientNameInput.value.trim()
+            : "";
+
+
+    const patientId =
+        patientIdInput
+            ? patientIdInput.value.trim()
+            : "";
+
+
+    if (!patientName) {
+
+        showMessage(
+            "billMessage",
+            "Please enter patient name.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (pharmacyCart.length === 0) {
+
+        showMessage(
+            "billMessage",
+            "Please add at least one medicine.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // FRESH MASTER READ
+    // --------------------------------------------------------
+
+    const currentMedicines =
+        getStoredMedicines();
+
+
+    const validationItems = [];
+
+
+    // --------------------------------------------------------
+    // VALIDATE EVERY CART ITEM FIRST.
+    // NO STOCK IS CHANGED DURING THIS PASS.
+    // --------------------------------------------------------
+
+    for (const cartItem of pharmacyCart) {
+
+        const medicine =
+            findMedicineById(
+                cartItem.medicineId,
+                currentMedicines
+            );
+
+
+        if (!medicine) {
+
+            showMessage(
+                "billMessage",
+                "Medicine no longer exists: " +
+                cartItem.name,
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (!isMedicineActive(medicine)) {
+
+            showMessage(
+                "billMessage",
+                medicine.name +
+                " is not Active.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (isMedicineExpired(medicine)) {
+
+            showMessage(
+                "billMessage",
+                medicine.name +
+                " is expired.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const quantity =
+            Number(cartItem.quantity);
+
+
+        if (
+            !Number.isInteger(quantity) ||
+            quantity <= 0
+        ) {
+
+            showMessage(
+                "billMessage",
+                "Invalid quantity for " +
+                medicine.name,
+                "error"
+            );
+
+            return;
+        }
+
+
+        const stock =
+            Number(medicine.stock || 0);
+
+
+        if (quantity > stock) {
+
+            showMessage(
+                "billMessage",
+                "Insufficient stock for " +
+                medicine.name +
+                ". Available: " +
+                stock +
+                ", Required: " +
+                quantity,
+                "error"
+            );
+
+            return;
+        }
+
+
+        validationItems.push({
+
+            medicine:
+                medicine,
+
+            quantity:
+                quantity,
+
+            price:
+                Number(medicine.price || 0),
+
+            lineTotal:
+                Number(medicine.price || 0) *
+                quantity
+
+        });
+    }
+
+
+    // --------------------------------------------------------
+    // ALL ITEMS VALIDATED.
+    // NOW DEDUCT STOCK.
+    // --------------------------------------------------------
+
+    for (const item of validationItems) {
+
+        item.medicine.stock =
+            Number(item.medicine.stock) -
+            item.quantity;
+    }
+
+
+    // --------------------------------------------------------
+    // SAVE STOCK FIRST.
+    // --------------------------------------------------------
+
+    if (!saveStoredMedicines(
+        currentMedicines
+    )) {
+
+        showMessage(
+            "billMessage",
+            "Unable to update medicine stock.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // CREATE BILL.
+    // --------------------------------------------------------
+
+    const totalAmount =
+        validationItems.reduce(
+            function (sum, item) {
+
+                return sum +
+                    item.lineTotal;
+
+            },
+            0
+        );
+
+
+    const bill = {
+
+        id:
+            generateBillId(),
+
+        type:
+            "Pharmacy",
+
+        patientId:
+            patientId,
+
+        patient:
+            patientName,
+
+        patientName:
+            patientName,
+
+        amount:
+            Number(totalAmount.toFixed(2)),
+
+        status:
+            "Unpaid",
+
+        method:
+            "",
+
+        reference:
+            "",
+
+        date:
+            getToday(),
+
+        createdAt:
+            new Date().toISOString(),
+
+        items:
+            validationItems.map(
+                function (item) {
+
+                    return {
+
+                        medicineId:
+                            item.medicine.id,
+
+                        medicine:
+                            item.medicine.name,
+
+                        category:
+                            item.medicine.category || "",
+
+                        unit:
+                            item.medicine.unit || "",
+
+                        quantity:
+                            item.quantity,
+
+                        price:
+                            item.price,
+
+                        total:
+                            item.lineTotal
+
+                    };
+
+                }
+            )
+    };
+
+
+    const bills =
+        getStoredBills();
+
+
+    bills.push(bill);
+
+
+    if (!saveStoredBills(bills)) {
+
+        showMessage(
+            "billMessage",
+            "Unable to save bill.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    // Save latest bill ID for payment / print.
+    sessionStorage.setItem(
+        "cms_last_pharmacy_bill",
+        bill.id
+    );
+
+
+    // Clear cart after successful bill.
+    pharmacyCart = [];
+
+
+    renderPharmacyCart();
     loadInventory();
     loadStock();
-    loadPrescriptionQueue();
-    loadPrescriptionDetails();
-    populateMedicineDropdowns();
     updateDashboard();
+    populateMedicineDropdowns();
 
-    // Auto-fill prescription ID on dispense page if passed in query string
-    const params = new URLSearchParams(window.location.search);
-    const rxId = params.get("id");
-    const rxInput = document.getElementById("prescriptionId");
-    if (rxId && rxInput) {
-        rxInput.value = rxId;
+
+    showMessage(
+        "billMessage",
+        "Pharmacy bill " +
+        bill.id +
+        " generated successfully. Status: Unpaid."
+    );
+
+
+    // Display generated bill.
+    displayPharmacyBill(bill);
+}
+
+
+// ============================================================
+// 16. DISPLAY BILL
+// ============================================================
+
+function displayPharmacyBill(bill) {
+
+    const receipt =
+        document.getElementById(
+            "pharmacyBillReceipt"
+        );
+
+
+    if (!receipt) {
+        return;
     }
-});
+
+
+    const itemRows =
+        (bill.items || [])
+            .map(function (item) {
+
+                return `
+
+                    <tr>
+
+                        <td>
+                            ${escapeHtml(
+                                item.medicine
+                            )}
+                        </td>
+
+                        <td>
+                            ${item.quantity}
+                        </td>
+
+                        <td>
+                            ₹${Number(
+                                item.price
+                            ).toFixed(2)}
+                        </td>
+
+                        <td>
+                            ₹${Number(
+                                item.total
+                            ).toFixed(2)}
+                        </td>
+
+                    </tr>
+
+                `;
+
+            })
+            .join("");
+
+
+    receipt.style.display =
+        "block";
+
+
+    receipt.innerHTML = `
+
+        <div
+            id="printablePharmacyBill"
+            style="
+                padding:20px;
+                max-width:800px;
+                margin:20px auto;
+                background:#fff;
+            "
+        >
+
+            <h2>
+                Clinic Management
+            </h2>
+
+            <h3>
+                Pharmacy Bill
+            </h3>
+
+            <p>
+                <strong>Bill ID:</strong>
+                ${escapeHtml(bill.id)}
+            </p>
+
+            <p>
+                <strong>Date:</strong>
+                ${escapeHtml(bill.date)}
+            </p>
+
+            <p>
+                <strong>Patient:</strong>
+                ${escapeHtml(
+                    bill.patientName ||
+                    bill.patient ||
+                    "—"
+                )}
+            </p>
+
+            ${
+                bill.patientId
+                    ? `
+                        <p>
+                            <strong>Patient ID:</strong>
+                            ${escapeHtml(
+                                bill.patientId
+                            )}
+                        </p>
+                    `
+                    : ""
+            }
+
+            <hr>
+
+            <table
+                style="
+                    width:100%;
+                    border-collapse:collapse;
+                "
+            >
+
+                <thead>
+
+                    <tr>
+
+                        <th style="text-align:left;">
+                            Medicine
+                        </th>
+
+                        <th>
+                            Quantity
+                        </th>
+
+                        <th>
+                            Price
+                        </th>
+
+                        <th>
+                            Total
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${itemRows}
+
+                </tbody>
+
+            </table>
+
+            <hr>
+
+            <h3>
+                Total:
+                ₹${Number(
+                    bill.amount
+                ).toFixed(2)}
+            </h3>
+
+            <p>
+                <strong>Status:</strong>
+                ${escapeHtml(
+                    bill.status
+                )}
+            </p>
+
+            ${
+                bill.status === "Paid"
+                    ? `
+                        <p>
+                            <strong>Payment Method:</strong>
+                            ${escapeHtml(
+                                bill.method
+                            )}
+                        </p>
+
+                        ${
+                            bill.reference
+                                ? `
+                                    <p>
+                                        <strong>Reference:</strong>
+                                        ${escapeHtml(
+                                            bill.reference
+                                        )}
+                                    </p>
+                                `
+                                : ""
+                        }
+                    `
+                    : ""
+            }
+
+        </div>
+
+    `;
+}
+
+
+// ============================================================
+// 17. PAYMENT
+// ============================================================
+
+function processPharmacyPayment() {
+
+    const methodInput =
+        document.getElementById(
+            "paymentMethod"
+        );
+
+
+    const referenceInput =
+        document.getElementById(
+            "paymentReference"
+        );
+
+
+    const method =
+        methodInput
+            ? methodInput.value
+            : "";
+
+
+    const reference =
+        referenceInput
+            ? referenceInput.value.trim()
+            : "";
+
+
+    if (!method) {
+
+        showMessage(
+            "paymentMessage",
+            "Please select a payment method.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        (
+            method === "UPI" ||
+            method === "Card"
+        ) &&
+        !reference
+    ) {
+
+        showMessage(
+            "paymentMessage",
+            "Payment reference is required for UPI/Card.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const bills =
+        getStoredBills();
+
+
+    const lastBillId =
+        sessionStorage.getItem(
+            "cms_last_pharmacy_bill"
+        );
+
+
+    let bill = null;
+
+
+    if (lastBillId) {
+
+        bill =
+            bills.find(function (item) {
+
+                return String(item.id) ===
+                       String(lastBillId);
+
+            });
+    }
+
+
+    // Fallback: latest unpaid pharmacy bill.
+    if (!bill) {
+
+        for (
+            let index = bills.length - 1;
+            index >= 0;
+            index--
+        ) {
+
+            if (
+                bills[index].type === "Pharmacy" &&
+                bills[index].status === "Unpaid"
+            ) {
+
+                bill =
+                    bills[index];
+
+                break;
+            }
+        }
+    }
+
+
+    if (!bill) {
+
+        showMessage(
+            "paymentMessage",
+            "No unpaid pharmacy bill found.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (bill.status === "Paid") {
+
+        showMessage(
+            "paymentMessage",
+            "This bill is already paid.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    bill.status =
+        "Paid";
+
+    bill.method =
+        method;
+
+    bill.reference =
+        reference;
+
+
+    if (!saveStoredBills(bills)) {
+
+        showMessage(
+            "paymentMessage",
+            "Unable to save payment.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    createPharmacyReceipt(
+        bill
+    );
+
+
+    displayPharmacyBill(
+        bill
+    );
+
+
+    showMessage(
+        "paymentMessage",
+        "Payment processed successfully."
+    );
+}
+
+
+// ============================================================
+// 18. RECEIPTS
+// ============================================================
+
+function getStoredReceipts() {
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                "cms_receipts"
+            );
+
+
+        if (!raw) {
+            return [];
+        }
+
+
+        const parsed =
+            JSON.parse(raw);
+
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+
+    } catch (error) {
+
+        console.error(
+            "Error reading cms_receipts:",
+            error
+        );
+
+        return [];
+    }
+}
+
+
+function saveStoredReceipts(
+    receipts
+) {
+
+    try {
+
+        localStorage.setItem(
+            "cms_receipts",
+            JSON.stringify(receipts)
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Error saving receipts:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+function createPharmacyReceipt(
+    bill
+) {
+
+    const receipts =
+        getStoredReceipts();
+
+
+    const existing =
+        receipts.find(
+            function (receipt) {
+
+                return String(
+                    receipt.billId
+                ) === String(
+                    bill.id
+                );
+
+            }
+        );
+
+
+    if (existing) {
+
+        existing.status =
+            bill.status;
+
+        existing.method =
+            bill.method;
+
+        existing.reference =
+            bill.reference;
+
+    } else {
+
+        receipts.push({
+
+            id:
+                "RCT-" +
+                Date.now(),
+
+            billId:
+                bill.id,
+
+            type:
+                "Pharmacy",
+
+            patientId:
+                bill.patientId || "",
+
+            patientName:
+                bill.patientName ||
+                bill.patient ||
+                "",
+
+            amount:
+                bill.amount,
+
+            method:
+                bill.method,
+
+            reference:
+                bill.reference,
+
+            date:
+                getToday(),
+
+            items:
+                bill.items || []
+
+        });
+    }
+
+
+    saveStoredReceipts(
+        receipts
+    );
+}
+
+
+// ============================================================
+// 19. PRINT PHARMACY BILL
+// ============================================================
+
+function printPharmacyBill() {
+
+    const lastBillId =
+        sessionStorage.getItem(
+            "cms_last_pharmacy_bill"
+        );
+
+
+    const bills =
+        getStoredBills();
+
+
+    let bill = null;
+
+
+    if (lastBillId) {
+
+        bill =
+            bills.find(function (item) {
+
+                return String(item.id) ===
+                       String(lastBillId);
+
+            });
+    }
+
+
+    if (!bill) {
+
+        for (
+            let index = bills.length - 1;
+            index >= 0;
+            index--
+        ) {
+
+            if (
+                bills[index].type ===
+                "Pharmacy"
+            ) {
+
+                bill =
+                    bills[index];
+
+                break;
+            }
+        }
+    }
+
+
+    if (!bill) {
+
+        alert(
+            "No pharmacy bill available to print."
+        );
+
+        return;
+    }
+
+
+    const itemRows =
+        (bill.items || [])
+            .map(function (item) {
+
+                return `
+
+                    <tr>
+
+                        <td>
+                            ${escapeHtml(
+                                item.medicine
+                            )}
+                        </td>
+
+                        <td>
+                            ${item.quantity}
+                        </td>
+
+                        <td>
+                            ₹${Number(
+                                item.price
+                            ).toFixed(2)}
+                        </td>
+
+                        <td>
+                            ₹${Number(
+                                item.total
+                            ).toFixed(2)}
+                        </td>
+
+                    </tr>
+
+                `;
+
+            })
+            .join("");
+
+
+    const printWindow =
+        window.open(
+            "",
+            "_blank",
+            "width=900,height=700"
+        );
+
+
+    if (!printWindow) {
+
+        alert(
+            "Please allow pop-ups to print the bill."
+        );
+
+        return;
+    }
+
+
+    printWindow.document.write(`
+
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+            <title>
+                Pharmacy Bill - ${escapeHtml(bill.id)}
+            </title>
+
+            <style>
+
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 30px;
+                    color: #222;
+                }
+
+                .receipt {
+                    max-width: 800px;
+                    margin: auto;
+                }
+
+                h1,
+                h2,
+                h3 {
+                    text-align: center;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                }
+
+                th,
+                td {
+                    border: 1px solid #ccc;
+                    padding: 10px;
+                    text-align: left;
+                }
+
+                th {
+                    background: #f3f3f3;
+                }
+
+                .total {
+                    text-align: right;
+                    font-size: 20px;
+                    font-weight: bold;
+                    margin-top: 20px;
+                }
+
+                .status {
+                    margin-top: 15px;
+                    font-weight: bold;
+                }
+
+                @media print {
+
+                    body {
+                        padding: 10px;
+                    }
+
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            <div class="receipt">
+
+                <h1>
+                    Clinic Management
+                </h1>
+
+                <h2>
+                    Pharmacy Bill
+                </h2>
+
+                <p>
+                    <strong>Bill ID:</strong>
+                    ${escapeHtml(bill.id)}
+                </p>
+
+                <p>
+                    <strong>Date:</strong>
+                    ${escapeHtml(bill.date)}
+                </p>
+
+                <p>
+                    <strong>Patient:</strong>
+                    ${escapeHtml(
+                        bill.patientName ||
+                        bill.patient ||
+                        "—"
+                    )}
+                </p>
+
+                ${
+                    bill.patientId
+                        ? `
+                            <p>
+                                <strong>Patient ID:</strong>
+                                ${escapeHtml(
+                                    bill.patientId
+                                )}
+                            </p>
+                        `
+                        : ""
+                }
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Medicine
+                            </th>
+
+                            <th>
+                                Quantity
+                            </th>
+
+                            <th>
+                                Unit Price
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${itemRows}
+
+                    </tbody>
+
+                </table>
+
+
+                <div class="total">
+
+                    Total:
+                    ₹${Number(
+                        bill.amount
+                    ).toFixed(2)}
+
+                </div>
+
+
+                <div class="status">
+
+                    Status:
+                    ${escapeHtml(
+                        bill.status
+                    )}
+
+                </div>
+
+
+                ${
+                    bill.status === "Paid"
+                        ? `
+                            <p>
+                                <strong>
+                                    Payment Method:
+                                </strong>
+
+                                ${escapeHtml(
+                                    bill.method
+                                )}
+                            </p>
+
+                            ${
+                                bill.reference
+                                    ? `
+                                        <p>
+                                            <strong>
+                                                Reference:
+                                            </strong>
+
+                                            ${escapeHtml(
+                                                bill.reference
+                                            )}
+                                        </p>
+                                    `
+                                    : ""
+                            }
+                        `
+                        : ""
+                }
+
+            </div>
+
+        </body>
+
+        </html>
+
+    `);
+
+
+    printWindow.document.close();
+
+
+    printWindow.focus();
+
+
+    setTimeout(function () {
+
+        printWindow.print();
+
+        printWindow.close();
+
+    }, 300);
+}
+
+
+// ============================================================
+// 20. DASHBOARD
+// ============================================================
+
+function updateDashboard() {
+
+    const currentMedicines =
+        getStoredMedicines();
+
+
+    medicines =
+        currentMedicines;
+
+
+    const pendingElement =
+        document.getElementById(
+            "pendingPrescriptions"
+        );
+
+
+    const medicineCountElement =
+        document.getElementById(
+            "medicineCount"
+        );
+
+
+    const lowStockElement =
+        document.getElementById(
+            "lowStock"
+        );
+
+
+    if (medicineCountElement) {
+
+        medicineCountElement.innerText =
+            currentMedicines.length;
+    }
+
+
+    if (lowStockElement) {
+
+        lowStockElement.innerText =
+            currentMedicines.filter(
+                function (medicine) {
+
+                    return (
+                        Number(medicine.stock || 0) <=
+                        Number(
+                            medicine.reorderLevel || 0
+                        )
+                    );
+
+                }
+            ).length;
+    }
+
+
+    if (pendingElement) {
+
+        const prescriptions =
+            getStoredPrescriptions();
+
+
+        const pendingCount =
+            prescriptions.filter(
+                function (rx) {
+
+                    return (
+                        rx.status === "Pending" ||
+                        rx.status ===
+                        "Pending Dispensation"
+                    );
+
+                }
+            ).length;
+
+
+        pendingElement.innerText =
+            pendingCount;
+    }
+}
+
+
+// ============================================================
+// 21. INITIALIZATION
+// ============================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        medicines =
+            getStoredMedicines();
+
+
+        loadInventory();
+
+        loadStock();
+
+        loadPrescriptionQueue();
+
+        loadPrescriptionDetails();
+
+        populateMedicineDropdowns();
+
+        updateDashboard();
+
+        renderPharmacyCart();
+
+
+        // ----------------------------------------------------
+        // Prescription ID passed to dispense page
+        // ----------------------------------------------------
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const prescriptionId =
+            params.get("id");
+
+
+        const prescriptionInput =
+            document.getElementById(
+                "prescriptionId"
+            );
+
+
+        if (
+            prescriptionId &&
+            prescriptionInput
+        ) {
+
+            prescriptionInput.value =
+                prescriptionId;
+        }
+
+
+        // ----------------------------------------------------
+        // Billing medicine details
+        // ----------------------------------------------------
+
+        const billMedicine =
+            document.getElementById(
+                "billMedicine"
+            );
+
+
+        if (billMedicine) {
+
+            billMedicine.addEventListener(
+                "change",
+                updateBillingMedicineDetails
+            );
+
+        }
+
+
+        // ----------------------------------------------------
+        // Billing quantity
+        // ----------------------------------------------------
+
+        const billQuantity =
+            document.getElementById(
+                "billQuantity"
+            );
+
+
+        if (billQuantity) {
+
+            billQuantity.addEventListener(
+                "input",
+                calculateBill
+            );
+
+        }
+
+
+        // ----------------------------------------------------
+        // Payment method
+        // ----------------------------------------------------
+
+        const paymentMethod =
+            document.getElementById(
+                "paymentMethod"
+            );
+
+
+        if (paymentMethod) {
+
+            paymentMethod.addEventListener(
+                "change",
+                function () {
+
+                    const reference =
+                        document.getElementById(
+                            "paymentReference"
+                        );
+
+
+                    if (!reference) {
+                        return;
+                    }
+
+
+                    if (
+                        paymentMethod.value ===
+                        "Cash"
+                    ) {
+
+                        reference.placeholder =
+                            "Not required for Cash";
+
+                    } else {
+
+                        reference.placeholder =
+                            "Required for UPI/Card";
+                    }
+
+                }
+            );
+
+        }
+
+    }
+);
+```
