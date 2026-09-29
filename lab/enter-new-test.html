@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Enter New Lab Test</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/forms.css">
+</head>
+
+<body>
+
+<div class="app-wrapper">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="menu">
+
+        <a href="dashboard.html" class="sidebar-brand">
+
+            <div class="sidebar-brand-icon">
+                ⚕
+            </div>
+
+            <div class="sidebar-brand-text">
+
+                <span class="sidebar-brand-name">
+                    Clinic Management
+                </span>
+
+                <span class="sidebar-brand-sub">
+                    Laboratory
+                </span>
+
+            </div>
+
+        </a>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-section-label">
+                Laboratory
+            </div>
+
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-item-icon">⌂</span>
+                <span class="nav-item-label">Dashboard</span>
+            </a>
+
+            <a
+                href="enter-new-test.html"
+                class="nav-item active">
+
+                <span class="nav-item-icon">＋</span>
+                <span class="nav-item-label">Enter New Test</span>
+
+            </a>
+
+            <a href="pending-lab-orders.html"
+               class="nav-item">
+
+                <span class="nav-item-icon">◷</span>
+                <span class="nav-item-label">Pending Orders</span>
+
+            </a>
+
+            <a href="completed-tests.html"
+               class="nav-item">
+
+                <span class="nav-item-icon">✓</span>
+                <span class="nav-item-label">Completed Tests</span>
+
+            </a>
+
+            <a href="lab-billing.html"
+               class="nav-item">
+
+                <span class="nav-item-icon">₹</span>
+                <span class="nav-item-label">Lab Billing</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-user">
+
+            <div class="sidebar-avatar">
+                L
+            </div>
+
+            <div class="sidebar-user-info">
+
+                <div class="sidebar-user-name">
+                    Lab Technician
+                </div>
+
+                <div class="sidebar-user-role">
+                    Laboratory Staff
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <div class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button
+                    class="topbar-toggle"
+                    type="button"
+                    onclick="toggleSidebar()">
+                    ☰
+                </button>
+
+                <div>
+
+                    <div class="topbar-page-title">
+                        Enter New Test
+                    </div>
+
+                    <div class="topbar-breadcrumb">
+                        <span>Laboratory</span>
+                        <span class="topbar-breadcrumb-sep">/</span>
+                        <span>New Test</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <main class="page-content">
+
+            <div class="page-header">
+
+                <div class="page-header-left">
+
+                    <h1 class="page-title">
+                        Enter New Laboratory Test
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Create a new laboratory order.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form
+                onsubmit="addNewLabTest(event)">
+
+                <div class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div>
+
+                            <div class="form-section-title">
+                                Patient Information
+                            </div>
+
+                            <div class="form-section-subtitle">
+                                Enter patient and doctor details
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-section-body">
+
+                        <div class="form-grid form-grid-2">
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="patientName">
+
+                                    Patient Name
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="patientName"
+                                    class="form-control"
+                                    placeholder="Enter patient name"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="patientId">
+
+                                    Patient ID
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="patientId"
+                                    class="form-control"
+                                    placeholder="Enter patient ID"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="doctorName">
+
+                                    Doctor Name
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="doctorName"
+                                    class="form-control"
+                                    placeholder="Enter doctor name"
+                                    required>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div>
+
+                            <div class="form-section-title">
+                                Test Information
+                            </div>
+
+                            <div class="form-section-subtitle">
+                                Specify the required laboratory test
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-section-body">
+
+                        <div class="form-grid form-grid-2">
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="testName">
+
+                                    Laboratory Test
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <select
+                                    id="testName"
+                                    class="form-control"
+                                    required>
+
+                                    <option value="">
+                                        Select laboratory test
+                                    </option>
+
+                                    <option value="Blood Test">
+                                        Blood Test
+                                    </option>
+
+                                    <option value="CBC">
+                                        CBC
+                                    </option>
+
+                                    <option value="Blood Sugar">
+                                        Blood Sugar
+                                    </option>
+
+                                    <option value="Lipid Profile">
+                                        Lipid Profile
+                                    </option>
+
+                                    <option value="Thyroid Test">
+                                        Thyroid Test
+                                    </option>
+
+                                    <option value="Urine Test">
+                                        Urine Test
+                                    </option>
+
+                                    <option value="Liver Function Test">
+                                        Liver Function Test
+                                    </option>
+
+                                    <option value="Kidney Function Test">
+                                        Kidney Function Test
+                                    </option>
+
+                                    <option value="X-Ray">
+                                        X-Ray
+                                    </option>
+
+                                    <option value="ECG">
+                                        ECG
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="testDate">
+
+                                    Test Date
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="testDate"
+                                    class="form-control"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="priority">
+
+                                    Priority
+
+                                </label>
+
+                                <select
+                                    id="priority"
+                                    class="form-control">
+
+                                    <option value="Normal">
+                                        Normal
+                                    </option>
+
+                                    <option value="Urgent">
+                                        Urgent
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group col-span-2">
+
+                                <label
+                                    class="form-label"
+                                    for="notes">
+
+                                    Notes
+
+                                </label>
+
+                                <textarea
+                                    id="notes"
+                                    class="form-control"
+                                    rows="5"
+                                    placeholder="Enter additional notes"></textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <a
+                        href="dashboard.html"
+                        class="btn btn-secondary">
+
+                        Cancel
+
+                    </a>
+
+                    <button
+                        type="reset"
+                        class="btn btn-outline">
+
+                        Clear
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Add New Test
+
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div
+                id="message"
+                class="mt-20">
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function toggleSidebar() {
+
+    const sidebar =
+        document.getElementById("menu");
+
+    if (sidebar) {
+        sidebar.classList.toggle("open");
+    }
+
+}
+
+</script>
+
+<script src="../js/lab.js"></script>
+
+</body>
+</html>
