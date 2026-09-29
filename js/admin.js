@@ -1322,7 +1322,7 @@ if (password.length < 8) {
 
 const users = getUsers();
 const reservedUsernames = [
-    "admin", "doctor", "reception", "receptionist", "pharmacy", "pharmacist", "lab"
+    "admin"
 ];
 
 if (reservedUsernames.includes(username) || users.some(function (user) {
@@ -1562,7 +1562,7 @@ if (newPassword && newPassword.length < 8) {
 }
 
 const reservedUsernames = [
-    "admin", "doctor", "reception", "receptionist", "pharmacy", "pharmacist", "lab"
+    "admin"
 ];
 const usernameInUse = reservedUsernames.includes(nextUsername) || users.some(function (item) {
     return item.id !== id && item.username && item.username.toLowerCase() === nextUsername;
