@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Lab Billing | Laboratory — CMS</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="../css/style.css">
+
+    <link rel="stylesheet"
+          href="../css/forms.css">
+
+</head>
+
+
+<body>
+
+
+<div class="sidebar-overlay"
+     id="sidebarOverlay"
+     onclick="closeSidebar()">
+</div>
+
+
+<div class="sidebar"
+     id="sidebar">
+
+
+<a class="sidebar-brand"
+   href="dashboard.html">
+
+    <div class="sidebar-brand-icon">
+        🧪
+    </div>
+
+    <div class="sidebar-brand-text">
+
+        <span class="sidebar-brand-name">
+            MediCare CMS
+        </span>
+
+        <span class="sidebar-brand-sub">
+            Laboratory
+        </span>
+
+    </div>
+
+</a>
+
+
+<nav class="sidebar-nav">
+
+    <span class="nav-section-label">
+        Main
+    </span>
+
+
+    <a class="nav-item"
+       href="dashboard.html">
+
+        <span class="nav-item-icon">
+            📊
+        </span>
+
+        <span class="nav-item-label">
+            Dashboard
+        </span>
+
+    </a>
+
+
+    <div class="sidebar-divider"></div>
+
+
+    <span class="nav-section-label">
+        Laboratory
+    </span>
+
+
+    <a class="nav-item"
+       href="pending-lab-orders.html">
+
+        <span class="nav-item-icon">
+            📋
+        </span>
+
+        <span class="nav-item-label">
+            Pending Lab Orders
+        </span>
+
+    </a>
+
+
+    <a class="nav-item"
+       href="test-details.html">
+
+        <span class="nav-item-icon">
+            🔬
+        </span>
+
+        <span class="nav-item-label">
+            Test Details
+        </span>
+
+    </a>
+
+
+    <a class="nav-item"
+       href="enter-results.html">
+
+        <span class="nav-item-icon">
+            📝
+        </span>
+
+        <span class="nav-item-label">
+            Enter Results
+        </span>
+
+    </a>
+
+
+    <a class="nav-item"
+       href="completed-tests.html">
+
+        <span class="nav-item-icon">
+            ✅
+        </span>
+
+        <span class="nav-item-label">
+            Completed Tests
+        </span>
+
+    </a>
+
+
+    <div class="sidebar-divider"></div>
+
+
+    <span class="nav-section-label">
+        Billing
+    </span>
+
+
+    <a class="nav-item active"
+       href="lab-billing.html">
+
+        <span class="nav-item-icon">
+            💰
+        </span>
+
+        <span class="nav-item-label">
+            Lab Billing
+        </span>
+
+    </a>
+
+</nav>
+
+
+<div class="sidebar-user">
+
+    <div class="sidebar-avatar"
+         id="sidebarAvatar">
+        LT
+    </div>
+
+    <div class="sidebar-user-info">
+
+        <div class="sidebar-user-name"
+             id="sidebarName">
+            Lab Technician
+        </div>
+
+        <div class="sidebar-user-role">
+            Laboratory
+        </div>
+
+    </div>
+
+    <button class="sidebar-logout-btn"
+            onclick="logout()">
+        ⏏
+    </button>
+
+</div>
+
+</div>
+
+
+<div class="main-content">
+
+
+<header class="topbar">
+
+    <div class="topbar-left">
+
+        <button class="topbar-toggle"
+                onclick="openSidebar()">
+            ☰
+        </button>
+
+        <div>
+
+            <div class="topbar-page-title">
+                Lab Billing
+            </div>
+
+            <div class="topbar-breadcrumb">
+
+                <span>
+                    Laboratory
+                </span>
+
+                <span class="topbar-breadcrumb-sep">
+                    ›
+                </span>
+
+                <span>
+                    Billing
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="page-content">
+
+
+<div class="page-header">
+
+    <div class="page-header-left">
+
+        <h1 class="page-title">
+            Laboratory Billing
+        </h1>
+
+        <p class="page-subtitle">
+            Generate laboratory test bills
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="form-section">
+
+
+<div class="form-section-header">
+
+    <div class="form-section-icon">
+        ₹
+    </div>
+
+    <div>
+
+        <div class="form-section-title">
+            Create Lab Bill
+        </div>
+
+        <div class="form-section-subtitle">
+            Enter patient and test billing details
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="form-section-body">
+
+
+<div class="form-grid form-grid-2">
+
+
+<div class="form-group">
+
+    <label class="form-label">
+        Patient Name
+        <span class="required">*</span>
+    </label>
+
+    <input
+        type="text"
+        id="billingPatient"
+        class="form-control"
+        placeholder="Enter patient name">
+
+</div>
+
+
+<div class="form-group">
+
+    <label class="form-label">
+        Test
+        <span class="required">*</span>
+    </label>
+
+    <select
+        id="billingTest"
+        class="form-control"
+        onchange="calculateLabBill()">
+
+        <option value="">
+            Select Test
+        </option>
+
+        <option value="500">
+            Complete Blood Count (CBC) - ₹500
+        </option>
+
+        <option value="800">
+            Lipid Profile - ₹800
+        </option>
+
+        <option value="600">
+            HbA1c - ₹600
+        </option>
+
+        <option value="400">
+            Urine Routine Examination - ₹400
+        </option>
+
+        <option value="900">
+            Thyroid Profile - ₹900
+        </option>
+
+    </select>
+
+</div>
+
+
+<div class="form-group">
+
+    <label class="form-label">
+        Quantity
+    </label>
+
+    <input
+        type="number"
+        id="billingQuantity"
+        class="form-control"
+        value="1"
+        min="1"
+        oninput="calculateLabBill()">
+
+</div>
+
+
+</div>
+
+
+<br>
+
+
+<div class="card">
+
+    <div class="card-body">
+
+        <div style="font-size:var(--text-sm);
+                    color:var(--text-muted);">
+
+            Total Amount
+
+        </div>
+
+        <div style="font-size:2rem;
+                    font-weight:800;
+                    color:var(--text-primary);">
+
+            ₹<span id="labBillTotal">
+                0
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<br>
+
+
+<div class="page-actions">
+
+    <button
+        class="btn btn-success"
+        onclick="generateLabBill()">
+
+        Generate Bill
+
+    </button>
+
+
+    <button
+        class="btn btn-outline"
+        onclick="clearLabBill()">
+
+        Clear
+
+    </button>
+
+</div>
+
+
+<p id="billingMessage"></p>
+
+
+</div>
+
+</div>
+
+
+</main>
+
+</div>
+
+
+<script src="../js/storage.js"></script>
+
+<script src="../js/lab.js"></script>
+
+</body>
+
+</html>

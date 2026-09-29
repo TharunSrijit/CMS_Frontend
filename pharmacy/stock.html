@@ -19,6 +19,8 @@
 
 <div class="app-wrapper">
 
+    <!-- SIDEBAR -->
+
     <aside class="sidebar">
 
         <a href="dashboard.html" class="sidebar-brand">
@@ -49,47 +51,87 @@
             </div>
 
             <a href="dashboard.html" class="nav-item">
+
                 <span class="nav-item-icon">📊</span>
-                <span class="nav-item-label">Dashboard</span>
+
+                <span class="nav-item-label">
+                    Dashboard
+                </span>
+
             </a>
+
 
             <a href="prescription-queue.html" class="nav-item">
+
                 <span class="nav-item-icon">📋</span>
-                <span class="nav-item-label">Prescription Queue</span>
+
+                <span class="nav-item-label">
+                    Prescription Queue
+                </span>
+
             </a>
+
 
             <a href="prescription-details.html" class="nav-item">
+
                 <span class="nav-item-icon">📄</span>
-                <span class="nav-item-label">Prescription Details</span>
+
+                <span class="nav-item-label">
+                    Prescription Details
+                </span>
+
             </a>
+
 
             <a href="dispense-medicine.html" class="nav-item">
+
                 <span class="nav-item-icon">💊</span>
-                <span class="nav-item-label">Dispense Medicine</span>
+
+                <span class="nav-item-label">
+                    Dispense Medicine
+                </span>
+
             </a>
+
 
             <a href="medicine-inventory.html" class="nav-item">
+
                 <span class="nav-item-icon">📦</span>
-                <span class="nav-item-label">Medicine Inventory</span>
+
+                <span class="nav-item-label">
+                    Medicine Inventory
+                </span>
+
             </a>
 
-            <a href="stock.html"
-               class="nav-item active">
+
+            <a href="stock.html" class="nav-item active">
 
                 <span class="nav-item-icon">📈</span>
-                <span class="nav-item-label">Stock</span>
+
+                <span class="nav-item-label">
+                    Stock
+                </span>
 
             </a>
 
+
             <a href="pharmacy-billing.html" class="nav-item">
+
                 <span class="nav-item-icon">💰</span>
-                <span class="nav-item-label">Billing</span>
+
+                <span class="nav-item-label">
+                    Billing
+                </span>
+
             </a>
 
         </nav>
 
     </aside>
 
+
+    <!-- MAIN CONTENT -->
 
     <main class="main-content">
 
@@ -135,7 +177,7 @@
                     </h1>
 
                     <p class="page-subtitle">
-                        Monitor and update medicine stock
+                        Monitor, restock and manage medicine expiry
                     </p>
 
                 </div>
@@ -143,12 +185,18 @@
             </div>
 
 
+            <!-- STOCK TABLE -->
+
             <div class="table-container">
 
                 <div class="table-header">
 
-                    <div class="table-title">
-                        Current Stock
+                    <div class="table-header-left">
+
+                        <div class="table-title">
+                            Current Stock
+                        </div>
+
                     </div>
 
                 </div>
@@ -162,10 +210,25 @@
 
                             <tr>
 
-                                <th>Medicine</th>
-                                <th>Current Stock</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th>
+                                    Medicine
+                                </th>
+
+                                <th>
+                                    Current Stock
+                                </th>
+
+                                <th>
+                                    Expiry Date
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
 
                             </tr>
 
@@ -174,136 +237,7 @@
 
                         <tbody id="stockTable">
 
-                            <tr>
-
-                                <td class="td-primary">
-                                    Paracetamol
-                                </td>
-
-                                <td>
-                                    50
-                                </td>
-
-                                <td>
-
-                                    <span class="badge badge-success">
-                                        Available
-                                    </span>
-
-                                </td>
-
-                                <td class="td-actions">
-
-                                    <button
-                                        class="btn btn-primary btn-sm"
-                                        onclick="addStock('Paracetamol')">
-
-                                        Add Stock
-
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-
-                            <tr>
-
-                                <td class="td-primary">
-                                    Amoxicillin
-                                </td>
-
-                                <td>
-                                    8
-                                </td>
-
-                                <td>
-
-                                    <span class="badge badge-warning">
-                                        Low Stock
-                                    </span>
-
-                                </td>
-
-                                <td class="td-actions">
-
-                                    <button
-                                        class="btn btn-primary btn-sm"
-                                        onclick="addStock('Amoxicillin')">
-
-                                        Add Stock
-
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-
-                            <tr>
-
-                                <td class="td-primary">
-                                    Cetirizine
-                                </td>
-
-                                <td>
-                                    25
-                                </td>
-
-                                <td>
-
-                                    <span class="badge badge-success">
-                                        Available
-                                    </span>
-
-                                </td>
-
-                                <td class="td-actions">
-
-                                    <button
-                                        class="btn btn-primary btn-sm"
-                                        onclick="addStock('Cetirizine')">
-
-                                        Add Stock
-
-                                    </button>
-
-                                </td>
-
-                            </tr>
-
-
-                            <tr>
-
-                                <td class="td-primary">
-                                    Azithromycin
-                                </td>
-
-                                <td>
-                                    5
-                                </td>
-
-                                <td>
-
-                                    <span class="badge badge-warning">
-                                        Low Stock
-                                    </span>
-
-                                </td>
-
-                                <td class="td-actions">
-
-                                    <button
-                                        class="btn btn-primary btn-sm"
-                                        onclick="addStock('Azithromycin')">
-
-                                        Add Stock
-
-                                    </button>
-
-                                </td>
-
-                            </tr>
+                            <!-- JavaScript loads stock -->
 
                         </tbody>
 
@@ -319,8 +253,10 @@
 
 </div>
 
+
 <script src="../js/pharmacy.js"></script>
 
     <script src="../js/validation.js"></script>
 </body>
+
 </html>
