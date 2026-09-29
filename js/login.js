@@ -18,13 +18,7 @@ const dashboardByRole = {
 };
 
 const localAccounts = {
-    admin: { password: 'admin123', role: 'ADMIN', userRole: 'admin', fullName: 'Administrator' },
-    doctor: { password: 'doctor123', role: 'DOCTOR', userRole: 'doctor', fullName: 'Dr. Arun Kumar' },
-    reception: { password: 'reception123', role: 'RECEPTIONIST', userRole: 'receptionist', fullName: 'Receptionist' },
-    receptionist: { password: ['reception123', 'receptionist123'], role: 'RECEPTIONIST', userRole: 'receptionist', fullName: 'Receptionist' },
-    pharmacy: { password: 'pharmacy123', role: 'PHARMACIST', userRole: 'pharmacist', fullName: 'Pharmacist' },
-    pharmacist: { password: 'pharmacist123', role: 'PHARMACIST', userRole: 'pharmacist', fullName: 'Pharmacist' },
-    lab: { password: 'lab123', role: 'LAB_TECHNICIAN', userRole: 'lab', fullName: 'Lab Technician' }
+    admin: { password: 'admin123', role: 'ADMIN', userRole: 'admin', fullName: 'Administrator' }
 };
 
 const registeredRoleDetails = {
@@ -61,6 +55,52 @@ function findRegisteredAccount(username) {
     };
 }
 
+function readStoredRecords(key) {
+    let doctors;
+
+    try {
+        doctors = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch (error) {
+        return [];
+    }
+
+    return Array.isArray(doctors) ? doctors : [];
+}
+
+function normalizeDoctorName(name) {
+    return name.toLowerCase().replace(/^dr\.?\s*/, '').replace(/\s+/g, ' ').trim();
+}
+
+function findDoctorProfile(account) {
+    const doctors = readStoredRecords('cms_doctors');
+
+    if (account.profileType === 'staff' && account.profileId) {
+        const staffProfile = readStoredRecords('cms_staff').find(person =>
+            person.id === account.profileId && person.role === 'Doctor'
+        );
+        if (!staffProfile) return null;
+
+        const doctor = doctors.find(item =>
+            item.id === staffProfile.doctorId || item.staffId === staffProfile.id
+        );
+        return doctor ? { doctor, staffProfile } : null;
+    }
+
+    let doctor = account.profileId
+        ? doctors.find(item => item.id === account.profileId)
+        : null;
+
+    if (!doctor && !account.profileId && account.profileType === 'doctor') {
+        const normalizedName = normalizeDoctorName(account.fullName);
+        const matches = doctors.filter(item =>
+            item.name && normalizeDoctorName(item.name) === normalizedName
+        );
+        if (matches.length === 1) doctor = matches[0];
+    }
+
+    return doctor ? { doctor, staffProfile: null } : null;
+}
+
 togglePassword.addEventListener('click', () => {
     const showPassword = passwordInput.type === 'password';
     passwordInput.type = showPassword ? 'text' : 'password';
@@ -78,9 +118,21 @@ loginForm.addEventListener('submit', event => {
     const registeredAccount = findRegisteredAccount(username);
     const account = registeredAccount || localAccounts[username];
     const requiredRole = loginForm.dataset.role;
+    const doctorProfile = account && account.userRole === 'doctor'
+        ? findDoctorProfile(account)
+        : null;
 
     if (registeredAccount && registeredAccount.status !== 'Active') {
         message.textContent = 'This account is inactive. Contact your clinic administrator.';
+        return;
+    }
+
+    if (account && account.userRole === 'doctor' && (
+        !doctorProfile ||
+        doctorProfile.doctor.status !== 'Active' ||
+        (doctorProfile.staffProfile && doctorProfile.staffProfile.status !== 'Active')
+    )) {
+        message.textContent = 'This doctor profile is inactive or unavailable. Contact your clinic administrator.';
         return;
     }
 
@@ -112,8 +164,8 @@ loginForm.addEventListener('submit', event => {
         name: account.fullName,
         role: account.userRole,
         userId: account.id || null,
-        profileId: account.profileId || null,
-        profileType: account.profileType || null
+        profileId: account.profileId || (doctorProfile && doctorProfile.doctor.id) || null,
+        profileType: account.profileType || (doctorProfile && 'doctor') || null
     }));
     window.location.assign(dashboardByRole[account.role]);
 });
