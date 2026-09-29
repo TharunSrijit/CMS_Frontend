@@ -71,11 +71,11 @@
                         <div class="doctor-form-grid">
                             <div class="doctor-field">
                                 <label for="doctorName">Doctor name</label>
-                                <input class="doctor-input" type="text" id="doctorName" placeholder="Enter doctor name" autocomplete="name" required>
+                                <input class="doctor-input" type="text" id="doctorName" data-validate="person-name" placeholder="Enter doctor name" autocomplete="name" required>
                             </div>
                             <div class="doctor-field">
                                 <label for="doctorEmail">Email</label>
-                                <input class="doctor-input" type="email" id="doctorEmail" placeholder="name@clinic.com" autocomplete="email" required>
+                                <input class="doctor-input" type="email" id="doctorEmail" data-validate="contact-email" placeholder="name@clinic.com" autocomplete="email" required>
                             </div>
                             <div class="doctor-field">
                                 <label for="doctorPhone">Phone</label>
@@ -83,7 +83,32 @@
                             </div>
                             <div class="doctor-field">
                                 <label for="doctorSpecialization">Specialization</label>
-                                <input class="doctor-input" type="text" id="doctorSpecialization" placeholder="Example: Cardiology" required>
+                                <select class="doctor-input" id="doctorSpecialization" data-validate="medical-specialty" required>
+                                    <option value="">Select a specialty</option>
+                                    <option>General</option>
+                                    <option>General Medicine</option>
+                                    <option>Cardiology</option>
+                                    <option>Dermatology</option>
+                                    <option>Endocrinology</option>
+                                    <option>Gastroenterology</option>
+                                    <option>General Surgery</option>
+                                    <option>Gynecology &amp; Obstetrics</option>
+                                    <option>Nephrology</option>
+                                    <option>Neurology</option>
+                                    <option>Neurosurgery</option>
+                                    <option>Oncology</option>
+                                    <option>Ophthalmology</option>
+                                    <option>Orthopaedics</option>
+                                    <option>ENT</option>
+                                    <option>Pediatrics</option>
+                                    <option>Psychiatry</option>
+                                    <option>Pulmonology</option>
+                                    <option>Radiology</option>
+                                    <option>Urology</option>
+                                    <option>Emergency Medicine</option>
+                                    <option>Anesthesiology</option>
+                                    <option>Pathology</option>
+                                </select>
                             </div>
                         </div>
                         <div class="doctor-form-actions">
@@ -127,5 +152,6 @@
 
     <script src="../js/storage.js"></script>
     <script src="../js/admin.js"></script>
+    <script src="../js/validation.js"></script>
 </body>
 </html>

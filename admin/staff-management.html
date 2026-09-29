@@ -71,11 +71,11 @@
                         <div class="staff-form-grid">
                             <div class="staff-field">
                                 <label for="staffName">Staff name</label>
-                                <input class="staff-input" type="text" id="staffName" placeholder="Enter staff name" autocomplete="name" required>
+                                <input class="staff-input" type="text" id="staffName" data-validate="person-name" placeholder="Enter staff name" autocomplete="name" required>
                             </div>
                             <div class="staff-field">
                                 <label for="staffEmail">Email</label>
-                                <input class="staff-input" type="email" id="staffEmail" placeholder="name@clinic.com" autocomplete="email" required>
+                                <input class="staff-input" type="email" id="staffEmail" data-validate="contact-email" placeholder="name@clinic.com" autocomplete="email" required>
                             </div>
                             <div class="staff-field">
                                 <label for="staffPhone">Phone</label>
@@ -93,7 +93,32 @@
                             </div>
                             <div class="staff-field" id="doctor-specialization-field" hidden>
                                 <label for="staffSpecialization">Doctor specialization</label>
-                                <input class="staff-input" type="text" id="staffSpecialization" placeholder="Example: Cardiology">
+                                <select class="staff-input" id="staffSpecialization" data-validate="medical-specialty">
+                                    <option value="">Select a specialty</option>
+                                    <option>General</option>
+                                    <option>General Medicine</option>
+                                    <option>Cardiology</option>
+                                    <option>Dermatology</option>
+                                    <option>Endocrinology</option>
+                                    <option>Gastroenterology</option>
+                                    <option>General Surgery</option>
+                                    <option>Gynecology &amp; Obstetrics</option>
+                                    <option>Nephrology</option>
+                                    <option>Neurology</option>
+                                    <option>Neurosurgery</option>
+                                    <option>Oncology</option>
+                                    <option>Ophthalmology</option>
+                                    <option>Orthopaedics</option>
+                                    <option>ENT</option>
+                                    <option>Pediatrics</option>
+                                    <option>Psychiatry</option>
+                                    <option>Pulmonology</option>
+                                    <option>Radiology</option>
+                                    <option>Urology</option>
+                                    <option>Emergency Medicine</option>
+                                    <option>Anesthesiology</option>
+                                    <option>Pathology</option>
+                                </select>
                             </div>
                         </div>
                         <div class="staff-form-actions">
@@ -137,5 +162,6 @@
 
     <script src="../js/storage.js"></script>
     <script src="../js/admin.js"></script>
+    <script src="../js/validation.js"></script>
 </body>
 </html>

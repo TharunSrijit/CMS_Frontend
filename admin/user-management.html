@@ -71,11 +71,11 @@
                         <div class="user-form-grid">
                             <div class="user-field">
                                 <label for="userName">User name</label>
-                                <input class="user-input" type="text" id="userName" placeholder="Enter user name" autocomplete="name" required>
+                                <input class="user-input" type="text" id="userName" data-validate="person-name" placeholder="Enter user name" autocomplete="name" required>
                             </div>
                             <div class="user-field">
                                 <label for="userEmail">Email</label>
-                                <input class="user-input" type="email" id="userEmail" placeholder="name@clinic.com" autocomplete="email" required>
+                                <input class="user-input" type="email" id="userEmail" data-validate="contact-email" placeholder="name@clinic.com" autocomplete="email" required>
                             </div>
                             <div class="user-field">
                                 <label for="userUsername">Login username</label>
@@ -138,5 +138,6 @@
 
     <script src="../js/storage.js"></script>
     <script src="../js/admin.js"></script>
+    <script src="../js/validation.js"></script>
 </body>
 </html>
