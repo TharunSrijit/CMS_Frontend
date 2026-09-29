@@ -256,24 +256,61 @@
 
     /* Prescription Print Modal */
     .modal-overlay {
+      display: none;
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.5);
       backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
+      align-items: center; justify-content: center;
       z-index: 2000;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.2s;
+      padding: 20px;
     }
-    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-overlay.open { display: flex; }
     .modal-box {
       background: #fff;
       border-radius: 12px;
-      width: 90%;
-      max-width: 650px;
+      width: 100%;
+      max-width: min(95vw, 650px);
       max-height: 90vh;
       overflow-y: auto;
       box-shadow: var(--shadow-lg);
-      padding: 30px;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .diag-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .rx-table {
+      min-width: 540px;
+    }
+    @media (max-width: 768px) {
+      .diag-grid { grid-template-columns: 1fr; }
+      .patient-hero-card { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .patient-select-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+      .patient-select-bar > div { width: 100%; flex-wrap: wrap; }
+      .patient-select-bar select { flex: 1; }
+      .action-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 10px;
+        margin: 20px -16px -16px -16px;
+        padding: 12px 16px;
+      }
+      .action-footer > div {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      .action-footer .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    @media (max-width: 480px) {
+      .modal-box { padding: 16px; }
     }
     @media print {
       body * { visibility: hidden; }
@@ -475,7 +512,7 @@
           <div class="section-header">
             <div class="section-title">🔍 Clinical Assessment & Diagnosis</div>
           </div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:12px;">
+          <div class="diag-grid">
             <div>
               <label class="form-label" style="font-size:12px; font-weight:600;">Primary Diagnosis *</label>
               <input type="text" id="diagPrimary" class="rx-input" placeholder="e.g. Acute Upper Respiratory Tract Infection" />
@@ -498,21 +535,23 @@
             <button class="btn btn-outline btn-sm" onclick="addMedicationRow()">+ Add Medicine</button>
           </div>
 
-          <table class="rx-table">
-            <thead>
-              <tr>
-                <th style="width:30%;">Medicine Name</th>
-                <th style="width:18%;">Dosage</th>
-                <th style="width:20%;">Frequency</th>
-                <th style="width:16%;">Duration</th>
-                <th style="width:16%;">Instructions</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="rxTableBody">
-              <!-- Dynamically added rows -->
-            </tbody>
-          </table>
+          <div class="table-responsive" style="overflow-x:auto;">
+            <table class="rx-table">
+              <thead>
+                <tr>
+                  <th style="width:30%;">Medicine Name</th>
+                  <th style="width:18%;">Dosage</th>
+                  <th style="width:20%;">Frequency</th>
+                  <th style="width:16%;">Duration</th>
+                  <th style="width:16%;">Instructions</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="rxTableBody">
+                <!-- Dynamically added rows -->
+              </tbody>
+            </table>
+          </div>
           <div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">
             <span style="font-size:11px; color:var(--text-muted); align-self:center;">Quick add:</span>
             <button class="badge" style="cursor:pointer;" onclick="quickAddRx('Paracetamol 500mg', '1 Tab', '1-0-1', '3 Days', 'After food')">+ Paracetamol</button>

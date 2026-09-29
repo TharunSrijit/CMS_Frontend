@@ -38,6 +38,51 @@ function getToday() {
 
 const TODAY = getToday();
 
+function isAppointmentConsulted(appt) {
+    if (!appt) return false;
+    var apptId = (typeof appt === 'string') ? appt : appt.id;
+    var status = (typeof appt === 'object') ? appt.status : null;
+
+    if (status === 'Completed') return true;
+
+    try {
+        var appts = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+        var foundAppt = appts.find(function (a) { return a.id === apptId; });
+        if (foundAppt && foundAppt.status === 'Completed') return true;
+
+        var consults = JSON.parse(localStorage.getItem('cms_consultations') || '[]');
+        var foundConsult = consults.some(function (c) {
+            return c.appointmentId && c.appointmentId === apptId;
+        });
+        if (foundConsult) return true;
+    } catch (e) {}
+
+    return false;
+}
+
+function isPatientConsultedToday(patientId, excludeApptId) {
+    if (!patientId) return false;
+    var today = getToday();
+
+    try {
+        var appts = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+        var completedApptToday = appts.some(function (a) {
+            if (excludeApptId && a.id === excludeApptId) return false;
+            return a.patientId === patientId && a.date === today && a.status === 'Completed';
+        });
+        if (completedApptToday) return true;
+
+        var consults = JSON.parse(localStorage.getItem('cms_consultations') || '[]');
+        var consultedToday = consults.some(function (c) {
+            if (excludeApptId && c.appointmentId === excludeApptId) return false;
+            return c.patientId === patientId && c.date === today;
+        });
+        if (consultedToday) return true;
+    } catch (e) {}
+
+    return false;
+}
+
 const AVATAR_COLOURS = [
     '#9C6B5D', '#7e5249', '#5c3a32', '#2980b9', '#27ae60',
     '#d68910', '#8e44ad', '#c0392b', '#16a085', '#2c3e50'
@@ -225,31 +270,31 @@ function initDateLabel() {
 
 function openSidebar() {
 
-    document.getElementById('sidebar')
-        .classList.add('open');
-
-    document.getElementById('sidebarOverlay')
-        .classList.add('open');
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('sidebarOverlay');
+    if (sb) sb.classList.add('open');
+    if (ov) ov.classList.add('open');
 }
 
 
 function closeSidebar() {
 
-    document.getElementById('sidebar')
-        .classList.remove('open');
-
-    document.getElementById('sidebarOverlay')
-        .classList.remove('open');
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('sidebarOverlay');
+    if (sb) sb.classList.remove('open');
+    if (ov) ov.classList.remove('open');
 }
 
 
 function toggleSidebar() {
 
-    document.getElementById('sidebar')
-        .classList.toggle('open');
-
-    document.getElementById('sidebarOverlay')
-        .classList.toggle('open');
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('sidebarOverlay');
+    if (sb && sb.classList.contains('open')) {
+        closeSidebar();
+    } else {
+        openSidebar();
+    }
 }
 
 
@@ -857,6 +902,24 @@ var currentTokenId  = null;
 function initAppointments() {
 
     loadAppointments();
+    checkRedirectToast();
+}
+
+
+function checkRedirectToast() {
+
+    try {
+        var t = sessionStorage.getItem('cms_toast');
+        if (t) {
+            sessionStorage.removeItem('cms_toast');
+            var parsed = JSON.parse(t);
+            if (parsed && parsed.msg) {
+                setTimeout(function () {
+                    showToast(parsed.msg, parsed.type || 'info');
+                }, 200);
+            }
+        }
+    } catch (e) {}
 }
 
 
@@ -1075,10 +1138,12 @@ function apptRenderTable() {
             '<button class="action-btn view" title="Quick View" ' +
             'onclick="openDrawer(\'' + a.id + '\')">👁</button>' +
 
-            (a.status !== 'Completed' && a.status !== 'Cancelled'
-                ? '<button class="action-btn approve" title="Start Consultation" ' +
-                  'onclick="openConsultation(\'' + a.id + '\')">🩺</button>'
-                : '') +
+            (isAppointmentConsulted(a) || a.status === 'Completed'
+                ? '<button class="action-btn" title="✓ Consulted Today" disabled style="opacity:0.55;cursor:not-allowed;pointer-events:none;">✓</button>'
+                : (a.status !== 'Cancelled'
+                    ? '<button class="action-btn approve" title="Start Consultation" ' +
+                      'onclick="openConsultation(\'' + a.id + '\')">🩺</button>'
+                    : '')) +
 
             (a.status === 'Waiting' || a.status === 'Confirmed'
                 ? '<button class="action-btn edit" title="Mark In Progress" ' +
@@ -1405,6 +1470,27 @@ function openDrawer(id) {
                 ? 'none' : '';
     }
 
+    var consultBtn = document.getElementById('drawerConsultBtn');
+    if (consultBtn) {
+        if (isAppointmentConsulted(a) || a.status === 'Completed' || isPatientConsultedToday(a.patientId, a.id)) {
+            consultBtn.textContent = '✓ Consulted Today';
+            consultBtn.className = 'btn btn-secondary btn-sm';
+            consultBtn.disabled = true;
+            consultBtn.style.opacity = '0.65';
+            consultBtn.style.cursor = 'not-allowed';
+            consultBtn.style.pointerEvents = 'none';
+            consultBtn.onclick = null;
+        } else {
+            consultBtn.textContent = '🩺 Start Consultation';
+            consultBtn.className = 'btn btn-primary btn-sm';
+            consultBtn.disabled = false;
+            consultBtn.style.opacity = '1';
+            consultBtn.style.cursor = 'pointer';
+            consultBtn.style.pointerEvents = 'auto';
+            consultBtn.onclick = startConsultation;
+        }
+    }
+
     document.getElementById('patientDrawer').classList.add('open');
     document.getElementById('drawerOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -1435,6 +1521,13 @@ function markCompleted() {
 function startConsultation() {
 
     if (!activeDrawerId) return;
+    var a = allAppointments.find(function (ap) {
+        return ap.id === activeDrawerId;
+    });
+    if (a && (isAppointmentConsulted(a) || a.status === 'Completed' || isPatientConsultedToday(a.patientId, a.id))) {
+        showToast('This appointment has already been completed today.', 'warning');
+        return;
+    }
     openConsultation(activeDrawerId);
 }
 
@@ -1496,8 +1589,14 @@ function openConsultation(id) {
     var a = allAppointments.find(function (ap) {
         return ap.id === id;
     });
+    if (!a) return;
 
-    if (a && a.status !== 'In Progress' &&
+    if (isAppointmentConsulted(a) || a.status === 'Completed' || isPatientConsultedToday(a.patientId, a.id)) {
+        showToast('This patient has already completed today\'s consultation.', 'warning');
+        return;
+    }
+
+    if (a.status !== 'In Progress' &&
         a.status !== 'Completed') {
         setStatus(id, 'In Progress', false);
     }
@@ -1577,12 +1676,73 @@ function consultLoadData() {
     updateSidebarBadge();
 
     var urlParams = new URLSearchParams(window.location.search);
-    var targetId  = urlParams.get('id') ||
-                    localStorage.getItem('cms_active_appointment');
+    var requestedApptId = urlParams.get('appointmentId') || urlParams.get('id');
+    var requestedPatientId = urlParams.get('patientId');
+    var targetId = requestedApptId || localStorage.getItem('cms_active_appointment');
+
+    // 1. Direct URL check for specified appointment
+    if (requestedApptId) {
+        var requestedAppt = allAppointments.find(function (a) {
+            return a.id === requestedApptId;
+        });
+
+        if (requestedAppt && (isAppointmentConsulted(requestedAppt) || isPatientConsultedToday(requestedAppt.patientId, requestedAppt.id))) {
+            localStorage.removeItem('cms_active_appointment');
+            sessionStorage.setItem('cms_toast', JSON.stringify({
+                msg: 'This appointment has already been completed today.',
+                type: 'warning'
+            }));
+            window.location.replace('appointments.html');
+            return;
+        }
+    }
+
+    // 2. Direct URL check for specified patient ID
+    if (requestedPatientId || (requestedApptId && requestedApptId.startsWith('PAT'))) {
+        var checkPatId = requestedPatientId || requestedApptId;
+        if (isPatientConsultedToday(checkPatId)) {
+            localStorage.removeItem('cms_active_appointment');
+            sessionStorage.setItem('cms_toast', JSON.stringify({
+                msg: 'This patient has already completed today\'s consultation.',
+                type: 'warning'
+            }));
+            window.location.replace('appointments.html');
+            return;
+        }
+    }
 
     var todayAppts = allAppointments.filter(function (a) {
         return a.date === TODAY;
     });
+
+    if (targetId) {
+        var cand = todayAppts.find(function (a) {
+            return a.id === targetId;
+        });
+        if (cand && !isAppointmentConsulted(cand)) {
+            activeAppt = cand;
+        }
+    }
+
+    if (!activeAppt) {
+        activeAppt = todayAppts.find(function (a) {
+            return a.status === 'In Progress' && !isAppointmentConsulted(a);
+        }) || todayAppts.find(function (a) {
+            return (a.status === 'Waiting' || a.status === 'Confirmed') && !isAppointmentConsulted(a);
+        });
+    }
+
+    if (!activeAppt) {
+        if (todayAppts.length > 0) {
+            localStorage.removeItem('cms_active_appointment');
+            sessionStorage.setItem('cms_toast', JSON.stringify({
+                msg: 'All scheduled patients for today have already been consulted.',
+                type: 'info'
+            }));
+            window.location.replace('appointments.html');
+            return;
+        }
+    }
 
     // Populate dropdown
     var sel = document.getElementById('patientQueueSelect');
@@ -1590,27 +1750,18 @@ function consultLoadData() {
         sel.innerHTML = todayAppts.length === 0
             ? '<option value="">No patients scheduled today</option>'
             : todayAppts.map(function (a) {
+                var consulted = isAppointmentConsulted(a);
                 return '<option value="' + a.id + '" ' +
-                    (targetId === a.id ? 'selected' : '') + '>' +
+                    (activeAppt && activeAppt.id === a.id ? 'selected' : '') +
+                    (consulted ? ' disabled style="color:#999;"' : '') + '>' +
                     'Token #' + a.token + ' — ' +
-                    a.patientName + ' (' + a.status + ')' +
+                    a.patientName + (consulted ? ' (✓ Consulted)' : ' (' + a.status + ')') +
                     '</option>';
               }).join('');
     }
 
-    if (targetId) {
-        activeAppt = todayAppts.find(function (a) {
-            return a.id === targetId;
-        }) || todayAppts[0];
-    } else {
-        activeAppt = todayAppts.find(function (a) {
-            return a.status === 'In Progress';
-        }) || todayAppts.find(function (a) {
-            return a.status === 'Waiting';
-        }) || todayAppts[0];
-    }
-
     if (activeAppt) {
+        localStorage.setItem('cms_active_appointment', activeAppt.id);
         renderPatientHero(activeAppt);
     }
 }
@@ -1619,6 +1770,11 @@ function consultLoadData() {
 function onSelectPatientChange(id) {
 
     if (!id) return;
+    var target = allAppointments.find(function (a) { return a.id === id; });
+    if (target && isAppointmentConsulted(target)) {
+        showToast('This appointment is already completed.', 'warning');
+        return;
+    }
     localStorage.setItem('cms_active_appointment', id);
     window.location.href = 'consultation.html?id=' + id;
 }
@@ -1627,7 +1783,7 @@ function onSelectPatientChange(id) {
 function callNextPatient() {
 
     var next = allAppointments.find(function (a) {
-        return a.date === TODAY && a.status === 'Waiting';
+        return a.date === TODAY && a.status === 'Waiting' && !isAppointmentConsulted(a);
     });
 
     if (!next) {
@@ -1924,6 +2080,8 @@ function completeConsultation() {
         console.error('Error generating bill from consultation', e);
     }
 
+    localStorage.removeItem('cms_active_appointment');
+
     showToast(
         'Consultation for ' + activeAppt.patientName + ' saved!',
         'success'
@@ -2158,12 +2316,14 @@ function patientsRenderTable() {
             '</td>' +
             '<td><span class="badge badge-success">Active</span></td>' +
             '<td style="text-align:right;">' +
-            '<div style="display:inline-flex;gap:6px;">' +
+            '<div style="display:inline-flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' +
             '<a href="patient-details.html?id=' + p.id +
             '" class="btn btn-outline btn-sm" title="View Full Medical Record">Profile ↗</a>' +
-            '<button class="btn btn-secondary btn-sm" ' +
-            'onclick="startConsultFor(\'' + p.id + '\', \'' + p.name +
-            '\')" title="Start Consultation">🩺 Consult</button>' +
+            (isPatientConsultedToday(p.id)
+                ? '<button class="btn btn-secondary btn-sm" disabled style="opacity:0.65;cursor:not-allowed;pointer-events:none;" title="Patient already consulted today">✓ Consulted Today</button>'
+                : '<button class="btn btn-secondary btn-sm" ' +
+                  'onclick="startConsultFor(\'' + p.id + '\', \'' + p.name +
+                  '\')" title="Start Consultation">🩺 Consult</button>') +
             '</div></td></tr>';
     }).join('');
 }
@@ -2171,13 +2331,18 @@ function patientsRenderTable() {
 
 function startConsultFor(patientId, patientName) {
 
+    if (isPatientConsultedToday(patientId)) {
+        showToast('This patient has already completed today\'s consultation.', 'warning');
+        return;
+    }
+
     var appts = JSON.parse(
         localStorage.getItem('cms_appointments') || '[]'
     );
     var today = getToday();
 
     var appt = appts.find(function (a) {
-        return a.patientId === patientId && a.date === today;
+        return a.patientId === patientId && a.date === today && a.status !== 'Completed';
     });
 
     if (!appt) {
@@ -2328,6 +2493,27 @@ function detailsRenderHeader(p) {
             ? '🩺 Chronic: ' + p.chronic
             : '🩺 General Medicine'
     );
+
+    var consultBtn = document.getElementById('btnLaunchConsult');
+    if (consultBtn) {
+        if (isPatientConsultedToday(p.id)) {
+            consultBtn.textContent = '✓ Consulted Today';
+            consultBtn.className = 'btn btn-secondary btn-sm';
+            consultBtn.disabled = true;
+            consultBtn.style.opacity = '0.65';
+            consultBtn.style.cursor = 'not-allowed';
+            consultBtn.style.pointerEvents = 'none';
+            consultBtn.onclick = null;
+        } else {
+            consultBtn.textContent = '🩺 New Consultation';
+            consultBtn.className = 'btn btn-primary btn-sm';
+            consultBtn.disabled = false;
+            consultBtn.style.opacity = '1';
+            consultBtn.style.cursor = 'pointer';
+            consultBtn.style.pointerEvents = 'auto';
+            consultBtn.onclick = startConsultationForPatient;
+        }
+    }
 }
 
 
@@ -2553,6 +2739,11 @@ function startConsultationForPatient() {
 
     if (!currentPatient) return;
 
+    if (isPatientConsultedToday(currentPatient.id)) {
+        showToast('This patient has already completed today\'s consultation.', 'warning');
+        return;
+    }
+
     var appts = JSON.parse(
         localStorage.getItem('cms_appointments') || '[]'
     );
@@ -2560,7 +2751,7 @@ function startConsultationForPatient() {
 
     var appt = appts.find(function (a) {
         return a.patientId === currentPatient.id &&
-               a.date === today;
+               a.date === today && a.status !== 'Completed';
     });
 
     if (!appt) {
@@ -3035,6 +3226,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Common UI
     initDoctorUI();
     initDateLabel();
+
+    // Auto-close sidebar on mobile when a nav item is clicked
+    var navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+    navItems.forEach(function (item) {
+        item.addEventListener('click', function () {
+            if (window.innerWidth <= 992) {
+                closeSidebar();
+            }
+        });
+    });
 
     // Detect page and run the correct initializer
     var page = getCurrentPage();

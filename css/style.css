@@ -904,34 +904,40 @@ p { color: var(--text-secondary); line-height: 1.75; }
    13. MODALS
    ───────────────────────────────────────── */
 .modal-overlay {
+  display: none;
   position: fixed;
   inset: 0;
   background: rgba(61,42,37,.5);
   backdrop-filter: blur(4px);
   z-index: 2000;
-  display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+}
+
+.modal-overlay.open {
+  display: flex;
   animation: fadeIn .2s var(--ease);
 }
 
-.modal {
+.modal,
+.modal-box {
   background: #ffffff;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   width: 100%;
-  max-width: 560px;
+  max-width: min(95vw, 650px);
   max-height: 90vh;
-  overflow: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   animation: scaleIn .25s var(--ease);
 }
 
-.modal-lg { max-width: 780px; }
-.modal-xl { max-width: 1000px; }
-.modal-sm { max-width: 400px; }
+.modal-lg { max-width: min(95vw, 780px); }
+.modal-xl { max-width: min(95vw, 1000px); }
+.modal-sm { max-width: min(95vw, 400px); }
 
 .modal-header {
   padding: 22px 24px 18px;
@@ -1341,17 +1347,26 @@ p { color: var(--text-secondary); line-height: 1.75; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .topbar { padding: 0 16px; }
   .topbar-search { display: none; }
-  .page-content { padding: 16px; }
+  .topbar-subtitle { display: none; }
+  .user-chip-info { display: none; }
+  .page-content, .page-body { padding: 16px; }
   .page-header { flex-direction: column; gap: 12px; }
   .page-actions { width: 100%; justify-content: flex-end; }
-  .modal { border-radius: var(--radius-lg); }
+  .modal, .modal-box { border-radius: var(--radius-lg); padding: 20px; }
+  .btn { white-space: normal; }
+  .action-buttons, .td-actions-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 }
 
 @media (max-width: 480px) {
   :root { --header-height: 58px; }
-  .page-content { padding: 12px; }
-  .card-body { padding: 16px; }
-  .card-header { padding: 14px 16px; }
+  .page-content, .page-body { padding: 12px; }
+  .card-body { padding: 14px; }
+  .card-header { padding: 12px 14px; }
+  .modal, .modal-box { padding: 16px; width: 95vw; }
 }
 
 /* Mobile sidebar overlay */
@@ -1368,7 +1383,8 @@ p { color: var(--text-secondary); line-height: 1.75; }
 }
 
 /* Hamburger toggle */
-.topbar-toggle {
+.topbar-toggle,
+.topbar-menu-btn {
   display: none;
   width: 36px;
   height: 36px;
@@ -1377,11 +1393,26 @@ p { color: var(--text-secondary); line-height: 1.75; }
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-secondary);
-  font-size: 1.1rem;
-  transition: background var(--transition);
+  font-size: 1.15rem;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  transition: background var(--transition), color var(--transition);
+  padding: 0;
+  flex-shrink: 0;
 }
-.topbar-toggle:hover { background: var(--clr-blush); color: var(--accent); }
+.topbar-toggle:hover,
+.topbar-menu-btn:hover { background: var(--clr-blush); color: var(--accent); }
 
 @media (max-width: 992px) {
-  .topbar-toggle { display: flex; }
+  .topbar-toggle,
+  .topbar-menu-btn { display: inline-flex; }
+}
+
+/* Responsive Table scroll containers */
+.table-scroll,
+.table-responsive,
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }

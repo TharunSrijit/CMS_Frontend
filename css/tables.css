@@ -56,7 +56,10 @@
 }
 
 /* Scrollable wrapper */
-.table-scroll {
+.table-scroll,
+.table-responsive,
+.table-container {
+  width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -193,11 +196,13 @@ tbody td:last-child  { padding-right: 20px; }
   white-space: nowrap;
 }
 
-.td-actions-group {
+.td-actions-group,
+.action-buttons {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 /* ─── Foot ─── */
