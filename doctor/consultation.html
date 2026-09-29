@@ -532,19 +532,20 @@
         <div class="section-card">
           <div class="section-header">
             <div class="section-title">💊 Medication & Prescription (Rx)</div>
-            <button class="btn btn-outline btn-sm" onclick="addMedicationRow()">+ Add Medicine</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="addMedicationRow()">+ Add Medicine</button>
           </div>
 
           <div class="table-responsive" style="overflow-x:auto;">
             <table class="rx-table">
               <thead>
                 <tr>
-                  <th style="width:30%;">Medicine Name</th>
-                  <th style="width:18%;">Dosage</th>
-                  <th style="width:20%;">Frequency</th>
-                  <th style="width:16%;">Duration</th>
-                  <th style="width:16%;">Instructions</th>
-                  <th></th>
+                  <th style="width:28%;">Medicine *</th>
+                  <th style="width:16%;">Dosage *</th>
+                  <th style="width:18%;">Frequency *</th>
+                  <th style="width:14%;">Duration *</th>
+                  <th style="width:10%;">Qty *</th>
+                  <th style="width:14%;">Instructions</th>
+                  <th style="width:24px;"></th>
                 </tr>
               </thead>
               <tbody id="rxTableBody">
@@ -552,12 +553,8 @@
               </tbody>
             </table>
           </div>
-          <div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">
-            <span style="font-size:11px; color:var(--text-muted); align-self:center;">Quick add:</span>
-            <button class="badge" style="cursor:pointer;" onclick="quickAddRx('Paracetamol 500mg', '1 Tab', '1-0-1', '3 Days', 'After food')">+ Paracetamol</button>
-            <button class="badge" style="cursor:pointer;" onclick="quickAddRx('Amoxicillin 500mg', '1 Cap', '1-0-1', '5 Days', 'After food')">+ Amoxicillin</button>
-            <button class="badge" style="cursor:pointer;" onclick="quickAddRx('Pantoprazole 40mg', '1 Tab', '1-0-0', '7 Days', 'Before food')">+ Pantoprazole</button>
-            <button class="badge" style="cursor:pointer;" onclick="quickAddRx('Cetirizine 10mg', '1 Tab', '0-0-1', '5 Days', 'Bedtime')">+ Cetirizine</button>
+          <div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;" id="quickAddContainer">
+            <!-- Dynamically populated from active cms_medicines -->
           </div>
         </div>
 
@@ -567,17 +564,8 @@
             <div class="section-title">🧪 Laboratory & Diagnostic Tests</div>
             <span style="font-size:11px; color:var(--text-muted);">Sent directly to Clinic Lab module</span>
           </div>
-          <div class="lab-tags-grid">
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="Complete Blood Count (CBC)" /> <span>Complete Blood Count</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="Fasting Blood Sugar (FBS)" /> <span>Fasting Blood Sugar</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="HbA1c Glycated Hemoglobin" /> <span>HbA1c</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="Lipid Profile" /> <span>Lipid Profile</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="Liver Function Test (LFT)" /> <span>Liver Function Test</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="Renal Function Test (RFT)" /> <span>Renal Function (Kidney)</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="Thyroid Profile (T3, T4, TSH)" /> <span>Thyroid Profile</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="Urine Routine Examination" /> <span>Urine Routine</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="Chest X-Ray PA View" /> <span>Chest X-Ray</span></label>
-            <label class="lab-check-label"><input type="checkbox" name="labTest" value="12-Lead ECG" /> <span>12-Lead ECG</span></label>
+          <div class="lab-tags-grid" id="consultLabTestsGrid">
+            <!-- Dynamically populated from active cms_lab_tests -->
           </div>
           <div style="margin-top:10px;">
             <input type="text" id="labCustom" class="rx-input" placeholder="Other specific lab investigations or instructions..." />
@@ -694,6 +682,7 @@
             <th style="text-align:left; padding:6px 8px;">Dosage</th>
             <th style="text-align:left; padding:6px 8px;">Frequency</th>
             <th style="text-align:left; padding:6px 8px;">Duration</th>
+            <th style="text-align:left; padding:6px 8px;">Qty</th>
             <th style="text-align:left; padding:6px 8px;">Instructions</th>
           </tr>
         </thead>

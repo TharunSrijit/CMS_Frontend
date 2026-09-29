@@ -395,14 +395,102 @@ var DEFAULT_PATIENTS = [
     { id:'PAT012', name:'Kavitha Ramesh',  age:55, gender:'Female', blood:'O+',  phone:'9812340890', allergies:'Iodine',      chronic:'Hypertension',       status:'Active' }
 ];
 
+// Master Data Helpers
+function getMasterMedicines() {
+    var raw = JSON.parse(localStorage.getItem('cms_medicines') || '[]');
+    if (!raw || raw.length === 0) {
+        raw = [
+            { id: 'MED001', name: 'Paracetamol 500mg', category: 'Tablet', unit: 'Strip', price: 25, stock: 100, reorderLevel: 20, batchNo: 'PCM2026A', expiryDate: '2027-08-31', status: 'Active' },
+            { id: 'MED002', name: 'Amoxicillin 500mg', category: 'Capsule', unit: 'Strip', price: 80, stock: 50, reorderLevel: 10, batchNo: 'AMX2026A', expiryDate: '2027-06-30', status: 'Active' },
+            { id: 'MED003', name: 'Cetirizine 10mg', category: 'Tablet', unit: 'Strip', price: 30, stock: 40, reorderLevel: 10, batchNo: 'CET2026A', expiryDate: '2027-10-31', status: 'Active' },
+            { id: 'MED004', name: 'Azithromycin 250mg', category: 'Tablet', unit: 'Strip', price: 60, stock: 30, reorderLevel: 8, batchNo: 'AZI2026A', expiryDate: '2027-02-28', status: 'Active' },
+            { id: 'MED005', name: 'Omeprazole 20mg', category: 'Capsule', unit: 'Strip', price: 45, stock: 60, reorderLevel: 15, batchNo: 'OME2026A', expiryDate: '2027-07-31', status: 'Active' },
+            { id: 'MED006', name: 'Cough Syrup 100ml', category: 'Syrup', unit: 'Bottle', price: 90, stock: 25, reorderLevel: 5, batchNo: 'COU2026A', expiryDate: '2027-04-30', status: 'Active' },
+            { id: 'MED007', name: 'Vitamin C 500mg', category: 'Tablet', unit: 'Box', price: 120, stock: 80, reorderLevel: 20, batchNo: 'VTC2026A', expiryDate: '2027-12-31', status: 'Active' },
+            { id: 'MED008', name: 'Clotrimazole 1% Cream', category: 'Cream', unit: 'Tube', price: 55, stock: 12, reorderLevel: 5, batchNo: 'CLO2026A', expiryDate: '2027-03-31', status: 'Active' }
+        ];
+        localStorage.setItem('cms_medicines', JSON.stringify(raw));
+        if (!localStorage.getItem('cms_medicine_id_sequence')) {
+            localStorage.setItem('cms_medicine_id_sequence', '9');
+        }
+    }
+    return raw;
+}
+
+function getActiveMedicines() {
+    return getMasterMedicines().filter(function (m) {
+        return (m.status || 'Active').toLowerCase() === 'active';
+    });
+}
+
+function findMedicineById(id) {
+    if (id === undefined || id === null) return null;
+    var targetId = String(id).trim();
+    if (!targetId) return null;
+    return getMasterMedicines().find(function (m) {
+        return m && m.id !== undefined && m.id !== null && String(m.id).trim() === targetId;
+    }) || null;
+}
+
+function getMasterLabTests() {
+    var raw = JSON.parse(localStorage.getItem('cms_lab_tests') || '[]');
+    var master = raw.filter(function (t) {
+        if (t.recordType === 'master') return true;
+        if (t.patientId || t.patientName || t.consultationId || t.requestedAt || t.orderDate) return false;
+        return t.id && (t.name || t.testName);
+    });
+
+    if (master.length === 0) {
+        master = [
+            { id: 'LAB001', name: 'Complete Blood Count (CBC)', category: 'Hematology', price: 350, description: 'Complete blood count analysis', status: 'Active', recordType: 'master' },
+            { id: 'LAB002', name: 'Fasting Blood Sugar (FBS)', category: 'Biochemistry', price: 150, description: 'Blood glucose level test', status: 'Active', recordType: 'master' },
+            { id: 'LAB003', name: 'HbA1c Glycated Hemoglobin', category: 'Biochemistry', price: 450, description: '3-month average blood glucose', status: 'Active', recordType: 'master' },
+            { id: 'LAB004', name: 'Lipid Profile', category: 'Biochemistry', price: 500, description: 'Cholesterol & triglyceride panel', status: 'Active', recordType: 'master' },
+            { id: 'LAB005', name: 'Liver Function Test (LFT)', category: 'Biochemistry', price: 650, description: 'Hepatic enzyme assessment', status: 'Active', recordType: 'master' },
+            { id: 'LAB006', name: 'Renal Function Test (RFT)', category: 'Biochemistry', price: 550, description: 'Kidney function panel', status: 'Active', recordType: 'master' },
+            { id: 'LAB007', name: 'Thyroid Profile (T3, T4, TSH)', category: 'Endocrinology', price: 600, description: 'Thyroid hormone assessment', status: 'Active', recordType: 'master' },
+            { id: 'LAB008', name: 'Urine Routine Examination', category: 'Pathology', price: 180, description: 'Urine routine and microscopy', status: 'Active', recordType: 'master' },
+            { id: 'LAB009', name: '12-Lead ECG', category: 'Cardiology', price: 300, description: 'Electrocardiogram recording', status: 'Active', recordType: 'master' },
+            { id: 'LAB010', name: 'Chest X-Ray PA View', category: 'Radiology', price: 400, description: 'Chest radiography PA view', status: 'Active', recordType: 'master' }
+        ];
+
+        var existingOrders = raw.filter(function (t) {
+            return t.patientId || t.patientName || t.orderDate || t.requestedAt || t.recordType === 'request';
+        });
+        localStorage.setItem('cms_lab_tests', JSON.stringify(master.concat(existingOrders)));
+    }
+
+    return master;
+}
+
+function getActiveMasterLabTests() {
+    return getMasterLabTests().filter(function (t) {
+        return (t.status || 'Active').toLowerCase() === 'active';
+    });
+}
+
+function findLabTestById(id) {
+    if (!id) return null;
+    return getMasterLabTests().find(function (t) {
+        return t.id === id;
+    }) || null;
+}
+
+function getLabOrders() {
+    var raw = JSON.parse(localStorage.getItem('cms_lab_tests') || '[]');
+    return raw.filter(function (t) {
+        return t.recordType !== 'master' && (t.patientId || t.patientName || t.orderDate || t.requestedAt || t.testId);
+    });
+}
+
 var DEFAULT_RX = [
     {
         id: 'RX-98201', date: TODAY,
         patientId: 'PAT001', patientName: 'Rahul Menon',
         doctorName: 'Dr. Arun Kumar', status: 'Pending Dispensation',
         medicines: [
-            { medicine:'Paracetamol 650mg', dosage:'1 Tab', frequency:'1-0-1', duration:'3 Days', instructions:'After food' },
-            { medicine:'Pantoprazole 40mg', dosage:'1 Tab', frequency:'1-0-0', duration:'5 Days', instructions:'Before food' }
+            { medicineId: 'MED001', medicine:'Paracetamol 500mg', dosage:'1 Tab', frequency:'1-0-1', duration:'3 Days', quantity: 6, instructions:'After food' },
+            { medicineId: 'MED005', medicine:'Omeprazole 20mg', dosage:'1 Cap', frequency:'1-0-0', duration:'5 Days', quantity: 5, instructions:'Before food' }
         ]
     },
     {
@@ -410,8 +498,8 @@ var DEFAULT_RX = [
         patientId: 'PAT002', patientName: 'Anu Thomas',
         doctorName: 'Dr. Arun Kumar', status: 'Dispensed',
         medicines: [
-            { medicine:'Amoxicillin 500mg', dosage:'1 Cap', frequency:'1-0-1', duration:'5 Days', instructions:'After food' },
-            { medicine:'Cetirizine 10mg',   dosage:'1 Tab', frequency:'0-0-1', duration:'5 Days', instructions:'Bedtime' }
+            { medicineId: 'MED002', medicine:'Amoxicillin 500mg', dosage:'1 Cap', frequency:'1-0-1', duration:'5 Days', quantity: 10, instructions:'After food' },
+            { medicineId: 'MED003', medicine:'Cetirizine 10mg',   dosage:'1 Tab', frequency:'0-0-1', duration:'5 Days', quantity: 5, instructions:'Bedtime' }
         ]
     },
     {
@@ -419,8 +507,8 @@ var DEFAULT_RX = [
         patientId: 'PAT003', patientName: 'Arjun Kumar',
         doctorName: 'Dr. Arun Kumar', status: 'Pending Dispensation',
         medicines: [
-            { medicine:'Amlodipine 5mg', dosage:'1 Tab', frequency:'1-0-0', duration:'30 Days', instructions:'Morning after food' },
-            { medicine:'Aspirin 75mg',   dosage:'1 Tab', frequency:'0-1-0', duration:'30 Days', instructions:'Lunch' }
+            { medicineId: 'MED004', medicine:'Azithromycin 250mg', dosage:'1 Tab', frequency:'1-0-0', duration:'5 Days', quantity: 5, instructions:'Morning after food' },
+            { medicineId: 'MED007', medicine:'Vitamin C 500mg',   dosage:'1 Tab', frequency:'0-1-0', duration:'30 Days', quantity: 30, instructions:'Lunch' }
         ]
     },
     {
@@ -428,22 +516,24 @@ var DEFAULT_RX = [
         patientId: 'PAT005', patientName: 'Suresh Babu',
         doctorName: 'Dr. Arun Kumar', status: 'Dispensed',
         medicines: [
-            { medicine:'Metformin 500mg',  dosage:'1 Tab', frequency:'1-0-1', duration:'30 Days', instructions:'With meals' },
-            { medicine:'Glimepiride 1mg',  dosage:'1 Tab', frequency:'1-0-0', duration:'30 Days', instructions:'Before breakfast' }
+            { medicineId: 'MED006', medicine:'Cough Syrup 100ml',  dosage:'10ml', frequency:'1-0-1', duration:'7 Days', quantity: 1, instructions:'With warm water' },
+            { medicineId: 'MED001', medicine:'Paracetamol 500mg',  dosage:'1 Tab', frequency:'1-0-0', duration:'3 Days', quantity: 3, instructions:'Before breakfast' }
         ]
     }
 ];
 
 var DEFAULT_LABS = [
-    { id:'LAB-1001', orderDate:TODAY,       patientId:'PAT001', patientName:'Rahul Menon',     testName:'Complete Blood Count (CBC)',      priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'Hb: 14.1 g/dL, WBC: 8,200/mcL, Platelets: 230,000/mcL. All counts within normal biological reference range.' },
-    { id:'LAB-1002', orderDate:TODAY,       patientId:'PAT003', patientName:'Arjun Kumar',     testName:'Lipid Profile',                   priority:'Urgent', status:'Pending',   doctorName:'Dr. Arun Kumar', summary:'Sample received at pathology lab; awaiting biochemistry autoanalyzer processing.' },
-    { id:'LAB-1003', orderDate:TODAY,       patientId:'PAT005', patientName:'Suresh Babu',     testName:'HbA1c Glycated Hemoglobin',       priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'HbA1c: 7.2% (Fair glycemic control). Estimated average blood glucose: 160 mg/dL.' },
-    { id:'LAB-1004', orderDate:TODAY,       patientId:'PAT007', patientName:'Mohammed Rizwan', testName:'Urine Routine Examination',       priority:'Urgent', status:'Pending',   doctorName:'Dr. Arun Kumar', summary:'Sample collection underway in diagnostic wing.' },
-    { id:'LAB-1005', orderDate:'2026-02-14', patientId:'PAT008', patientName:'Divya Krishnan', testName:'Thyroid Profile (T3, T4, TSH)',   priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'TSH: 3.14 mIU/L (Euthyroid state). Free T4: 1.2 ng/dL.' }
+    { id:'LABREQ-1001', orderDate:TODAY, patientId:'PAT001', patientName:'Rahul Menon', testId:'LAB001', testName:'Complete Blood Count (CBC)', category:'Hematology', priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'Hb: 14.1 g/dL, WBC: 8,200/mcL, Platelets: 230,000/mcL. All counts within normal biological reference range.', requestedAt: TODAY + ' 09:15:00' },
+    { id:'LABREQ-1002', orderDate:TODAY, patientId:'PAT003', patientName:'Arjun Kumar', testId:'LAB004', testName:'Lipid Profile', category:'Biochemistry', priority:'Urgent', status:'Pending', doctorName:'Dr. Arun Kumar', summary:'Sample received at pathology lab; awaiting biochemistry autoanalyzer processing.', requestedAt: TODAY + ' 10:10:00' },
+    { id:'LABREQ-1003', orderDate:TODAY, patientId:'PAT005', patientName:'Suresh Babu', testId:'LAB003', testName:'HbA1c Glycated Hemoglobin', category:'Biochemistry', priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'HbA1c: 7.2% (Fair glycemic control). Estimated average blood glucose: 160 mg/dL.', requestedAt: TODAY + ' 11:20:00' },
+    { id:'LABREQ-1004', orderDate:TODAY, patientId:'PAT007', patientName:'Mohammed Rizwan', testId:'LAB008', testName:'Urine Routine Examination', category:'Pathology', priority:'Urgent', status:'Pending', doctorName:'Dr. Arun Kumar', summary:'Sample collection underway in diagnostic wing.', requestedAt: TODAY + ' 12:15:00' },
+    { id:'LABREQ-1005', orderDate:'2026-02-14', patientId:'PAT008', patientName:'Divya Krishnan', testId:'LAB007', testName:'Thyroid Profile (T3, T4, TSH)', category:'Endocrinology', priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'TSH: 3.14 mIU/L (Euthyroid state). Free T4: 1.2 ng/dL.', requestedAt: '2026-02-14 10:45:00' }
 ];
 
 
 function seedAllData() {
+    getMasterMedicines();
+    getMasterLabTests();
 
     if (!localStorage.getItem('cms_appointments')) {
         localStorage.setItem(
@@ -472,13 +562,17 @@ function seedAllData() {
         );
     }
 
-    var labs = JSON.parse(
+    var rawLabs = JSON.parse(
         localStorage.getItem('cms_lab_tests') || '[]'
     );
-    if (!labs || labs.length === 0) {
+    var hasOrders = rawLabs.some(function (l) {
+        return l.patientId || l.patientName;
+    });
+    if (!hasOrders) {
+        var masterTests = getMasterLabTests();
         localStorage.setItem(
             'cms_lab_tests',
-            JSON.stringify(DEFAULT_LABS)
+            JSON.stringify(masterTests.concat(DEFAULT_LABS))
         );
     }
 }
@@ -1663,6 +1757,8 @@ function initConsultation() {
     }
 
     consultLoadData();
+    renderConsultationLabTests();
+    renderQuickAddButtons();
     setupInitialMedications();
 }
 
@@ -1842,7 +1938,48 @@ function renderPatientHero(appt) {
 }
 
 
-// Medication Builder
+// Medication Builder & Master Integration
+
+function renderQuickAddButtons() {
+    var container = document.getElementById('quickAddContainer');
+    if (!container) return;
+
+    var activeMeds = getActiveMedicines();
+    if (activeMeds.length === 0) {
+        container.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">No active medicines in master catalog.</span>';
+        return;
+    }
+
+    container.innerHTML = '<span style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-right:4px;display:inline-flex;align-items:center;">Quick Add:</span>' +
+        activeMeds.slice(0, 6).map(function (m) {
+            return '<button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;border-radius:12px;" onclick="quickAddRx(\'' +
+                m.id + '\', \'1 ' + (m.category || 'Tablet') + '\', \'1-0-1\', \'5 Days\', 10, \'After food\')">+ ' +
+                m.name + '</button>';
+        }).join('');
+}
+
+
+function renderConsultationLabTests() {
+    var container = document.getElementById('consultLabTestsGrid');
+    if (!container) return;
+
+    var activeTests = getActiveMasterLabTests();
+    if (activeTests.length === 0) {
+        container.innerHTML = '<div style="font-size:12px;color:var(--text-muted);grid-column:1/-1;">No active lab investigations in master catalog.</div>';
+        return;
+    }
+
+    container.innerHTML = activeTests.map(function (t) {
+        var testName = t.name || t.testName;
+        var cat = t.category || 'General';
+        return '<label class="lab-check-label">' +
+            '<input type="checkbox" name="labTest" value="' + t.id + '" data-name="' + testName + '" data-category="' + cat + '" />' +
+            '<span>' + testName +
+            ' <small style="color:var(--text-muted);font-weight:400;display:block;font-size:11px;">' + cat + '</small></span>' +
+            '</label>';
+    }).join('');
+}
+
 
 function setupInitialMedications() {
 
@@ -1850,81 +1987,197 @@ function setupInitialMedications() {
     if (!tbody) return;
 
     tbody.innerHTML = '';
-    addMedicationRow('Paracetamol 500mg', '1 Tablet', '1-0-1', '3 Days', 'After food');
-    addMedicationRow('Pantoprazole 40mg', '1 Tablet', '1-0-0', '5 Days', 'Before food');
+    var activeMeds = getActiveMedicines();
+    if (activeMeds.length > 0) {
+        var first = activeMeds[0];
+        addMedicationRow(first.id, '1 ' + (first.category || 'Tablet'), '1-0-1', '3 Days', 6, 'After food');
+        if (activeMeds.length > 1) {
+            var second = activeMeds[1];
+            addMedicationRow(second.id, '1 ' + (second.category || 'Tablet'), '1-0-0', '5 Days', 5, 'Before food');
+        }
+    } else {
+        addMedicationRow('', '1 Tablet', '1-0-1', '3 Days', 6, 'After food');
+    }
 }
 
 
-function addMedicationRow(name, dosage, freq, dur, inst) {
+function addMedicationRow(medicineId, dosage, freq, dur, qty, inst) {
 
-    name   = name   || '';
-    dosage = dosage || '';
-    freq   = freq   || '1-0-1';
-    dur    = dur    || '5 Days';
-    inst   = inst   || 'After food';
+    medicineId = medicineId || '';
+    dosage     = dosage     || '';
+    freq       = freq       || '1-0-1';
+    dur        = dur        || '5 Days';
+    qty        = (qty !== undefined && qty !== null && qty !== '') ? qty : 10;
+    inst       = inst       || 'After food';
 
     var tbody = document.getElementById('rxTableBody');
     if (!tbody) return;
 
+    var activeMeds = getActiveMedicines();
+    var optionsHtml = '<option value="">-- Select Medicine --</option>';
+
+    var foundSelected = false;
+    var targetMedId = medicineId ? String(medicineId).trim() : '';
+    activeMeds.forEach(function (m) {
+        var isSel = (targetMedId && m.id && String(m.id).trim() === targetMedId);
+        if (isSel) foundSelected = true;
+        optionsHtml += '<option value="' + m.id + '"' + (isSel ? ' selected' : '') + '>' +
+            m.name + ' (' + (m.category || 'Tab') + ')' +
+            '</option>';
+    });
+
+    if (medicineId && !foundSelected) {
+        var existingMed = findMedicineById(medicineId);
+        var label = existingMed ? (existingMed.name + ' [Inactive]') : (medicineId + ' [Legacy/Inactive]');
+        optionsHtml += '<option value="' + medicineId + '" selected disabled>' + label + '</option>';
+    }
+
     var tr = document.createElement('tr');
 
     tr.innerHTML =
-        '<td><input type="text" class="rx-input rx-name" value="' + name +
-        '" placeholder="e.g. Amoxicillin 500mg" /></td>' +
-        '<td><input type="text" class="rx-input rx-dose" value="' + dosage +
-        '" placeholder="e.g. 1 Tab" /></td>' +
-        '<td><select class="rx-input rx-freq">' +
-        '<option value="1-0-1"' + (freq === '1-0-1' ? ' selected' : '') +
-        '>1-0-1 (Twice daily)</option>' +
-        '<option value="1-0-0"' + (freq === '1-0-0' ? ' selected' : '') +
-        '>1-0-0 (Morning)</option>' +
-        '<option value="0-0-1"' + (freq === '0-0-1' ? ' selected' : '') +
-        '>0-0-1 (Night)</option>' +
-        '<option value="1-1-1"' + (freq === '1-1-1' ? ' selected' : '') +
-        '>1-1-1 (Thrice daily)</option>' +
-        '<option value="SOS / As needed"' +
-        (freq.indexOf('SOS') !== -1 ? ' selected' : '') +
-        '>SOS (As needed)</option>' +
+        '<td><select class="rx-input rx-med-select" onchange="onRxMedSelectChange(this)">' +
+        optionsHtml +
         '</select></td>' +
-        '<td><input type="text" class="rx-input rx-dur" value="' + dur +
-        '" placeholder="5 Days" /></td>' +
-        '<td><input type="text" class="rx-input rx-inst" value="' + inst +
-        '" placeholder="After food" /></td>' +
-        '<td><button class="rx-delete-btn" onclick="this.closest(\'tr\').remove()" title="Remove">✕</button></td>';
+        '<td><input type="text" class="rx-input rx-dose" value="' + dosage + '" placeholder="e.g. 1 Tab / 5ml" /></td>' +
+        '<td><select class="rx-input rx-freq">' +
+        '<option value="1-0-1"' + (freq === '1-0-1' ? ' selected' : '') + '>1-0-1 (Twice daily)</option>' +
+        '<option value="1-0-0"' + (freq === '1-0-0' ? ' selected' : '') + '>1-0-0 (Morning)</option>' +
+        '<option value="0-0-1"' + (freq === '0-0-1' ? ' selected' : '') + '>0-0-1 (Night)</option>' +
+        '<option value="1-1-1"' + (freq === '1-1-1' ? ' selected' : '') + '>1-1-1 (Thrice daily)</option>' +
+        '<option value="SOS / As needed"' + (freq.indexOf('SOS') !== -1 ? ' selected' : '') + '>SOS (As needed)</option>' +
+        '</select></td>' +
+        '<td><input type="text" class="rx-input rx-dur" value="' + dur + '" placeholder="e.g. 5 Days" /></td>' +
+        '<td><input type="number" min="1" step="1" class="rx-input rx-qty" value="' + qty + '" placeholder="Qty" style="min-width:60px;" /></td>' +
+        '<td><input type="text" class="rx-input rx-inst" value="' + inst + '" placeholder="e.g. After food" /></td>' +
+        '<td><button type="button" class="rx-delete-btn" onclick="this.closest(\'tr\').remove()" title="Remove">✕</button></td>';
 
     tbody.appendChild(tr);
 }
 
 
-function quickAddRx(name, dosage, freq, dur, inst) {
+function onRxMedSelectChange(selEl) {
 
-    addMedicationRow(name, dosage, freq, dur, inst);
-    showToast('Added ' + name, 'info');
+    if (!selEl || !selEl.value) return;
+    var med = findMedicineById(selEl.value);
+    if (!med) return;
+
+    var tr = selEl.closest('tr');
+    if (!tr) return;
+
+    var doseInput = tr.querySelector('.rx-dose');
+    if (doseInput && !doseInput.value.trim()) {
+        doseInput.value = '1 ' + (med.category || 'Tablet');
+    }
+}
+
+
+function quickAddRx(medicineId, dosage, freq, dur, qty, inst) {
+
+    var med = findMedicineById(medicineId);
+    if (!med) {
+        showToast('Selected medicine is not available.', 'warning');
+        return;
+    }
+    if ((med.status || 'Active').toLowerCase() !== 'active') {
+        showToast('Medicine "' + med.name + '" is inactive.', 'warning');
+        return;
+    }
+
+    addMedicationRow(medicineId, dosage, freq, dur, qty, inst);
+    showToast('Added ' + med.name + ' to prescription', 'info');
+}
+
+
+function validateAndGetPrescriptionData() {
+
+    var rows = document.querySelectorAll('#rxTableBody tr');
+    var medicines = [];
+    var seenMedIds = {};
+
+    for (var i = 0; i < rows.length; i++) {
+        var tr = rows[i];
+        var selectEl = tr.querySelector('.rx-med-select');
+        var doseEl   = tr.querySelector('.rx-dose');
+        var freqEl   = tr.querySelector('.rx-freq');
+        var durEl    = tr.querySelector('.rx-dur');
+        var qtyEl    = tr.querySelector('.rx-qty');
+        var instEl   = tr.querySelector('.rx-inst');
+
+        var medId  = selectEl ? selectEl.value.trim() : '';
+        var dose   = doseEl ? doseEl.value.trim() : '';
+        var freq   = freqEl ? freqEl.value.trim() : '';
+        var dur    = durEl ? durEl.value.trim() : '';
+        var qtyRaw = qtyEl ? qtyEl.value.trim() : '';
+        var inst   = instEl ? instEl.value.trim() : '';
+
+        // If completely empty row and not the only row, skip
+        if (!medId && !dose && !dur && !qtyRaw) {
+            continue;
+        }
+
+        if (!medId) {
+            if (selectEl) selectEl.focus();
+            return { valid: false, message: 'Row #' + (i + 1) + ': Please select a medicine from Medicine Master.' };
+        }
+
+        var medMaster = findMedicineById(medId);
+        if (!medMaster) {
+            if (selectEl) selectEl.focus();
+            return { valid: false, message: 'Row #' + (i + 1) + ': Selected medicine does not exist in master list.' };
+        }
+
+        if ((medMaster.status || 'Active').toLowerCase() !== 'active') {
+            if (selectEl) selectEl.focus();
+            return { valid: false, message: 'Row #' + (i + 1) + ': Medicine "' + medMaster.name + '" is Inactive and cannot be prescribed.' };
+        }
+
+        if (!dose) {
+            if (doseEl) doseEl.focus();
+            return { valid: false, message: 'Row #' + (i + 1) + ' (' + medMaster.name + '): Dosage cannot be empty.' };
+        }
+
+        if (!freq) {
+            if (freqEl) freqEl.focus();
+            return { valid: false, message: 'Row #' + (i + 1) + ' (' + medMaster.name + '): Frequency cannot be empty.' };
+        }
+
+        if (!dur) {
+            if (durEl) durEl.focus();
+            return { valid: false, message: 'Row #' + (i + 1) + ' (' + medMaster.name + '): Duration cannot be empty.' };
+        }
+
+        var qtyNum = parseInt(qtyRaw, 10);
+        if (isNaN(qtyNum) || qtyNum <= 0) {
+            if (qtyEl) qtyEl.focus();
+            return { valid: false, message: 'Row #' + (i + 1) + ' (' + medMaster.name + '): Quantity must be a positive number.' };
+        }
+
+        var normalizedMedId = String(medMaster.id || medId).trim();
+        if (seenMedIds[normalizedMedId]) {
+            if (selectEl) selectEl.focus();
+            return { valid: false, message: 'Duplicate medicine: "' + medMaster.name + '" is added multiple times. Please adjust quantity instead of adding duplicate rows.' };
+        }
+        seenMedIds[normalizedMedId] = true;
+
+        medicines.push({
+            medicineId:   normalizedMedId,
+            medicine:     medMaster.name,
+            dosage:       dose,
+            frequency:    freq,
+            duration:     dur,
+            quantity:     qtyNum,
+            instructions: inst || 'After food'
+        });
+    }
+
+    return { valid: true, medicines: medicines };
 }
 
 
 function getPrescriptionData() {
 
-    var rows      = document.querySelectorAll('#rxTableBody tr');
-    var medicines = [];
-
-    rows.forEach(function (tr) {
-
-        var nameEl = tr.querySelector('.rx-name');
-        var name   = nameEl ? nameEl.value.trim() : '';
-
-        if (name) {
-            medicines.push({
-                medicine:     name,
-                dosage:       (tr.querySelector('.rx-dose') || {}).value || '1 Dose',
-                frequency:    (tr.querySelector('.rx-freq') || {}).value || '1-0-1',
-                duration:     (tr.querySelector('.rx-dur')  || {}).value || '3 Days',
-                instructions: (tr.querySelector('.rx-inst') || {}).value || 'After food'
-            });
-        }
-    });
-
-    return medicines;
+    var res = validateAndGetPrescriptionData();
+    return res.valid ? res.medicines : [];
 }
 
 
@@ -1947,18 +2200,33 @@ function completeConsultation() {
         return;
     }
 
-    var medicines = getPrescriptionData();
+    var rxResult = validateAndGetPrescriptionData();
+    if (!rxResult.valid) {
+        showToast(rxResult.message, 'warning');
+        return;
+    }
+
+    var medicines = rxResult.medicines;
 
     // Lab Tests
     var labCheckboxes = document.querySelectorAll(
         'input[name="labTest"]:checked'
     );
-    var labTests = Array.from(labCheckboxes).map(function (cb) {
-        return cb.value;
+    var labOrdersToSave = Array.from(labCheckboxes).map(function (cb) {
+        return {
+            testId:   cb.value,
+            testName: cb.dataset.name || cb.value,
+            category: cb.dataset.category || 'General'
+        };
     });
+
     var customLab = document.getElementById('labCustom');
     if (customLab && customLab.value.trim()) {
-        labTests.push(customLab.value.trim());
+        labOrdersToSave.push({
+            testId:   'LAB-CUSTOM',
+            testName: customLab.value.trim(),
+            category: 'General'
+        });
     }
 
     // 1. Update appointment status
@@ -1986,6 +2254,7 @@ function completeConsultation() {
         appointmentId:       activeAppt.id,
         patientId:           activeAppt.patientId || 'PAT-001',
         patientName:         activeAppt.patientName,
+        doctorId:            (loggedInUser && loggedInUser.id) || 'DOC001',
         doctorName:          loggedInUser.name || 'Dr. Arun Kumar',
         date:                TODAY,
         time:                new Date().toLocaleTimeString(
@@ -2002,7 +2271,7 @@ function completeConsultation() {
             weight: (document.getElementById('vitWeight') || {}).value || ''
         },
         medicines:  medicines,
-        labTests:   labTests,
+        labTests:   labOrdersToSave.map(function (l) { return l.testName; }),
         advice:     (document.getElementById('adviceNotes') || {}).value || '',
         followUp:   (document.getElementById('followUpSelect') || {}).value || ''
     };
@@ -2023,6 +2292,7 @@ function completeConsultation() {
             consultationId: consultRecord.id,
             patientId:      consultRecord.patientId,
             patientName:    consultRecord.patientName,
+            doctorId:       consultRecord.doctorId,
             doctorName:     consultRecord.doctorName,
             date:           TODAY,
             medicines:      medicines,
@@ -2034,21 +2304,30 @@ function completeConsultation() {
         );
     }
 
-    // 4. Save lab orders
-    if (labTests.length > 0) {
+    // 4. Save lab requests (Doctor creates requests only, NOT bills or results)
+    if (labOrdersToSave.length > 0) {
         var testList = JSON.parse(
             localStorage.getItem('cms_lab_tests') || '[]'
         );
-        labTests.forEach(function (t, i) {
+        var reqTime = getToday() + ' ' + new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+        labOrdersToSave.forEach(function (t, i) {
             testList.unshift({
-                id:          'LAB-' + (Date.now() + i),
-                testName:    t,
-                patientId:   consultRecord.patientId,
-                patientName: consultRecord.patientName,
-                doctorName:  consultRecord.doctorName,
-                orderDate:   TODAY,
-                status:      'Pending',
-                priority:    'Normal'
+                id:             'LABREQ-' + (Date.now() + i),
+                testId:         t.testId,
+                testName:       t.testName,
+                category:       t.category,
+                patientId:      consultRecord.patientId,
+                patientName:    consultRecord.patientName,
+                doctorId:       consultRecord.doctorId,
+                doctorName:     consultRecord.doctorName,
+                appointmentId:  activeAppt.id,
+                consultationId: consultRecord.id,
+                orderDate:      TODAY,
+                requestedAt:    reqTime,
+                status:         'Pending',
+                priority:       'Normal',
+                summary:        'Requested during clinical consultation'
             });
         });
         localStorage.setItem(
@@ -2056,8 +2335,6 @@ function completeConsultation() {
             JSON.stringify(testList)
         );
     }
-
-    // Note: Consultation bill is created by Receptionist upon patient arrival, not after doctor consultation.
 
     localStorage.removeItem('cms_active_appointment');
 
@@ -2096,7 +2373,7 @@ function openPrintModal() {
 
     setEl('mPatientName', activeAppt.patientName);
     setEl('mAgeGender',   (activeAppt.age || 30) + 'Y / ' + (activeAppt.gender || 'M'));
-    setEl('mPatientId',   activeAppt.patientId || 'PAT-001');
+    setEl('mPatientId',   activeAppt.patientId || 'PAT001');
     setEl('mBlood',       activeAppt.blood || 'B+');
     setEl('mDiagnosis',   (document.getElementById('diagPrimary') || {}).value || 'General Consultation');
     setEl('mAdvice',      (document.getElementById('adviceNotes') || {}).value || 'Take medications as prescribed with adequate rest.');
@@ -2108,7 +2385,7 @@ function openPrintModal() {
     if (mBody) {
         if (meds.length === 0) {
             mBody.innerHTML =
-                '<tr><td colspan="6" style="padding:10px;text-align:center;color:#888;">' +
+                '<tr><td colspan="7" style="padding:10px;text-align:center;color:#888;">' +
                 'No medications prescribed.</td></tr>';
         } else {
             mBody.innerHTML = meds.map(function (m, i) {
@@ -2118,7 +2395,8 @@ function openPrintModal() {
                     '<td style="padding:6px 8px;">' + m.dosage + '</td>' +
                     '<td style="padding:6px 8px;">' + m.frequency + '</td>' +
                     '<td style="padding:6px 8px;">' + m.duration + '</td>' +
-                    '<td style="padding:6px 8px;color:#555;">' + m.instructions + '</td></tr>';
+                    '<td style="padding:6px 8px;font-weight:600;">' + (m.quantity !== undefined ? m.quantity : '—') + '</td>' +
+                    '<td style="padding:6px 8px;color:#555;">' + (m.instructions || '—') + '</td></tr>';
             }).join('');
         }
     }
@@ -2128,8 +2406,12 @@ function openPrintModal() {
         'input[name="labTest"]:checked'
     );
     var labs = Array.from(labChecks).map(function (c) {
-        return c.value;
+        return (c.dataset.name || c.value) + (c.dataset.category ? ' (' + c.dataset.category + ')' : '');
     });
+    var customLab = document.getElementById('labCustom');
+    if (customLab && customLab.value.trim()) {
+        labs.push(customLab.value.trim());
+    }
 
     var labSec = document.getElementById('mLabSection');
     if (labSec) {
@@ -2516,8 +2798,8 @@ function detailsLoadClinical(p) {
             notes: 'Patient presented with 3-day history of dry cough and low-grade pyrexia. Throat examination revealed mild erythematous pharynx. Chest clear to auscultation.',
             vitals: { bp:'118/76', pulse:'76', temp:'99.1', spo2:'98', weight:'67' },
             medicines: [
-                { medicine:'Amoxicillin 500mg', dosage:'1 Cap', frequency:'1-0-1', duration:'5 Days', instructions:'After food' },
-                { medicine:'Paracetamol 650mg', dosage:'1 Tab', frequency:'SOS / As needed', duration:'3 Days', instructions:'For fever/body ache' }
+                { medicineId: 'MED002', medicine:'Amoxicillin 500mg', dosage:'1 Cap', frequency:'1-0-1', duration:'5 Days', quantity: 10, instructions:'After food' },
+                { medicineId: 'MED001', medicine:'Paracetamol 500mg', dosage:'1 Tab', frequency:'SOS / As needed', duration:'3 Days', quantity: 6, instructions:'For fever/body ache' }
             ],
             labTests: ['Complete Blood Count (CBC)'],
             advice: 'Adequate hydration, warm saline gargles twice daily. Review if fever persists over 48 hours.',
@@ -2543,8 +2825,8 @@ function detailsLoadClinical(p) {
             id: 'RX-98210', date: '2026-02-14',
             doctorName: 'Dr. Arun Kumar', status: 'Dispensed',
             medicines: [
-                { medicine:'Amoxicillin 500mg', dosage:'1 Cap', frequency:'1-0-1', duration:'5 Days' },
-                { medicine:'Paracetamol 650mg', dosage:'1 Tab', frequency:'SOS', duration:'3 Days' }
+                { medicineId: 'MED002', medicine:'Amoxicillin 500mg', dosage:'1 Cap', frequency:'1-0-1', duration:'5 Days', quantity: 10, instructions: 'After food' },
+                { medicineId: 'MED001', medicine:'Paracetamol 500mg', dosage:'1 Tab', frequency:'SOS', duration:'3 Days', quantity: 6, instructions: 'As needed' }
             ]
         }];
     }
@@ -2553,19 +2835,17 @@ function detailsLoadClinical(p) {
     if (countRx) countRx.textContent = patientPrescriptions.length;
     detailsRenderPrescriptions(patientPrescriptions);
 
-    // 3. Lab Tests
-    var allLabTests = JSON.parse(
-        localStorage.getItem('cms_lab_tests') || '[]'
-    );
+    // 3. Lab Tests & Completed Results
+    var allLabOrders = getLabOrders();
 
-    patientLabs = allLabTests.filter(function (l) {
+    patientLabs = allLabOrders.filter(function (l) {
         return l.patientId === p.id || l.patientName === p.name;
     });
 
     if (patientLabs.length === 0) {
         patientLabs = [{
-            id: 'LAB-1029', orderDate: '2026-02-14',
-            testName: 'Complete Blood Count (CBC)',
+            id: 'LABREQ-1001', orderDate: '2026-02-14', testId: 'LAB001',
+            testName: 'Complete Blood Count (CBC)', category: 'Hematology',
             status: 'Completed', priority: 'Normal',
             doctorName: 'Dr. Arun Kumar',
             summary: 'Hb: 14.2 g/dL, WBC: 7,800 /mcL, Platelets: 240,000 /mcL (Normal limits)'
@@ -2605,9 +2885,10 @@ function detailsRenderConsultations(consults) {
                 '<b>Prescribed Medications:</b>' +
                 '<ul style="margin:4px 0 8px 18px;padding:0;color:var(--text-primary);">' +
                 c.medicines.map(function (m) {
-                    return '<li><b>' + m.medicine + '</b> — ' +
+                    return '<li><b>' + (m.medicine || m.name) + '</b> — ' +
                         (m.dosage || '') + ' (' + (m.frequency || '') +
-                        ') for ' + (m.duration || '') + '</li>';
+                        ') for ' + (m.duration || '') +
+                        (m.quantity ? ' [Qty: ' + m.quantity + ']' : '') + '</li>';
                 }).join('') + '</ul></div>';
         }
 
@@ -2642,21 +2923,38 @@ function detailsRenderPrescriptions(prescriptions) {
     var tbody = document.getElementById('prescriptionsTableBody');
     if (!tbody) return;
 
+    if (!prescriptions || prescriptions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">No prescriptions recorded.</td></tr>';
+        return;
+    }
+
     tbody.innerHTML = prescriptions.map(function (rx) {
-        return (rx.medicines || []).map(function (m, i) {
+        var meds = rx.medicines || [];
+        if (meds.length === 0) {
             return '<tr>' +
-                (i === 0 ? '<td rowspan="' + rx.medicines.length +
+                '<td style="font-family:monospace;font-weight:600;color:var(--accent);">' + rx.id + '</td>' +
+                '<td>' + rx.date + '</td>' +
+                '<td colspan="3" style="color:var(--text-muted);">No medicines prescribed</td>' +
+                '<td>' + (rx.doctorName || 'Dr. Arun Kumar') + '</td>' +
+                '<td><span class="badge badge-success">' + (rx.status || 'Active') + '</span></td>' +
+                '</tr>';
+        }
+
+        return meds.map(function (m, i) {
+            return '<tr>' +
+                (i === 0 ? '<td rowspan="' + meds.length +
                  '" style="font-family:monospace;font-weight:600;color:var(--accent);">' +
                  rx.id + '</td>' : '') +
-                (i === 0 ? '<td rowspan="' + rx.medicines.length +
+                (i === 0 ? '<td rowspan="' + meds.length +
                  '">' + rx.date + '</td>' : '') +
-                '<td style="font-weight:600;">' + m.medicine + '</td>' +
-                '<td>' + m.dosage + ' (' + m.frequency + ')</td>' +
-                '<td>' + m.duration + '</td>' +
-                (i === 0 ? '<td rowspan="' + rx.medicines.length +
+                '<td style="font-weight:600;">' + (m.medicine || m.name) +
+                (m.quantity ? ' <small style="color:var(--text-muted);">(Qty: ' + m.quantity + ')</small>' : '') + '</td>' +
+                '<td>' + (m.dosage || '—') + ' (' + (m.frequency || '—') + ')</td>' +
+                '<td>' + (m.duration || '—') + '</td>' +
+                (i === 0 ? '<td rowspan="' + meds.length +
                  '">' + (rx.doctorName || 'Dr. Arun Kumar') + '</td>' : '') +
-                (i === 0 ? '<td rowspan="' + rx.medicines.length +
-                 '"><span class="badge badge-success">' +
+                (i === 0 ? '<td rowspan="' + meds.length +
+                 '"><span class="badge ' + (rx.status === 'Dispensed' ? 'badge-success' : 'badge-warning') + '">' +
                  (rx.status || 'Active') + '</span></td>' : '') +
                 '</tr>';
         }).join('');
@@ -2669,20 +2967,27 @@ function detailsRenderLabs(labs) {
     var tbody = document.getElementById('labsTableBody');
     if (!tbody) return;
 
+    if (!labs || labs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">No lab investigations found.</td></tr>';
+        return;
+    }
+
     tbody.innerHTML = labs.map(function (l) {
+        var isCompleted = (l.status === 'Completed');
         return '<tr>' +
             '<td style="font-family:monospace;font-weight:600;color:var(--accent);">' +
-            l.id + '</td>' +
-            '<td>' + l.orderDate + '</td>' +
-            '<td style="font-weight:600;">' + l.testName + '</td>' +
+            (l.id || 'LAB-000') + '</td>' +
+            '<td>' + (l.orderDate || l.requestedAt || TODAY) + '</td>' +
+            '<td style="font-weight:600;">🧪 ' + (l.testName || l.name || 'Lab Test') + '</td>' +
+            '<td><span class="badge" style="background:#f0e9e4;">' + (l.category || 'General') + '</span></td>' +
             '<td><span class="badge ' +
-            (l.status === 'Completed' ? 'badge-success' : 'badge-warning') +
-            '">' + l.status + '</span></td>' +
-            '<td><span class="badge" style="background:#f0e9e4;">' +
+            (isCompleted ? 'badge-success' : 'badge-warning') +
+            '">' + (l.status || 'Pending') + '</span></td>' +
+            '<td><span class="badge ' + (l.priority === 'Urgent' ? 'priority-urgent' : 'priority-normal') + '">' +
             (l.priority || 'Normal') + '</span></td>' +
             '<td>' + (l.doctorName || 'Dr. Arun Kumar') + '</td>' +
-            '<td style="font-size:12px;color:var(--text-secondary);">' +
-            (l.summary || 'Awaiting lab technician results') + '</td></tr>';
+            '<td style="font-size:12px;color:' + (isCompleted ? 'var(--text-primary)' : 'var(--text-muted)') + ';">' +
+            (isCompleted ? (l.summary || 'Investigation completed.') : (l.summary || 'Awaiting lab processing')) + '</td></tr>';
     }).join('');
 }
 
@@ -2844,12 +3149,12 @@ function filterRx() {
     filteredRx = allRx.filter(function (r) {
 
         var medNames = (r.medicines || []).map(function (m) {
-            return m.medicine.toLowerCase();
+            return (m.medicine || m.name || '').toLowerCase();
         }).join(' ');
 
         var matchQ = !q ||
-            r.patientName.toLowerCase().indexOf(q) !== -1 ||
-            r.id.toLowerCase().indexOf(q) !== -1 ||
+            (r.patientName && r.patientName.toLowerCase().indexOf(q) !== -1) ||
+            (r.id && r.id.toLowerCase().indexOf(q) !== -1) ||
             medNames.indexOf(q) !== -1;
 
         var matchS = !status || r.status === status;
@@ -2890,10 +3195,13 @@ function rxRenderTable() {
             (r.patientId || '') + '</div></td>' +
             '<td><div class="med-pill-list">' +
             (r.medicines || []).map(function (m) {
+                var medName = m.medicine || m.name || 'Medicine';
                 return '<div class="med-pill">' +
-                    '<b>💊 ' + m.medicine + '</b> <span>' +
-                    m.dosage + ' (' + m.frequency + ') · ' +
-                    m.duration + '</span></div>';
+                    '<b>💊 ' + medName + '</b> <span>' +
+                    (m.dosage || '') + ' (' + (m.frequency || '') + ') · ' +
+                    (m.duration || '') +
+                    (m.quantity ? ' · Qty: ' + m.quantity : '') +
+                    '</span></div>';
             }).join('') + '</div></td>' +
             '<td>' + (r.doctorName || 'Dr. Arun Kumar') + '</td>' +
             '<td><span class="badge ' +
@@ -2927,14 +3235,21 @@ function viewRxSlip(id) {
 
     var mb = document.getElementById('vMedBody');
     if (mb) {
-        mb.innerHTML = (rx.medicines || []).map(function (m, i) {
-            return '<tr style="border-bottom:1px solid #f0e9e4;">' +
-                '<td style="padding:6px;">' + (i + 1) + '</td>' +
-                '<td style="padding:6px;font-weight:600;">' + m.medicine + '</td>' +
-                '<td style="padding:6px;">' + m.dosage + '</td>' +
-                '<td style="padding:6px;">' + m.frequency + '</td>' +
-                '<td style="padding:6px;">' + m.duration + '</td></tr>';
-        }).join('');
+        var meds = rx.medicines || [];
+        if (meds.length === 0) {
+            mb.innerHTML = '<tr><td colspan="7" style="padding:10px;text-align:center;color:#888;">No medications listed.</td></tr>';
+        } else {
+            mb.innerHTML = meds.map(function (m, i) {
+                return '<tr style="border-bottom:1px solid #f0e9e4;">' +
+                    '<td style="padding:6px;">' + (i + 1) + '</td>' +
+                    '<td style="padding:6px;font-weight:600;">' + (m.medicine || m.name) + '</td>' +
+                    '<td style="padding:6px;">' + (m.dosage || '—') + '</td>' +
+                    '<td style="padding:6px;">' + (m.frequency || '—') + '</td>' +
+                    '<td style="padding:6px;">' + (m.duration || '—') + '</td>' +
+                    '<td style="padding:6px;font-weight:600;">' + (m.quantity !== undefined ? m.quantity : '—') + '</td>' +
+                    '<td style="padding:6px;color:#555;">' + (m.instructions || '—') + '</td></tr>';
+            }).join('');
+        }
     }
 
     var modal = document.getElementById('viewModal');
@@ -2965,19 +3280,17 @@ function initLabTests() {
 
 function loadLabsData() {
 
-    var stored = JSON.parse(
-        localStorage.getItem('cms_lab_tests') || '[]'
-    );
+    allLabTests = getLabOrders();
 
-    if (!stored || stored.length === 0) {
-        stored = DEFAULT_LABS;
+    if (!allLabTests || allLabTests.length === 0) {
+        allLabTests = DEFAULT_LABS;
+        var masterTests = getMasterLabTests();
         localStorage.setItem(
             'cms_lab_tests',
-            JSON.stringify(stored)
+            JSON.stringify(masterTests.concat(DEFAULT_LABS))
         );
     }
 
-    allLabTests = stored;
     filterLabTests();
     labUpdateStats();
     updateSidebarBadge();
@@ -3027,9 +3340,10 @@ function filterLabTests() {
     filteredLabTests = allLabTests.filter(function (l) {
 
         var matchQ = !q ||
-            l.patientName.toLowerCase().indexOf(q) !== -1 ||
-            l.testName.toLowerCase().indexOf(q) !== -1 ||
-            l.id.toLowerCase().indexOf(q) !== -1;
+            (l.patientName && l.patientName.toLowerCase().indexOf(q) !== -1) ||
+            (l.testName && l.testName.toLowerCase().indexOf(q) !== -1) ||
+            (l.id && l.id.toLowerCase().indexOf(q) !== -1) ||
+            (l.category && l.category.toLowerCase().indexOf(q) !== -1);
 
         var matchS = !status   || l.status   === status;
         var matchP = !priority || l.priority === priority;
@@ -3038,6 +3352,11 @@ function filterLabTests() {
     });
 
     labRenderTable();
+}
+
+
+function filterLabs() {
+    filterLabTests();
 }
 
 
@@ -3054,30 +3373,32 @@ function labRenderTable() {
 
     if (filteredLabTests.length === 0) {
         tbody.innerHTML =
-            '<tr><td colspan="8" style="text-align:center;padding:32px;' +
+            '<tr><td colspan="9" style="text-align:center;padding:32px;' +
             'color:var(--text-muted);">No lab investigations found.</td></tr>';
         return;
     }
 
     tbody.innerHTML = filteredLabTests.map(function (l) {
+        var isCompleted = (l.status === 'Completed');
         return '<tr>' +
             '<td style="font-family:monospace;font-weight:600;color:var(--accent);">' +
             l.id + '</td>' +
-            '<td>' + l.orderDate + '</td>' +
+            '<td>' + (l.orderDate || l.requestedAt || TODAY) + '</td>' +
             '<td><div style="font-weight:600;color:var(--text-primary);">' +
-            l.patientName + '</div>' +
+            (l.patientName || 'Unknown') + '</div>' +
             '<div style="font-size:11px;color:var(--text-muted);">' +
             (l.patientId || '') + '</div></td>' +
-            '<td style="font-weight:600;">🧪 ' + l.testName + '</td>' +
+            '<td style="font-weight:600;">🧪 ' + (l.testName || 'Lab Test') + '</td>' +
+            '<td><span class="badge" style="background:#f0e9e4;">' + (l.category || 'General') + '</span></td>' +
             '<td><span class="badge ' +
             (l.priority === 'Urgent' ? 'priority-urgent' : 'priority-normal') +
             '">' + (l.priority || 'Normal') + '</span></td>' +
             '<td><span class="badge ' +
-            (l.status === 'Completed' ? 'badge-success' : 'badge-warning') +
-            '">' + l.status + '</span></td>' +
+            (isCompleted ? 'badge-success' : 'badge-warning') +
+            '">' + (l.status || 'Pending') + '</span></td>' +
             '<td style="font-size:12px;color:var(--text-secondary);' +
             'max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
-            (l.summary || 'Pending lab processing') + '</td>' +
+            (isCompleted ? (l.summary || 'Report ready') : (l.summary || 'Pending sample processing')) + '</td>' +
             '<td style="text-align:right;">' +
             '<button class="btn btn-outline btn-sm" ' +
             'onclick="viewReport(\'' + l.id + '\')">📋 View Report</button>' +
@@ -3098,16 +3419,16 @@ function viewReport(id) {
         if (el) el.textContent = val;
     };
 
-    setEl('repTestTitle', lab.testName);
-    setEl('repSub',       'Order ID: ' + lab.id);
-    setEl('repPatient',   lab.patientName);
-    setEl('repDate',      lab.orderDate);
+    setEl('repTestTitle', lab.testName || 'Lab Investigation');
+    setEl('repSub',       'Request ID: ' + lab.id + (lab.testId ? ' · Test ID: ' + lab.testId : ''));
+    setEl('repPatient',   (lab.patientName || '—') + (lab.patientId ? ' (' + lab.patientId + ')' : ''));
+    setEl('repDate',      lab.orderDate || lab.requestedAt || TODAY);
     setEl('repDoc',       lab.doctorName || 'Dr. Arun Kumar');
-    setEl('repPriority',  lab.priority || 'Normal');
+    setEl('repPriority',  (lab.priority || 'Normal') + (lab.category ? ' · ' + lab.category : ''));
 
     var badge = document.getElementById('repBadge');
     if (badge) {
-        badge.textContent = lab.status;
+        badge.textContent = lab.status || 'Pending';
         badge.className   = 'badge ' +
             (lab.status === 'Completed' ? 'badge-success' : 'badge-warning');
     }
@@ -3115,7 +3436,7 @@ function viewReport(id) {
     var body = document.getElementById('repBody');
     if (body) {
         body.textContent = lab.summary ||
-            'Lab report is in analysis stage. Expected completion within 2 hours.';
+            (lab.status === 'Completed' ? 'Investigation complete. Diagnostic report verified.' : 'Lab request is pending laboratory intake and processing.');
     }
 
     var modal = document.getElementById('reportModal');
@@ -3127,6 +3448,26 @@ function closeReportModal() {
 
     var modal = document.getElementById('reportModal');
     if (modal) modal.classList.remove('open');
+}
+
+
+function populateOrderModalLabTests() {
+
+    var sel = document.getElementById('mTestSelect');
+    if (!sel) return;
+
+    var activeTests = getActiveMasterLabTests();
+    if (activeTests.length === 0) {
+        sel.innerHTML = '<option value="">-- No Active Lab Tests Available --</option>';
+        return;
+    }
+
+    sel.innerHTML = '<option value="">-- Select Lab Test from Master --</option>' +
+        activeTests.map(function (t) {
+            return '<option value="' + t.id + '|' + (t.name || t.testName) + '|' + (t.category || 'General') + '">' +
+                (t.name || t.testName) + ' (' + (t.category || 'General') + ')' +
+                '</option>';
+        }).join('');
 }
 
 
@@ -3144,6 +3485,8 @@ function openOrderModal() {
         }).join('');
     }
 
+    populateOrderModalLabTests();
+
     var modal = document.getElementById('orderModal');
     if (modal) modal.classList.add('open');
 }
@@ -3160,36 +3503,65 @@ function submitNewLabOrder(e) {
 
     e.preventDefault();
 
-    var patVal   = document.getElementById('mPatientSelect').value.split('|');
-    var patId    = patVal[0];
-    var patName  = patVal[1];
-    var testName = document.getElementById('mTestSelect').value;
+    var patSelect = document.getElementById('mPatientSelect');
+    var testSelect = document.getElementById('mTestSelect');
+    if (!patSelect || !testSelect) return;
+
+    var patVal = patSelect.value.split('|');
+    var patId  = patVal[0];
+    var patName = patVal[1] || 'Patient';
+
+    if (!testSelect.value) {
+        showToast('Please select an active lab test.', 'warning');
+        return;
+    }
+
+    var testVal  = testSelect.value.split('|');
+    var testId   = testVal[0];
+    var testName = testVal[1] || testSelect.value;
+    var category = testVal[2] || 'General';
+
     var priority = document.getElementById('mPriority').value;
-    var notes    = document.getElementById('mIndication').value.trim();
+    var notes    = (document.getElementById('mIndication') || {}).value || '';
+    notes = notes.trim();
+
+    var masterTest = findLabTestById(testId);
+    if (!masterTest || (masterTest.status || 'Active').toLowerCase() !== 'active') {
+        showToast('Selected lab test is inactive or invalid.', 'warning');
+        return;
+    }
 
     var newOrder = {
-        id:          'LAB-' + Date.now(),
+        id:          'LABREQ-' + Date.now(),
+        testId:      testId,
+        testName:    testName,
+        category:    category,
         orderDate:   TODAY,
+        requestedAt: getToday() + ' ' + new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }),
         patientId:   patId,
         patientName: patName,
-        testName:    testName,
         priority:    priority,
         status:      'Pending',
-        doctorName:  loggedInUser.name || 'Dr. Arun Kumar',
+        doctorId:    (loggedInUser && loggedInUser.id) || 'DOC001',
+        doctorName:  loggedInUser.name || loggedInUser.username || 'Dr. Arun Kumar',
         summary:     notes
             ? 'Clinical note: ' + notes
-            : 'Test order sent to central diagnostic facility.'
+            : 'Order requested by physician; awaiting diagnostic lab collection.'
     };
 
-    allLabTests.unshift(newOrder);
+    var rawAll = JSON.parse(localStorage.getItem('cms_lab_tests') || '[]');
+    rawAll.unshift(newOrder);
     localStorage.setItem(
         'cms_lab_tests',
-        JSON.stringify(allLabTests)
+        JSON.stringify(rawAll)
     );
+
+    allLabTests.unshift(newOrder);
 
     closeOrderModal();
     filterLabTests();
     labUpdateStats();
+    showToast('Lab request for ' + testName + ' submitted!', 'success');
 }
 
 

@@ -197,6 +197,7 @@
               <th>Order Date</th>
               <th>Patient</th>
               <th>Test Name</th>
+              <th>Category</th>
               <th>Priority</th>
               <th>Status</th>
               <th>Result / Summary</th>
@@ -236,17 +237,7 @@
       <div style="margin-bottom:12px;">
         <label class="form-label" style="font-size:12px; font-weight:600;">Investigation / Test Name *</label>
         <select id="mTestSelect" required style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; background:var(--surface);">
-          <option value="Complete Blood Count (CBC)">Complete Blood Count (CBC)</option>
-          <option value="Fasting Blood Sugar (FBS)">Fasting Blood Sugar (FBS)</option>
-          <option value="HbA1c Glycated Hemoglobin">HbA1c Glycated Hemoglobin</option>
-          <option value="Lipid Profile">Lipid Profile</option>
-          <option value="Liver Function Test (LFT)">Liver Function Test (LFT)</option>
-          <option value="Renal Function Test (RFT)">Renal Function Test (RFT)</option>
-          <option value="Thyroid Profile (T3, T4, TSH)">Thyroid Profile (T3, T4, TSH)</option>
-          <option value="Urine Routine Examination">Urine Routine Examination</option>
-          <option value="Serum Electrolytes">Serum Electrolytes</option>
-          <option value="12-Lead ECG">12-Lead ECG</option>
-          <option value="Chest X-Ray PA View">Chest X-Ray PA View</option>
+          <!-- Populated dynamically from cms_lab_tests -->
         </select>
       </div>
 
