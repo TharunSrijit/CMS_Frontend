@@ -156,7 +156,8 @@
                     </a>
 
                     <a href="dispense-medicine.html"
-                       class="btn btn-primary">
+                       class="btn btn-primary"
+                       id="rxTopDispenseBtn">
 
                         Dispense Medicine
 
@@ -173,8 +174,8 @@
 
                     <div>
 
-                        <div class="card-title">
-                            Prescription P001
+                        <div class="card-title" id="rxTitle">
+                            Prescription Details
                         </div>
 
                         <div class="card-subtitle">
@@ -183,7 +184,7 @@
 
                     </div>
 
-                    <span class="badge badge-warning">
+                    <span class="badge badge-warning" id="rxStatusBadge">
                         Pending
                     </span>
 
@@ -198,8 +199,8 @@
 
                             <strong>Patient</strong>
 
-                            <p>
-                                Rahul
+                            <p id="rxPatient">
+                                —
                             </p>
 
                         </div>
@@ -208,8 +209,8 @@
 
                             <strong>Doctor</strong>
 
-                            <p>
-                                Dr. Arun
+                            <p id="rxDoctor">
+                                —
                             </p>
 
                         </div>
@@ -218,8 +219,8 @@
 
                             <strong>Date</strong>
 
-                            <p>
-                                28-09-2026
+                            <p id="rxDate">
+                                —
                             </p>
 
                         </div>
@@ -228,8 +229,8 @@
 
                             <strong>Prescription ID</strong>
 
-                            <p>
-                                P001
+                            <p id="rxId">
+                                —
                             </p>
 
                         </div>
@@ -265,60 +266,24 @@
                                 <th>Medicine</th>
                                 <th>Dosage</th>
                                 <th>Duration</th>
-                                <th>Quantity</th>
+                                <th>Instructions / Quantity</th>
 
                             </tr>
 
                         </thead>
 
-                        <tbody>
-
-                            <tr>
-
-                                <td class="td-primary">
-                                    Paracetamol
-                                </td>
-
-                                <td>
-                                    500 mg - 1 tablet
-                                </td>
-
-                                <td>
-                                    5 Days
-                                </td>
-
-                                <td>
-                                    5
-                                </td>
-
-                            </tr>
-
-                            <tr>
-
-                                <td class="td-primary">
-                                    Amoxicillin
-                                </td>
-
-                                <td>
-                                    500 mg - 1 tablet
-                                </td>
-
-                                <td>
-                                    7 Days
-                                </td>
-
-                                <td>
-                                    7
-                                </td>
-
-                            </tr>
-
+                        <tbody id="rxMedicinesTable">
+                            <!-- Populated dynamically by js/pharmacy.js -->
                         </tbody>
 
                     </table>
 
                 </div>
 
+            </div>
+
+            <div id="rxActionContainer" style="margin-top:20px;display:flex;gap:12px;align-items:center;">
+                <!-- Dispense button injected dynamically -->
             </div>
 
         </div>

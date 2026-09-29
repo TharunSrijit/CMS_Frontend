@@ -31,7 +31,7 @@ const STORAGE_KEYS = {
 
     // Pharmacy
     medicines: "cms_medicines",
-    prescriptions: "cms_pharmacy_prescriptions",
+    pharmacyPrescriptions: "cms_pharmacy_prescriptions",
 
     // Common
     notifications: "cms_notifications"

@@ -1891,6 +1891,29 @@ function completeConsultation() {
         );
     }
 
+    // 5. Auto-generate billing record for consultation
+    try {
+        var billingList = JSON.parse(
+            localStorage.getItem('cms_billing') || '[]'
+        );
+        billingList.unshift({
+            id:          'BILL' + String(Date.now()).slice(-5),
+            patientId:   consultRecord.patientId,
+            patientName: consultRecord.patientName,
+            amount:      '500',
+            method:      'Cash',
+            notes:       'Consultation fee — ' + (consultRecord.diagnosis || 'General OPD'),
+            status:      'Unpaid',
+            date:        TODAY
+        });
+        localStorage.setItem(
+            'cms_billing',
+            JSON.stringify(billingList)
+        );
+    } catch (e) {
+        console.error('Error generating bill from consultation', e);
+    }
+
     showToast(
         'Consultation for ' + activeAppt.patientName + ' saved!',
         'success'

@@ -225,7 +225,25 @@ function initials_(name) { return (name||'?').split(' ').map(w=>w[0]).join('').t
 
 let selectedPat = null;
 
+function loadDoctorOptions() {
+  const docSelect = document.getElementById('doctorSelect');
+  if (!docSelect) return;
+  const storedDoctors = JSON.parse(localStorage.getItem('cms_doctors') || '[]');
+  const activeDoctors = storedDoctors.filter(d => !d.status || d.status.toLowerCase() === 'active');
+  if (activeDoctors.length > 0) {
+    const currentVal = docSelect.value;
+    docSelect.innerHTML = '<option value="">Select doctor</option>' +
+      activeDoctors.map(d => {
+        const spec = d.specialization || d.department || 'General';
+        const label = `${d.name} — ${spec}`;
+        return `<option value="${d.name}">${label}</option>`;
+      }).join('');
+    if (currentVal) docSelect.value = currentVal;
+  }
+}
+
 function pageInit() {
+  loadDoctorOptions();
   // Set default date to today
   document.getElementById('apptDate').value = TODAY;
   // Check URL for pre-selected patient
