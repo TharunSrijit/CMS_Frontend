@@ -1,20 +1,17 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
 
-```
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-<title>Pharmacy Billing</title>
+    <title>Pharmacy Billing</title>
 
-<link rel="stylesheet" href="../css/style.css">
-<link rel="stylesheet" href="../css/forms.css">
-```
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/forms.css">
 
 </head>
 
@@ -22,7 +19,6 @@
 
 <div class="app-wrapper">
 
-```
 <!-- =========================================================
      SIDEBAR
 ========================================================== -->
@@ -150,6 +146,15 @@
 
     </nav>
 
+    <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">PH</div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="sidebarName">Pharmacist</div>
+            <div class="sidebar-user-role">Pharmacy</div>
+        </div>
+        <button class="sidebar-logout-btn" onclick="logout()" title="Logout">⏏</button>
+    </div>
+
 </aside>
 
 
@@ -211,7 +216,7 @@
                 </h1>
 
                 <p class="page-subtitle">
-                    Generate medicine bills from the Admin Medicine Master
+                    Process payments and manage direct pharmacy sales
                 </p>
 
             </div>
@@ -220,7 +225,7 @@
 
 
         <!-- =================================================
-             CREATE BILL
+             CREATE BILL (FOR DIRECT SALE)
         ================================================== -->
 
         <div class="form-section">
@@ -234,11 +239,11 @@
                 <div>
 
                     <div class="form-section-title">
-                        Create Bill
+                        Create Direct Pharmacy Bill
                     </div>
 
                     <div class="form-section-subtitle">
-                        Select medicines and quantities
+                        Select medicines and quantities for direct sales (Prescription bills are generated from Prescription Details)
                     </div>
 
                 </div>
@@ -278,7 +283,7 @@
                             for="patientId"
                             class="form-label">
 
-                            Patient ID
+                            Patient ID (Optional)
 
                         </label>
 
@@ -313,8 +318,7 @@
 
                         <select
                             id="billMedicine"
-                            class="form-control"
-                            onchange="calculateBill()">
+                            class="form-control">
 
                             <option value="">
                                 Select Medicine
@@ -341,8 +345,7 @@
                             class="form-control"
                             value="1"
                             min="1"
-                            step="1"
-                            oninput="calculateBill()">
+                            step="1">
 
                     </div>
 
@@ -408,7 +411,7 @@
                 </button>
 
 
-                <p id="billMessage"></p>
+                <p id="billMessage" style="margin-top:10px;"></p>
 
 
                 <br>
@@ -581,44 +584,48 @@
                      ACTION BUTTONS
                 ================================================== -->
 
-                <button
-                    type="button"
-                    class="btn btn-success"
-                    onclick="generateBill()">
+                <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
 
-                    Generate Bill
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="generateBill()">
 
-                </button>
+                        📄 Generate Bill (Direct Sale)
 
-
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    onclick="processPharmacyPayment()">
-
-                    Process Payment
-
-                </button>
+                    </button>
 
 
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    onclick="printPharmacyBill()">
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="processPharmacyPayment()">
 
-                    Print Bill
+                        💳 Process Payment
 
-                </button>
+                    </button>
 
 
-                <p id="paymentMessage"></p>
+                    <button
+                        type="button"
+                        class="btn btn-outline"
+                        onclick="printPharmacyBill()">
+
+                        🖨️ Print Bill / Receipt
+
+                    </button>
+
+                </div>
+
+
+                <p id="paymentMessage" style="margin-top:12px;"></p>
 
 
                 <!-- RECEIPT / BILL OUTPUT -->
 
                 <div
                     id="pharmacyBillReceipt"
-                    style="display:none;">
+                    style="display:none;margin-top:20px;">
 
                 </div>
 
@@ -631,7 +638,6 @@
     </div>
 
 </main>
-```
 
 </div>
 
@@ -642,117 +648,6 @@
 <script src="../js/pharmacy.js"></script>
 
 <script src="../js/validation.js"></script>
-
-<!-- =========================================================
-     BILLING UI HELPERS
-========================================================== -->
-
-<script>
-
-function updateBillingMedicineDetails() {
-
-    const select =
-        document.getElementById("billMedicine");
-
-    const priceField =
-        document.getElementById("billPrice");
-
-    const stockField =
-        document.getElementById("billStock");
-
-    const reorderField =
-        document.getElementById("billReorderLevel");
-
-
-    if (!select) {
-        return;
-    }
-
-
-    const medicineId =
-        select.value;
-
-
-    const medicines =
-        JSON.parse(
-            localStorage.getItem("cms_medicines") || "[]"
-        );
-
-
-    const medicine =
-        medicines.find(function (item) {
-
-            return String(item.id) === String(medicineId);
-
-        });
-
-
-    if (!medicine) {
-
-        if (priceField) {
-            priceField.value = "₹0.00";
-        }
-
-        if (stockField) {
-            stockField.textContent = "0";
-        }
-
-        if (reorderField) {
-            reorderField.textContent = "0";
-        }
-
-        return;
-    }
-
-
-    if (priceField) {
-
-        priceField.value =
-            "₹" +
-            Number(medicine.price || 0).toFixed(2);
-
-    }
-
-
-    if (stockField) {
-
-        stockField.textContent =
-            Number(medicine.stock || 0);
-
-    }
-
-
-    if (reorderField) {
-
-        reorderField.textContent =
-            Number(medicine.reorderLevel || 0);
-
-    }
-
-}
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        const medicineSelect =
-            document.getElementById("billMedicine");
-
-
-        if (medicineSelect) {
-
-            medicineSelect.addEventListener(
-                "change",
-                updateBillingMedicineDetails
-            );
-
-        }
-
-    }
-);
-
-</script>
 
 </body>
 
