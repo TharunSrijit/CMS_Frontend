@@ -2057,34 +2057,7 @@ function completeConsultation() {
         );
     }
 
-    // 5. Auto-generate billing record for consultation
-    var CONSULTATION_FEE = 500;
-    try {
-        var billingList = JSON.parse(
-            localStorage.getItem('cms_billing') || '[]'
-        );
-        billingList.unshift({
-            id:          'BILL' + String(Date.now()).slice(-8),
-            type:        'Consultation',
-            patientId:   consultRecord.patientId,
-            patientName: consultRecord.patientName,
-            doctor:      consultRecord.doctorName || '',
-            amount:      CONSULTATION_FEE,
-            status:      'Unpaid',
-            method:      '',
-            reference:   '',
-            notes:       'Consultation fee — ' + (consultRecord.diagnosis || 'General OPD'),
-            date:        TODAY,
-            paidDate:    '',
-            paidAt:      ''
-        });
-        localStorage.setItem(
-            'cms_billing',
-            JSON.stringify(billingList)
-        );
-    } catch (e) {
-        console.error('Error generating bill from consultation', e);
-    }
+    // Note: Consultation bill is created by Receptionist upon patient arrival, not after doctor consultation.
 
     localStorage.removeItem('cms_active_appointment');
 

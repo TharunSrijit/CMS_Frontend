@@ -100,7 +100,7 @@
     </div>
 
     <!-- Stat row -->
-    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+    <div class="stats-grid" style="margin-bottom:24px;">
       <div class="stat-card terra"><div class="stat-card-top"><div><div class="stat-card-label">Total</div><div class="stat-card-value" id="s1">0</div></div><div class="stat-card-icon">📅</div></div></div>
       <div class="stat-card warning"><div class="stat-card-top"><div><div class="stat-card-label">Waiting</div><div class="stat-card-value" id="s2">0</div></div><div class="stat-card-icon">⏳</div></div></div>
       <div class="stat-card info"><div class="stat-card-top"><div><div class="stat-card-label">In Progress</div><div class="stat-card-value" id="s3">0</div></div><div class="stat-card-icon">🩺</div></div></div>
@@ -113,9 +113,10 @@
           <span class="table-title">Appointment List</span>
           <span class="table-count" id="apptCount">0</span>
         </div>
-        <div class="table-header-right">
+        <div class="table-header-right" style="display:flex;gap:6px;flex-wrap:wrap;">
           <button class="btn btn-ghost btn-sm" onclick="filterStatus('')">All</button>
           <button class="btn btn-ghost btn-sm" onclick="filterStatus('Waiting')">Waiting</button>
+          <button class="btn btn-ghost btn-sm" onclick="filterStatus('Arrived')">Arrived</button>
           <button class="btn btn-ghost btn-sm" onclick="filterStatus('Booked')">Booked</button>
           <button class="btn btn-ghost btn-sm" onclick="filterStatus('Completed')">Completed</button>
         </div>
@@ -127,7 +128,7 @@
         </div>
         <select class="table-filter-select" id="statusFilter" onchange="renderTable()">
           <option value="">All Statuses</option>
-          <option>Booked</option><option>Confirmed</option><option>Waiting</option>
+          <option>Booked</option><option>Confirmed</option><option>Arrived</option><option>Waiting</option>
           <option>In Progress</option><option>Completed</option><option>Cancelled</option>
         </select>
         <select class="table-filter-select" id="typeFilter" onchange="renderTable()">
@@ -145,7 +146,7 @@
               <th>Doctor</th>
               <th class="col-w-100">Type</th>
               <th class="col-w-120">Status</th>
-              <th class="td-actions col-w-140">Actions</th>
+              <th class="td-actions" style="min-width:200px;">Actions</th>
             </tr>
           </thead>
           <tbody id="apptBody"></tbody>
@@ -244,6 +245,64 @@ function filterStatus(s) {
   renderTable();
 }
 
+const CONSULTATION_FEE = 500;
+
+function getConsultationBill(apptId) {
+  const bills = JSON.parse(localStorage.getItem('cms_billing') || '[]');
+  return bills.find(b => b.type === 'Consultation' && b.appointmentId === apptId);
+}
+
+function confirmArrival(id) {
+  const all = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+  const appt = all.find(a => a.id === id);
+  if (!appt) return;
+
+  const bills = JSON.parse(localStorage.getItem('cms_billing') || '[]');
+  let bill = bills.find(b => b.type === 'Consultation' && b.appointmentId === id);
+  if (!bill) {
+    bill = {
+      id: 'BILL' + String(Date.now()).slice(-6) + String(Math.floor(Math.random() * 900 + 100)),
+      type: 'Consultation',
+      patientId: appt.patientId,
+      patientName: appt.patientName,
+      doctor: appt.doctor || '',
+      appointmentId: appt.id,
+      amount: CONSULTATION_FEE,
+      status: 'Unpaid',
+      method: '',
+      reference: '',
+      notes: 'Consultation fee — ' + (appt.type || 'General OPD'),
+      date: TODAY,
+      paidDate: '',
+      paidAt: ''
+    };
+    bills.push(bill);
+    localStorage.setItem('cms_billing', JSON.stringify(bills));
+  }
+
+  appt.status = 'Arrived';
+  localStorage.setItem('cms_appointments', JSON.stringify(all));
+  showToast('Arrival confirmed for ' + appt.patientName + '. Consultation bill created.', 'success');
+  loadAppts();
+}
+
+function issueToken(id) {
+  const all = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
+  const appt = all.find(a => a.id === id);
+  if (!appt) return;
+
+  const bill = getConsultationBill(id);
+  if (!bill || bill.status !== 'Paid') {
+    showToast('Please collect the consultation fee before issuing the token.', 'warning');
+    return;
+  }
+
+  appt.status = 'Waiting';
+  localStorage.setItem('cms_appointments', JSON.stringify(all));
+  showToast('Token #' + String(appt.token).padStart(2,'0') + ' issued to ' + appt.patientName + ' — in queue ✅', 'success');
+  loadAppts();
+}
+
 function renderTable() {
   const q = document.getElementById('apptSearch').value.toLowerCase();
   const sf= document.getElementById('statusFilter').value;
@@ -259,21 +318,40 @@ function renderTable() {
     tbody.innerHTML = '<tr><td colspan="7"><div class="table-empty"><div class="table-empty-icon">📭</div><div class="table-empty-title">No appointments found</div></div></td></tr>';
     return;
   }
-  const sc = {Booked:'badge-info',Confirmed:'badge-primary',Waiting:'badge-warning','In Progress':'badge-primary',Completed:'badge-success',Cancelled:'badge-danger'};
+  const sc = {Booked:'badge-info',Confirmed:'badge-primary',Arrived:'badge-warning',Waiting:'badge-warning','In Progress':'badge-primary',Completed:'badge-success',Cancelled:'badge-danger'};
   const ti = {General:'🩺','Follow-up':'🔄',Emergency:'🚨'};
-  tbody.innerHTML = data.map(a => `<tr>
+  tbody.innerHTML = data.map(a => {
+    const bill = getConsultationBill(a.id);
+    const isBillPaid = bill && bill.status === 'Paid';
+    let actionButtons = '';
+
+    if (a.status === 'Booked' || a.status === 'Confirmed') {
+      actionButtons += `<button class="action-btn approve" title="Confirm Patient Arrival" onclick="confirmArrival('${a.id}')">📍 Confirm Arrival</button>`;
+    } else if (a.status === 'Arrived') {
+      if (!isBillPaid) {
+        actionButtons += `<a href="billing.html?search=${encodeURIComponent(a.id)}" class="action-btn view" title="Collect Consultation Fee" style="color:var(--clr-terracotta,#9C6B5D);font-weight:600;">💰 Pay Bill</a>`;
+      }
+      actionButtons += `<button class="action-btn approve" title="Issue Token" onclick="issueToken('${a.id}')">🎫 Issue Token</button>`;
+    } else if (a.status === 'Waiting' || a.status === 'In Progress') {
+      actionButtons += `<button class="action-btn approve" title="Complete" onclick="setApptStatus('${a.id}','Completed')">✅</button>`;
+    }
+
+    if (a.status !== 'Completed' && a.status !== 'Cancelled') {
+      actionButtons += `<button class="action-btn delete" title="Cancel" onclick="cancelAppt('${a.id}','${a.patientName}')">✕</button>`;
+    }
+
+    return `<tr>
     <td><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-xs);background:${a.status==='In Progress'?'var(--accent)':'var(--clr-blush)'};color:${a.status==='In Progress'?'#fff':'var(--accent)'};font-weight:700;font-size:var(--text-xs);">${String(a.token).padStart(2,'0')}</span></td>
     <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:${avatarColor(a.patientId)}">${initials_(a.patientName)}</div><div><div class="td-primary">${a.patientName}</div><div style="font-size:var(--text-xs);color:var(--text-muted);">${a.patientId}</div></div></div></td>
     <td style="font-weight:600;font-size:var(--text-sm);">${a.time}</td>
     <td style="font-size:var(--text-xs);">${a.doctor}</td>
     <td style="font-size:var(--text-xs);">${ti[a.type]||'📋'} ${a.type}</td>
-    <td><span class="badge ${sc[a.status]||'badge-neutral'}">${a.status}</span></td>
+    <td><span class="badge ${sc[a.status]||'badge-neutral'}">${a.status}</span>${a.status==='Arrived' ? (isBillPaid ? '<div style="font-size:10px;color:var(--success);font-weight:600;margin-top:2px;">Bill Paid</div>' : '<div style="font-size:10px;color:var(--warning-dark,#b78103);font-weight:600;margin-top:2px;">Fee Unpaid</div>') : ''}</td>
     <td class="td-actions"><div class="td-actions-group">
-      ${a.status==='Booked'||a.status==='Confirmed'?`<button class="action-btn approve" title="Check In" onclick="setApptStatus('${a.id}','Waiting')">✓ Check In</button>`:''}
-      ${a.status==='Waiting'||a.status==='In Progress'?`<button class="action-btn approve" title="Complete" onclick="setApptStatus('${a.id}','Completed')">✅</button>`:''}
-      ${a.status!=='Completed'&&a.status!=='Cancelled'?`<button class="action-btn delete" title="Cancel" onclick="cancelAppt('${a.id}','${a.patientName}')">✕</button>`:''}
+      ${actionButtons}
     </div></td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 function setApptStatus(id, s) {

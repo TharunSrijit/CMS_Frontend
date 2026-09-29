@@ -170,15 +170,13 @@
     <div class="page-header">
       <div class="page-header-left">
         <h1 class="page-title">Billing</h1>
-        <p class="page-subtitle">Manage invoices, record payments, and print bills & receipts.</p>
+        <p class="page-subtitle">Manage registration & consultation bills, record payments, and print receipts.</p>
       </div>
-      <div class="page-actions">
-        <button class="btn btn-primary btn-sm" onclick="openNewBill()">+ New Invoice</button>
-      </div>
+      <div class="page-actions"></div>
     </div>
 
     <!-- Stats -->
-    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+    <div class="stats-grid" style="margin-bottom:24px;">
       <div class="stat-card terra"><div class="stat-card-top"><div><div class="stat-card-label">Total Invoices</div><div class="stat-card-value" id="bTotal">0</div></div><div class="stat-card-icon">🧾</div></div></div>
       <div class="stat-card danger"><div class="stat-card-top"><div><div class="stat-card-label">Unpaid</div><div class="stat-card-value" id="bUnpaid">0</div></div><div class="stat-card-icon">💸</div></div></div>
       <div class="stat-card success"><div class="stat-card-top"><div><div class="stat-card-label">Paid Today</div><div class="stat-card-value" id="bPaid">0</div></div><div class="stat-card-icon">✅</div></div></div>
@@ -196,8 +194,6 @@
             <button class="filter-pill active" data-type="" onclick="setTypeFilter(this, '')">All</button>
             <button class="filter-pill" data-type="Registration" onclick="setTypeFilter(this, 'Registration')">Registration</button>
             <button class="filter-pill" data-type="Consultation" onclick="setTypeFilter(this, 'Consultation')">Consultation</button>
-            <button class="filter-pill" data-type="Pharmacy" onclick="setTypeFilter(this, 'Pharmacy')">Pharmacy</button>
-            <button class="filter-pill" data-type="Lab" onclick="setTypeFilter(this, 'Lab')">Lab</button>
           </div>
           <div class="search-input-wrap" style="position:relative;">
             <input type="text" class="table-search-input" id="searchBilling" placeholder="🔍 Search patient, ID..." oninput="searchBills(this.value)" style="padding:6px 12px;border:1px solid var(--border-light);border-radius:var(--radius-md);font-size:var(--text-xs);width:190px;" />
@@ -234,8 +230,8 @@
 <div id="billModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(61,42,37,.45);
      backdrop-filter:blur(3px);z-index:2000;" onclick="closeBillModal()"></div>
 <div id="billModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-     width:460px;max-width:95vw;background:#fff;border-radius:var(--radius-lg);
-     box-shadow:var(--shadow-xl);z-index:2001;overflow:hidden;">
+     width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;background:#fff;border-radius:var(--radius-lg);
+     box-shadow:var(--shadow-xl);z-index:2001;">
   <div style="padding:20px 24px;background:var(--clr-blush);border-bottom:1px solid var(--border-light);">
     <div style="font-size:var(--text-lg);font-weight:700;">New Invoice</div>
   </div>
@@ -280,8 +276,8 @@
 <div id="payModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(61,42,37,.45);
      backdrop-filter:blur(3px);z-index:2000;" onclick="closePayModal()"></div>
 <div id="payModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-     width:460px;max-width:95vw;background:#fff;border-radius:var(--radius-lg);
-     box-shadow:var(--shadow-xl);z-index:2001;overflow:hidden;">
+     width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;background:#fff;border-radius:var(--radius-lg);
+     box-shadow:var(--shadow-xl);z-index:2001;">
   <div style="padding:20px 24px;background:var(--clr-blush);border-bottom:1px solid var(--border-light);">
     <div style="font-size:var(--text-lg);font-weight:700;">Record Payment</div>
   </div>
@@ -316,8 +312,8 @@
 <div id="viewBillModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(61,42,37,.45);
      backdrop-filter:blur(3px);z-index:2000;" onclick="closeViewBillModal()"></div>
 <div id="viewBillModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-     width:480px;max-width:95vw;background:#fff;border-radius:var(--radius-lg);
-     box-shadow:var(--shadow-xl);z-index:2001;overflow:hidden;">
+     width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;background:#fff;border-radius:var(--radius-lg);
+     box-shadow:var(--shadow-xl);z-index:2001;">
   <div style="padding:20px 24px;background:var(--clr-blush);border-bottom:1px solid var(--border-light);">
     <div style="font-size:var(--text-lg);font-weight:700;">📋 Bill Details</div>
   </div>
@@ -334,8 +330,8 @@
 <div id="receiptModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(61,42,37,.45);
      backdrop-filter:blur(3px);z-index:2000;" onclick="closeReceiptModal()"></div>
 <div id="receiptModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-     width:420px;max-width:95vw;background:#fff;border-radius:var(--radius-lg);
-     box-shadow:var(--shadow-xl);z-index:2001;overflow:hidden;">
+     width:420px;max-width:95vw;max-height:90vh;overflow-y:auto;background:#fff;border-radius:var(--radius-lg);
+     box-shadow:var(--shadow-xl);z-index:2001;">
   <div style="padding:20px 24px;background:var(--success-light);border-bottom:1px solid var(--border-light);">
     <div style="font-size:var(--text-lg);font-weight:700;color:var(--success);">✅ Payment Receipt</div>
   </div>
@@ -416,15 +412,22 @@ const AVATAR_COLOURS = ['#9C6B5D','#7e5249','#5c3a32','#2980b9','#27ae60','#d689
 function avatarColor(id) { const n=(id||'').replace(/\D/g,''); return AVATAR_COLOURS[parseInt(n||'0')%AVATAR_COLOURS.length]; }
 function initials_(name) { return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 
+const REGISTRATION_FEE = 100;
+const CONSULTATION_FEE = 500;
+
 function pageInit() {
   const params = new URLSearchParams(window.location.search);
-  const q = params.get('search') || params.get('patient') || '';
+  const q = params.get('search') || params.get('patient') || params.get('id') || '';
   if (q) {
     const searchInput = document.getElementById('searchBilling');
     if (searchInput) searchInput.value = q;
     currentSearchQuery = q.toLowerCase();
   }
   renderBills();
+  const payId = params.get('pay');
+  if (payId) {
+    openPayModal(payId);
+  }
 }
 
 /* ── STATE ── */
@@ -455,7 +458,7 @@ function billTypeClass(type) {
 }
 
 function generateBillId() {
-  return 'BILL' + String(Date.now()).slice(-8);
+  return 'BILL' + String(Date.now()).slice(-6) + String(Math.floor(Math.random() * 900 + 100));
 }
 
 /* ── TYPE FILTER ── */
@@ -474,7 +477,14 @@ function searchBills(val) {
 
 /* ── RENDER ── */
 function renderBills() {
-  let bills = getBills();
+  const allStored = getBills();
+  // Receptionist module displays and manages only Registration and Consultation bills
+  const recepBills = allStored.filter(b => {
+    const t = billType(b);
+    return t === 'Registration' || t === 'Consultation';
+  });
+
+  let bills = recepBills;
   const statusFilter = document.getElementById('billFilter').value;
 
   // Apply type filter
@@ -486,23 +496,26 @@ function renderBills() {
     bills = bills.filter(b =>
       (b.patientName || '').toLowerCase().includes(currentSearchQuery) ||
       (b.patientId || '').toLowerCase().includes(currentSearchQuery) ||
+      (b.appointmentId || '').toLowerCase().includes(currentSearchQuery) ||
       (b.id || '').toLowerCase().includes(currentSearchQuery)
     );
   }
 
-  const allB = getBills();
-  const paidToday = allB.filter(b => b.status === 'Paid' && b.paidDate === TODAY);
+  // Show newest invoices first
+  bills = bills.slice().reverse();
+
+  const paidToday = recepBills.filter(b => b.status === 'Paid' && b.paidDate === TODAY);
   const totalRevenue = paidToday.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
 
-  document.getElementById('bTotal').textContent  = allB.length;
-  document.getElementById('bUnpaid').textContent = allB.filter(b => b.status === 'Unpaid').length;
+  document.getElementById('bTotal').textContent  = recepBills.length;
+  document.getElementById('bUnpaid').textContent = recepBills.filter(b => b.status === 'Unpaid').length;
   document.getElementById('bPaid').textContent   = paidToday.length;
   document.getElementById('bRevenue').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
   document.getElementById('billCount').textContent = bills.length + ' invoices';
 
   const tbody = document.getElementById('billBody');
   if (!bills.length) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="table-empty"><div class="table-empty-icon">🧾</div><div class="table-empty-title">No invoices found</div><div class="table-empty-desc">Try adjusting your filters or create a new invoice.</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="table-empty"><div class="table-empty-icon">🧾</div><div class="table-empty-title">No invoices found</div><div class="table-empty-desc">No registration or consultation invoices matching your filters.</div></div></td></tr>';
     return;
   }
 
@@ -805,12 +818,14 @@ function receiptHtml(r) {
     </div>
     <div style="font-size:var(--text-sm);line-height:1.8;">
       <div style="display:flex;justify-content:space-between;"><span>Receipt No.</span><strong>${esc(r.receiptNo)}</strong></div>
-      <div style="display:flex;justify-content:space-between;"><span>Invoice No.</span><strong>${esc(r.invoiceId)}</strong></div>
-      <div style="display:flex;justify-content:space-between;"><span>Bill Type</span><strong><span class="bill-type-badge ${billTypeClass(type)}">${esc(type)}</span></strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Bill No.</span><strong>${esc(r.invoiceId)}</strong></div>
       <div style="border-top:1px dashed var(--border-light);margin:8px 0;"></div>
-      <div style="display:flex;justify-content:space-between;"><span>Patient</span><strong>${esc(r.patientName)} (${esc(r.patientId)})</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Patient</span><strong>${esc(r.patientName)}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Patient ID</span><strong>${esc(r.patientId)}</strong></div>
+      <div style="border-top:1px dashed var(--border-light);margin:8px 0;"></div>
+      <div style="display:flex;justify-content:space-between;"><span>Bill Type</span><strong><span class="bill-type-badge ${billTypeClass(type)}">${esc(type)}</span></strong></div>
       ${doctor ? `<div style="display:flex;justify-content:space-between;"><span>Doctor</span><strong>${esc(doctor)}</strong></div>` : ''}
-      <div style="display:flex;justify-content:space-between;"><span>Date</span><strong>${when.toLocaleString('en-IN')}</strong></div>
+      <div style="display:flex;justify-content:space-between;"><span>Date</span><strong>${when.toLocaleDateString('en-IN')}</strong></div>
       <div style="border-top:1px dashed var(--border-light);margin:8px 0;"></div>
       <div style="display:flex;justify-content:space-between;"><span>Mode of Payment</span><strong>${esc(r.method)}</strong></div>
       ${r.reference?`<div style="display:flex;justify-content:space-between;"><span>Reference</span><strong>${esc(r.reference)}</strong></div>`:''}
@@ -854,19 +869,20 @@ function printCurrentReceipt() {
     <div class="print-subheader">PAYMENT RECEIPT</div>
     <div class="print-divider"></div>
     <div class="print-row"><span>Receipt No:</span><strong>${esc(r.receiptNo)}</strong></div>
-    <div class="print-row"><span>Invoice No:</span><strong>${esc(r.invoiceId)}</strong></div>
+    <div class="print-row"><span>Bill No:</span><strong>${esc(r.invoiceId)}</strong></div>
+    <div class="print-divider"></div>
+    <div class="print-row"><span>Patient:</span><strong>${esc(r.patientName)}</strong></div>
+    <div class="print-row"><span>Patient ID:</span><strong>${esc(r.patientId)}</strong></div>
+    <div class="print-divider"></div>
     <div class="print-row"><span>Bill Type:</span><strong>${esc(type)}</strong></div>
-    <div class="print-divider"></div>
-    <div class="print-row"><span>Patient:</span><strong>${esc(r.patientName)} (${esc(r.patientId)})</strong></div>
     ${doctor ? `<div class="print-row"><span>Doctor:</span><strong>${esc(doctor)}</strong></div>` : ''}
-    <div class="print-row"><span>Date:</span><strong>${when.toLocaleString('en-IN')}</strong></div>
     <div class="print-divider"></div>
+    <div class="print-total-row"><span>Amount Paid:</span><span>₹${Number(r.amount).toFixed(2)}</span></div>
     <div class="print-row"><span>Payment Method:</span><strong>${esc(r.method)}</strong></div>
     ${r.reference ? `<div class="print-row"><span>Reference:</span><strong>${esc(r.reference)}</strong></div>` : ''}
     <div class="print-divider"></div>
-    <div class="print-total-row"><span>Amount Paid</span><span>₹${Number(r.amount).toFixed(2)}</span></div>
-    <div class="print-divider"></div>
     <div class="print-row"><span>Collected By:</span><strong>${esc(r.cashier)}</strong></div>
+    <div class="print-row"><span>Date:</span><strong>${when.toLocaleDateString('en-IN')}</strong></div>
     <div class="print-divider"></div>
   `;
 
