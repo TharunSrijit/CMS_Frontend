@@ -115,11 +115,11 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
               <div class="form-group">
                 <label class="form-label required" for="firstName">First Name</label>
-                <input class="form-input" type="text" id="firstName" placeholder="e.g. Rahul" required />
+                <input class="form-input" type="text" id="firstName" data-validate="person-name" placeholder="e.g. Rahul" required />
               </div>
               <div class="form-group">
                 <label class="form-label required" for="lastName">Last Name</label>
-                <input class="form-input" type="text" id="lastName" placeholder="e.g. Menon" required />
+                <input class="form-input" type="text" id="lastName" data-validate="person-name" placeholder="e.g. Menon" required />
               </div>
             </div>
 
@@ -137,7 +137,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label" for="dob">Date of Birth</label>
-                <input class="form-input" type="date" id="dob" />
+                <input class="form-input" type="date" id="dob" data-validate="date-not-future" />
               </div>
             </div>
 
@@ -152,14 +152,14 @@
               </div>
               <div class="form-group">
                 <label class="form-label" for="email">Email Address</label>
-                <input class="form-input" type="email" id="email" placeholder="patient@email.com" />
+                <input class="form-input" type="email" id="email" data-validate="contact-email" placeholder="patient@email.com" />
               </div>
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
               <div class="form-group">
                 <label class="form-label" for="ecName">Emergency Contact Name</label>
-                <input class="form-input" type="text" id="ecName" placeholder="Contact person name" />
+                <input class="form-input" type="text" id="ecName" data-validate="person-name" placeholder="Contact person name" />
               </div>
               <div class="form-group">
                 <label class="form-label" for="ecPhone">Emergency Contact Phone</label>
@@ -285,5 +285,6 @@ function showMsg(html, type) {
   el.innerHTML = '<div style="padding:12px 16px;border-radius:var(--radius-sm);background:' + bg[type] + ';color:' + col[type] + ';font-size:var(--text-sm);">' + html + '</div>';
 }
 </script>
+  <script src="../js/validation.js"></script>
 </body>
 </html>

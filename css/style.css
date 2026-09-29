@@ -136,6 +136,26 @@ input, select, textarea {
   font-family: var(--font-sans);
 }
 
+.form-error {
+  margin-top: 4px;
+  color: var(--danger, #c0392b);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid {
+  border-color: var(--danger, #c0392b) !important;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.12);
+}
+
+input.is-valid,
+select.is-valid,
+textarea.is-valid {
+  border-color: var(--success, #27ae60);
+}
+
 /* ─────────────────────────────────────────
    3. TYPOGRAPHY
    ───────────────────────────────────────── */
