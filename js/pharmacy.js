@@ -508,11 +508,6 @@ function loadPrescriptionDetails() {
     const rxId = document.getElementById("rxId");
     if (rxId) rxId.innerText = prescription.id;
 
-    const topButton = document.getElementById("rxTopDispenseBtn");
-    if (topButton) {
-        topButton.style.display = "none";
-    }
-
     const prescriptionMedicines = prescription.medicines || [];
 
     if (prescriptionMedicines.length === 0) {
@@ -1091,169 +1086,12 @@ function loadStock() {
 
 
 // ============================================================
-// 14. INDIVIDUAL / SINGLE ITEM DISPENSE PAGE
-// ============================================================
-
-function dispenseMedicine() {
-    const prescriptionInput = document.getElementById("prescriptionId");
-    const medicineInput = document.getElementById("medicine");
-    const quantityInput = document.getElementById("quantity");
-
-    const prescriptionId = prescriptionInput ? prescriptionInput.value.trim() : "";
-    const medicineId = medicineInput ? medicineInput.value : "";
-    const quantity = Number(quantityInput ? quantityInput.value : 0);
-
-    // If prescription ID is given, enforce payment before dispensing
-    if (prescriptionId) {
-        const prescriptions = getStoredPrescriptions();
-        const existingRx = prescriptions.find(function (rx) {
-            return String(rx.id).trim().toLowerCase() === prescriptionId.toLowerCase();
-        });
-
-        if (existingRx) {
-            if (existingRx.status === "Dispensed") {
-                showMessage("dispenseMessage", "This prescription has already been dispensed.", "error");
-                return;
-            }
-
-            const bills = getStoredBills();
-            const linkedBill = bills.find(function (b) {
-                return String(b.prescriptionId || "").trim().toLowerCase() === prescriptionId.toLowerCase();
-            });
-
-            if (!linkedBill || linkedBill.status !== "Paid") {
-                showMessage("dispenseMessage", "Payment is required before dispensing the medicine.", "error");
-                return;
-            }
-        }
-    }
-
-    if (!medicineId) {
-        showMessage("dispenseMessage", "Please select a medicine.", "error");
-        return;
-    }
-
-    if (!Number.isInteger(quantity) || quantity <= 0) {
-        showMessage("dispenseMessage", "Quantity must be a whole number greater than zero.", "error");
-        return;
-    }
-
-    const currentMedicines = getStoredMedicines();
-    const medicine = findMedicineById(medicineId, currentMedicines);
-
-    if (!medicine) {
-        showMessage("dispenseMessage", "Medicine was not found in the Admin Medicine Master.", "error");
-        return;
-    }
-
-    if (!isMedicineActive(medicine)) {
-        showMessage("dispenseMessage", "This medicine is not Active.", "error");
-        return;
-    }
-
-    if (isMedicineExpired(medicine)) {
-        showMessage("dispenseMessage", "Expired medicines cannot be dispensed.", "error");
-        return;
-    }
-
-    const stock = Number(medicine.stock || 0);
-    if (stock === 0) {
-        showMessage("dispenseMessage", "This medicine is out of stock.", "error");
-        return;
-    }
-
-    if (quantity > stock) {
-        showMessage("dispenseMessage", "Insufficient stock. Available: " + stock, "error");
-        return;
-    }
-
-    // Fresh read before deduction
-    const freshMedicines = getStoredMedicines();
-    const freshMedicine = findMedicineById(medicine.id, freshMedicines);
-
-    if (!freshMedicine || Number(freshMedicine.stock) < quantity) {
-        showMessage("dispenseMessage", "Stock changed. Please refresh and try again.", "error");
-        return;
-    }
-
-    freshMedicine.stock = Number(freshMedicine.stock) - quantity;
-
-    if (!saveStoredMedicines(freshMedicines)) {
-        showMessage("dispenseMessage", "Unable to save stock changes.", "error");
-        return;
-    }
-
-    let prescriptionUpdated = false;
-    if (prescriptionId) {
-        const prescriptions = getStoredPrescriptions();
-        const prescription = prescriptions.find(function (rx) {
-            return String(rx.id).trim().toLowerCase() === prescriptionId.toLowerCase();
-        });
-
-        if (prescription) {
-            prescription.status = "Dispensed";
-            saveStoredPrescriptions(prescriptions);
-            prescriptionUpdated = true;
-
-            const bills = getStoredBills();
-            const bill = bills.find(function (b) {
-                return String(b.prescriptionId || "").trim().toLowerCase() === prescriptionId.toLowerCase();
-            });
-            if (bill) {
-                bill.dispensed = true;
-                bill.dispensedDate = getToday();
-                saveStoredBills(bills);
-            }
-        }
-    }
-
-    const message = document.getElementById("dispenseMessage");
-    if (message) {
-        message.innerHTML = `
-            <span class="badge badge-success">Medicine dispensed successfully.</span>
-            <br><br>
-            Medicine: <strong>${escapeHtml(freshMedicine.name)}</strong><br>
-            Quantity: <strong>${quantity}</strong><br>
-            Remaining Stock: <strong>${freshMedicine.stock}</strong>
-            ${prescriptionUpdated ? `<br>Prescription <strong>${escapeHtml(prescriptionId)}</strong> updated to <strong>Dispensed</strong>.` : ""}
-        `;
-    }
-
-    loadInventory();
-    loadStock();
-    updateDashboard();
-    populateMedicineDropdowns();
-}
-
-
-// ============================================================
-// 15. MEDICINE DROPDOWNS
+// 14. MEDICINE DROPDOWNS
 // ============================================================
 
 function populateMedicineDropdowns() {
     const currentMedicines = getStoredMedicines();
     medicines = currentMedicines;
-
-    // Dispense select
-    const medicineSelect = document.getElementById("medicine");
-    if (medicineSelect) {
-        const currentValue = medicineSelect.value;
-        medicineSelect.innerHTML = `<option value="">Select Medicine</option>`;
-
-        currentMedicines
-            .filter(function (medicine) { return isMedicineAvailable(medicine); })
-            .forEach(function (medicine) {
-                medicineSelect.innerHTML += `
-                    <option value="${escapeHtml(medicine.id)}">
-                        ${escapeHtml(medicine.name)} - Stock: ${Number(medicine.stock)}
-                    </option>
-                `;
-            });
-
-        if (currentValue && currentMedicines.some(function (m) { return String(m.id) === String(currentValue) && isMedicineAvailable(m); })) {
-            medicineSelect.value = currentValue;
-        }
-    }
 
     // Billing select
     const billSelect = document.getElementById("billMedicine");
@@ -1611,6 +1449,266 @@ function generateBill() {
     renderPharmacyCart();
     showMessage("billMessage", "Pharmacy bill " + bill.id + " generated successfully. Status: Unpaid. (Stock unchanged until dispensing)");
     displayPharmacyBill(bill);
+    loadPharmacyBillHistory();
+}
+
+
+// ============================================================
+// 18A. RESET NEW BILL FORM
+// ============================================================
+
+function resetNewBillForm(showNotice) {
+    if (showNotice === undefined) {
+        showNotice = true;
+    }
+
+    // Clear patient fields
+    const patientName = document.getElementById("patientName");
+    if (patientName) patientName.value = "";
+
+    const patientId = document.getElementById("patientId");
+    if (patientId) patientId.value = "";
+
+    // Reset medicine selection & quantity
+    const billMedicine = document.getElementById("billMedicine");
+    if (billMedicine) billMedicine.value = "";
+
+    const billQuantity = document.getElementById("billQuantity");
+    if (billQuantity) billQuantity.value = "1";
+
+    const billPrice = document.getElementById("billPrice");
+    if (billPrice) billPrice.value = "₹0.00";
+
+    const billStock = document.getElementById("billStock");
+    if (billStock) billStock.innerText = "0";
+
+    const billReorderLevel = document.getElementById("billReorderLevel");
+    if (billReorderLevel) billReorderLevel.innerText = "0";
+
+    // Clear cart & total
+    pharmacyCart = [];
+    renderPharmacyCart();
+
+    // Reset payment fields
+    const paymentMethod = document.getElementById("paymentMethod");
+    if (paymentMethod) paymentMethod.value = "";
+
+    const paymentReference = document.getElementById("paymentReference");
+    if (paymentReference) {
+        paymentReference.value = "";
+        paymentReference.placeholder = "Required for UPI/Card";
+    }
+
+    // Clear temporary messages
+    const billMessage = document.getElementById("billMessage");
+    if (billMessage) {
+        billMessage.innerText = "";
+        billMessage.className = "";
+    }
+
+    const paymentMessage = document.getElementById("paymentMessage");
+    if (paymentMessage) {
+        paymentMessage.innerText = "";
+        paymentMessage.className = "";
+    }
+
+    // Hide/clear receipt output
+    const receipt = document.getElementById("pharmacyBillReceipt");
+    if (receipt) {
+        receipt.innerHTML = "";
+        receipt.style.display = "none";
+    }
+
+    // Clear session state and clean URL if parameters were present
+    sessionStorage.removeItem("cms_last_pharmacy_bill");
+
+    if (window.history && window.history.replaceState && window.location.search) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    if (showNotice && billMessage) {
+        showMessage("billMessage", "Direct sale form cleared. Ready for a new bill.");
+    }
+}
+
+
+// ============================================================
+// 18B. PHARMACY BILL HISTORY
+// ============================================================
+
+function loadPharmacyBillHistory(filterText, statusFilter) {
+    const historyBody = document.getElementById("pharmacyBillHistoryBody");
+    const countBadge = document.getElementById("pharmacyBillHistoryCount");
+    if (!historyBody) return;
+
+    const allBills = getStoredBills();
+
+    // Strictly filter to Pharmacy bills only (Direct Sale or Doctor Prescription Pharmacy bills)
+    // Excludes Registration bills, Consultation bills, Lab bills, etc.
+    const pharmacyBills = allBills.filter(function (bill) {
+        if (!bill) return false;
+        const type = String(bill.type || "").trim().toLowerCase();
+        if (type === "pharmacy") return true;
+        if (!bill.type && (String(bill.id || "").startsWith("PHB-") || (bill.prescriptionId && Array.isArray(bill.items)))) {
+            return true;
+        }
+        return false;
+    });
+
+    const searchInput = document.getElementById("billHistorySearch");
+    const statusSelect = document.getElementById("billHistoryStatusFilter");
+
+    const query = (filterText !== undefined ? filterText : (searchInput ? searchInput.value : "")).trim().toLowerCase();
+    const status = (statusFilter !== undefined ? statusFilter : (statusSelect ? statusSelect.value : "")).trim();
+
+    let filtered = pharmacyBills.slice();
+
+    if (status) {
+        filtered = filtered.filter(function (bill) {
+            return String(bill.status || "").toLowerCase() === status.toLowerCase();
+        });
+    }
+
+    if (query) {
+        filtered = filtered.filter(function (bill) {
+            const billId = String(bill.id || "").toLowerCase();
+            const patient = String(bill.patientName || bill.patient || "").toLowerCase();
+            const patientId = String(bill.patientId || "").toLowerCase();
+            const rxId = String(bill.prescriptionId || "").toLowerCase();
+            return billId.includes(query) || patient.includes(query) || patientId.includes(query) || rxId.includes(query);
+        });
+    }
+
+    // Sort newest first
+    filtered.sort(function (a, b) {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        if (timeA && timeB && timeA !== timeB) {
+            return timeB - timeA;
+        }
+        return String(b.id || "").localeCompare(String(a.id || ""));
+    });
+
+    if (countBadge) {
+        countBadge.innerText = filtered.length + " bill" + (filtered.length === 1 ? "" : "s");
+    }
+
+    historyBody.innerHTML = "";
+
+    if (filtered.length === 0) {
+        historyBody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align:center;padding:32px 16px;">
+                    <div style="font-size:28px;margin-bottom:8px;">🧾</div>
+                    <div style="font-weight:600;color:var(--text-primary,#0f172a);margin-bottom:4px;">No Pharmacy Bills Found</div>
+                    <div style="font-size:13px;color:var(--text-muted,#718096);">
+                        ${pharmacyBills.length === 0 ? "No pharmacy bills have been generated yet." : "No bills match the selected search or filter criteria."}
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    filtered.forEach(function (bill) {
+        const isPaid = String(bill.status || "").toLowerCase() === "paid";
+        const isDispensed = !!bill.dispensed;
+        const isRx = !!bill.prescriptionId;
+        const patientDisplayName = escapeHtml(bill.patientName || bill.patient || "Walk-in Patient");
+        const patientDisplayId = bill.patientId ? `<div style="font-size:11px;color:var(--text-muted,#718096);margin-top:2px;">ID: ${escapeHtml(bill.patientId)}</div>` : "";
+        const rxBadge = isRx ? `<div style="font-size:11px;color:var(--primary,#0070f3);margin-top:2px;">Rx: ${escapeHtml(bill.prescriptionId)}</div>` : "";
+        const billAmount = Number(bill.amount || 0).toFixed(2);
+        const billDate = escapeHtml(bill.date || (bill.createdAt ? bill.createdAt.split("T")[0] : getToday()));
+
+        historyBody.innerHTML += `
+            <tr>
+                <td style="font-weight:600;font-family:monospace;font-size:13px;">
+                    ${escapeHtml(bill.id)}
+                </td>
+                <td>
+                    <span class="badge ${isRx ? "badge-info" : "badge-secondary"}" style="font-size:11px;">
+                        ${isRx ? "Prescription" : "Direct Sale"}
+                    </span>
+                    ${rxBadge}
+                </td>
+                <td>
+                    <div style="font-weight:600;color:var(--text-primary,#0f172a);">${patientDisplayName}</div>
+                    ${patientDisplayId}
+                </td>
+                <td style="font-weight:600;">
+                    ₹${billAmount}
+                </td>
+                <td>
+                    <span class="badge ${isPaid ? "badge-success" : "badge-warning"}">
+                        ${escapeHtml(bill.status || "Unpaid")}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${isDispensed ? "badge-success" : "badge-warning"}">
+                        ${isDispensed ? "Dispensed" : "Pending"}
+                    </span>
+                </td>
+                <td style="font-size:13px;color:var(--text-muted,#718096);">
+                    ${billDate}
+                </td>
+                <td>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <button
+                            type="button"
+                            class="btn btn-outline btn-sm"
+                            onclick="viewHistoricalBill('${escapeHtml(bill.id)}')"
+                            title="View bill details (Read-only)">
+                            👁️ View
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-outline btn-sm"
+                            onclick="printPharmacyBill('${escapeHtml(bill.id)}')"
+                            title="Print bill or receipt">
+                            🖨️ Print
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function filterPharmacyBillHistory() {
+    const searchVal = document.getElementById("billHistorySearch") ? document.getElementById("billHistorySearch").value : "";
+    const statusVal = document.getElementById("billHistoryStatusFilter") ? document.getElementById("billHistoryStatusFilter").value : "";
+    loadPharmacyBillHistory(searchVal, statusVal);
+}
+
+function viewHistoricalBill(billId) {
+    const bills = getStoredBills();
+    const bill = bills.find(function (b) {
+        return String(b.id).trim().toLowerCase() === String(billId).trim().toLowerCase();
+    });
+
+    if (!bill) {
+        alert("Bill " + billId + " not found.");
+        return;
+    }
+
+    // Set active bill in session for printing
+    sessionStorage.setItem("cms_last_pharmacy_bill", bill.id);
+
+    // Render read-only bill details
+    displayPharmacyBill(bill);
+
+    // Scroll to the bill receipt view
+    const receipt = document.getElementById("pharmacyBillReceipt");
+    if (receipt) {
+        receipt.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    // Update URL query string without reloading page
+    if (window.history && window.history.replaceState) {
+        const newUrl = window.location.pathname + "?billId=" + encodeURIComponent(bill.id);
+        window.history.replaceState({ billId: bill.id }, document.title, newUrl);
+    }
 }
 
 
@@ -1804,6 +1902,7 @@ function processPharmacyPayment() {
 
     createPharmacyReceipt(bill);
     displayPharmacyBill(bill);
+    loadPharmacyBillHistory();
 
     showMessage(
         "paymentMessage",
@@ -1917,6 +2016,7 @@ function dispensePaidBill(billId) {
 
     createPharmacyReceipt(bill);
     displayPharmacyBill(bill);
+    loadPharmacyBillHistory();
 
     alert("Medicines dispensed successfully!\n\nStock updated:\n• " + deductedDetails.join("\n• "));
 
@@ -1988,9 +2088,9 @@ function createPharmacyReceipt(bill) {
 // 23. PRINT PHARMACY BILL / RECEIPT
 // ============================================================
 
-function printPharmacyBill() {
+function printPharmacyBill(targetBillId) {
     const params = new URLSearchParams(window.location.search);
-    const billIdParam = params.get("billId");
+    const billIdParam = targetBillId || params.get("billId");
     const lastBillId = sessionStorage.getItem("cms_last_pharmacy_bill");
     const prescriptionIdParam = params.get("prescriptionId") || params.get("rxId");
 
@@ -2170,17 +2270,11 @@ document.addEventListener("DOMContentLoaded", function () {
     populateMedicineDropdowns();
     updateDashboard();
     renderPharmacyCart();
+    loadPharmacyBillHistory();
 
     const params = new URLSearchParams(window.location.search);
-    const prescriptionId = params.get("id");
     const billIdParam = params.get("billId");
     const rxParam = params.get("prescriptionId") || params.get("rxId");
-    const lastBillId = sessionStorage.getItem("cms_last_pharmacy_bill");
-
-    const prescriptionInput = document.getElementById("prescriptionId");
-    if (prescriptionId && prescriptionInput) {
-        prescriptionInput.value = prescriptionId;
-    }
 
     const bills = getStoredBills();
     let billToDisplay = null;
@@ -2193,23 +2287,14 @@ document.addEventListener("DOMContentLoaded", function () {
         billToDisplay = bills.find(function (b) {
             return String(b.prescriptionId || "").trim().toLowerCase() === rxParam.trim().toLowerCase();
         });
-    } else if (lastBillId) {
-        billToDisplay = bills.find(function (b) {
-            return String(b.id) === String(lastBillId);
-        });
     }
 
     if (billToDisplay) {
         displayPharmacyBill(billToDisplay);
-
-        const pName = document.getElementById("patientName");
-        const pId = document.getElementById("patientId");
-
-        if (pName && !pName.value) {
-            pName.value = billToDisplay.patientName || billToDisplay.patient || "";
-        }
-        if (pId && !pId.value) {
-            pId.value = billToDisplay.patientId || "";
+    } else {
+        // Direct arrival on billing page without a specific billId parameter -> clean form
+        if (document.getElementById("billingCart")) {
+            resetNewBillForm(false);
         }
     }
 
