@@ -76,13 +76,259 @@
         cell.appendChild(button);
     }
 
+    const CANONICAL_LAB_TESTS = [
+        {
+            name: 'Complete Blood Count (CBC)',
+            aliases: ['complete blood count', 'cbc', 'complete blood count (cbc)', 'hemogram', 'full blood count'],
+            category: 'Hematology',
+            price: 350,
+            normalRange: '4,000–11,000',
+            unit: '/µL',
+            description: 'Complete blood count analysis',
+            status: 'Active'
+        },
+        {
+            name: 'Fasting Blood Sugar (FBS)',
+            aliases: ['fasting blood sugar', 'fbs', 'fasting blood sugar (fbs)', 'blood glucose', 'blood glucose fasting', 'blood sugar', 'fasting glucose', 'glucose fasting'],
+            category: 'Biochemistry',
+            price: 150,
+            normalRange: '70–100',
+            unit: 'mg/dL',
+            description: 'Blood glucose level test',
+            status: 'Active'
+        },
+        {
+            name: 'HbA1c Glycated Hemoglobin',
+            aliases: ['hba1c', 'hba1c glycated hemoglobin', 'glycated hemoglobin', 'hemoglobin a1c', 'hba1c test'],
+            category: 'Biochemistry',
+            price: 450,
+            normalRange: '< 5.7',
+            unit: '%',
+            description: '3-month average blood glucose',
+            status: 'Active'
+        },
+        {
+            name: 'Lipid Profile',
+            aliases: ['lipid profile', 'lipid panel', 'cholesterol profile', 'lipid profile test'],
+            category: 'Biochemistry',
+            price: 500,
+            normalRange: '< 200',
+            unit: 'mg/dL',
+            description: 'Cholesterol & triglyceride panel',
+            status: 'Active'
+        },
+        {
+            name: 'Liver Function Test (LFT)',
+            aliases: ['liver function test', 'lft', 'liver function test (lft)', 'liver panel', 'hepatic function test', 'hepatic enzyme assessment'],
+            category: 'Biochemistry',
+            price: 650,
+            normalRange: '0.2–1.2',
+            unit: 'mg/dL',
+            description: 'Hepatic enzyme assessment',
+            status: 'Active'
+        },
+        {
+            name: 'Renal Function Test (RFT)',
+            aliases: ['renal function test', 'rft', 'renal function test (rft)', 'kidney function test', 'kidney function test (rft)', 'kft', 'kidney function panel'],
+            category: 'Biochemistry',
+            price: 550,
+            normalRange: '0.6–1.2',
+            unit: 'mg/dL',
+            description: 'Kidney function panel',
+            status: 'Active'
+        },
+        {
+            name: 'Thyroid Profile (T3, T4, TSH)',
+            aliases: ['thyroid profile', 'thyroid profile (t3, t4, tsh)', 'thyroid function test', 'tft', 't3 t4 tsh', 'thyroid hormone assessment'],
+            category: 'Endocrinology',
+            price: 600,
+            normalRange: '0.4–4.0',
+            unit: 'µIU/mL',
+            description: 'Thyroid hormone assessment',
+            status: 'Active'
+        },
+        {
+            name: 'Urine Routine Examination',
+            aliases: ['urine routine examination', 'urine routine', 'urinalysis', 'urine routine & microscopy', 'urine routine and microscopy'],
+            category: 'Pathology',
+            price: 180,
+            normalRange: 'Normal / Pale Yellow',
+            unit: '',
+            description: 'Urine routine and microscopy',
+            status: 'Active'
+        },
+        {
+            name: '12-Lead ECG',
+            aliases: ['12-lead ecg', '12 lead ecg', 'ecg', 'electrocardiogram', 'electrocardiogram recording'],
+            category: 'Cardiology',
+            price: 300,
+            normalRange: 'Normal Sinus Rhythm',
+            unit: 'ECG',
+            description: 'Electrocardiogram recording',
+            status: 'Active'
+        },
+        {
+            name: 'Chest X-Ray PA View',
+            aliases: ['chest x-ray pa view', 'chest x-ray', 'chest x ray', 'chest radiography', 'chest radiography pa view', 'chest x-ray pa'],
+            category: 'Radiology',
+            price: 400,
+            normalRange: 'Normal Lung Fields & Cardiac Shadow',
+            unit: 'Film',
+            description: 'Chest radiography PA view',
+            status: 'Active'
+        }
+    ];
+
+    function findCanonicalMatch(testName) {
+        if (!testName) return null;
+        const clean = String(testName).trim().toLowerCase();
+        const stripped = clean.replace(/\(.*?\)/g, '').trim();
+
+        for (let i = 0; i < CANONICAL_LAB_TESTS.length; i++) {
+            const canonical = CANONICAL_LAB_TESTS[i];
+            if (canonical.aliases.some(alias => alias === clean || alias === stripped)) {
+                return canonical;
+            }
+        }
+        return null;
+    }
+
+    function cleanupMasterLabTests(masterTests) {
+        if (!Array.isArray(masterTests) || masterTests.length === 0) {
+            return { tests: [], modified: false };
+        }
+
+        let modified = false;
+        const processedTests = masterTests.map(t => Object.assign({}, t));
+
+        // Group tests by canonical match or core normalized name
+        const groups = new Map();
+
+        processedTests.forEach(test => {
+            const canonical = findCanonicalMatch(test.name || test.testName);
+            let groupKey;
+            if (canonical) {
+                groupKey = 'canonical:' + canonical.name;
+            } else {
+                const cleanName = String(test.name || test.testName || '').trim().replace(/\s+/g, ' ').toLowerCase();
+                const coreName = cleanName.replace(/\(.*?\)/g, '').trim();
+                groupKey = 'custom:' + (coreName || cleanName || test.id);
+            }
+
+            if (!groups.has(groupKey)) {
+                groups.set(groupKey, []);
+            }
+            groups.get(groupKey).push(test);
+        });
+
+        groups.forEach((groupTests, groupKey) => {
+            const canonical = groupKey.startsWith('canonical:')
+                ? CANONICAL_LAB_TESTS.find(c => 'canonical:' + c.name === groupKey)
+                : null;
+
+            // Sort so the lowest numeric ID (e.g. LAB001 < LAB009) is the primary record
+            groupTests.sort((a, b) => {
+                const numA = parseInt((String(a.id || '').match(/\d+/) || [999999])[0], 10);
+                const numB = parseInt((String(b.id || '').match(/\d+/) || [999999])[0], 10);
+                if (numA !== numB) return numA - numB;
+                return String(a.id).localeCompare(String(b.id));
+            });
+
+            const primary = groupTests[0];
+
+            let bestNormalRange = String(primary.normalRange || '').trim();
+            let bestUnit = String(primary.unit || '').trim();
+            let bestDescription = String(primary.description || '').trim();
+
+            for (let i = 1; i < groupTests.length; i++) {
+                const dup = groupTests[i];
+                if (!bestNormalRange && String(dup.normalRange || '').trim()) {
+                    bestNormalRange = String(dup.normalRange).trim();
+                }
+                if (!bestUnit && String(dup.unit || '').trim()) {
+                    bestUnit = String(dup.unit).trim();
+                }
+                if (!bestDescription && String(dup.description || '').trim()) {
+                    bestDescription = String(dup.description).trim();
+                }
+            }
+
+            if (canonical) {
+                if (!bestNormalRange && canonical.normalRange) bestNormalRange = canonical.normalRange;
+                if (!bestUnit && canonical.unit) bestUnit = canonical.unit;
+                if (!bestDescription && canonical.description) bestDescription = canonical.description;
+            }
+
+            // Populate missing data on Primary record
+            if (bestNormalRange && String(primary.normalRange || '').trim() !== bestNormalRange) {
+                primary.normalRange = bestNormalRange;
+                modified = true;
+            }
+            if (bestUnit && String(primary.unit || '').trim() !== bestUnit) {
+                primary.unit = bestUnit;
+                modified = true;
+            }
+            if (bestDescription && String(primary.description || '').trim() !== bestDescription) {
+                primary.description = bestDescription;
+                modified = true;
+            }
+            if (canonical && (!primary.category || primary.category === 'General' || primary.category === 'Other')) {
+                primary.category = canonical.category;
+                modified = true;
+            }
+            if (canonical && (!primary.price || Number(primary.price) === 0)) {
+                primary.price = canonical.price;
+                modified = true;
+            }
+            if (!primary.status || primary.status.toLowerCase() !== 'active') {
+                primary.status = 'Active';
+                modified = true;
+            }
+
+            // Duplicate records are retained for historical references, but deactivated
+            for (let i = 1; i < groupTests.length; i++) {
+                const duplicate = groupTests[i];
+                if (duplicate.status !== 'Inactive') {
+                    duplicate.status = 'Inactive';
+                    modified = true;
+                }
+                if (!String(duplicate.normalRange || '').trim() && bestNormalRange) {
+                    duplicate.normalRange = bestNormalRange;
+                    modified = true;
+                }
+                if (!String(duplicate.unit || '').trim() && bestUnit) {
+                    duplicate.unit = bestUnit;
+                    modified = true;
+                }
+            }
+        });
+
+        return {
+            tests: processedTests,
+            modified: modified
+        };
+    }
+
     function getMasterLabTests() {
-        return getLabTests().filter(test => test.recordType === 'master');
+        const tests = getLabTests();
+        const master = tests.filter(test => {
+            if (test.recordType === 'master') return true;
+            if (test.patientId || test.patientName || test.consultationId || test.requestedAt || test.orderDate) return false;
+            return test.id && (test.name || test.testName);
+        });
+
+        const cleaned = cleanupMasterLabTests(master);
+        if (cleaned.modified) {
+            saveMasterLabTests(cleaned.tests);
+        }
+        return cleaned.tests;
     }
 
     function saveMasterLabTests(masterTests) {
         const allTests = getLabTests();
-        const existingWorkflows = allTests.filter(test => test.recordType !== 'master');
+        const existingWorkflows = allTests.filter(test => {
+            return test.recordType !== 'master' && (test.patientId || test.patientName || test.consultationId || test.requestedAt || test.orderDate);
+        });
         const catalogRecords = masterTests.map(test => Object.assign({}, test, { recordType: 'master' }));
         return saveLabTests(existingWorkflows.concat(catalogRecords));
     }
@@ -198,61 +444,19 @@
         const tests = getLabTests();
         const masterTests = tests.filter(test => test.recordType === 'master');
 
-        const samples = [
-            {
-                name: 'Complete Blood Count',
-                category: 'Hematology',
-                price: 350,
-                description: 'Complete blood cell analysis',
-                status: 'Active'
-            },
-            {
-                name: 'Blood Glucose',
-                category: 'Biochemistry',
-                price: 150,
-                description: 'Blood glucose level test',
-                status: 'Active'
-            },
-            {
-                name: 'Lipid Profile',
-                category: 'Biochemistry',
-                price: 500,
-                description: 'Measures cholesterol and triglyceride levels',
-                status: 'Active'
-            },
-            {
-                name: 'Liver Function Test',
-                category: 'Biochemistry',
-                price: 650,
-                description: 'Evaluates liver enzymes and function',
-                status: 'Active'
-            },
-            {
-                name: 'Kidney Function Test',
-                category: 'Biochemistry',
-                price: 550,
-                description: 'Evaluates kidney function markers',
-                status: 'Active'
-            },
-            {
-                name: 'Urine Routine',
-                category: 'Pathology',
-                price: 180,
-                description: 'Routine urine analysis',
-                status: 'Active'
-            }
-        ];
-
-        const existingNames = new Set(masterTests.map(item => normalizeName(item.name || '')));
         const additions = [];
-        samples.forEach(sample => {
-            const normalizedName = normalizeName(sample.name);
-            if (existingNames.has(normalizedName)) return;
+        CANONICAL_LAB_TESTS.forEach(sample => {
+            const canonicalSample = findCanonicalMatch(sample.name);
+            const exists = masterTests.some(item => {
+                const c = findCanonicalMatch(item.name || item.testName);
+                if (c && canonicalSample && c.name === canonicalSample.name) return true;
+                return normalizeName(item.name || item.testName || '') === normalizeName(sample.name);
+            });
+            if (exists) return;
             additions.push(Object.assign({}, sample, {
                 id: getNextId(tests.concat(additions), 'LAB', 'cms_lab_test_id_sequence'),
                 recordType: 'master'
             }));
-            existingNames.add(normalizedName);
         });
 
         if (additions.length) saveLabTests(tests.concat(additions));
@@ -420,6 +624,8 @@
         const nameInput = document.getElementById('labTestName');
         const categoryInput = document.getElementById('labTestCategory');
         const priceInput = document.getElementById('labTestPrice');
+        const normalRangeInput = document.getElementById('labTestNormalRange');
+        const unitInput = document.getElementById('labTestUnit');
         const descriptionInput = document.getElementById('labTestDescription');
         const statusInput = document.getElementById('labTestStatus');
         const searchInput = document.getElementById('labTestSearch');
@@ -441,14 +647,14 @@
         function render() {
             const tests = getMasterLabTests();
             const query = searchInput.value.trim().toLocaleLowerCase();
-            const filtered = tests.filter(test => [test.id, test.name, test.category]
+            const filtered = tests.filter(test => [test.id, test.name, test.category, test.normalRange, test.unit]
                 .some(value => String(value || '').toLocaleLowerCase().includes(query)));
 
             tableBody.textContent = '';
             if (filtered.length === 0) {
                 const row = document.createElement('tr');
                 const cell = addCell(row, tests.length ? 'No tests match your search.' : 'No lab tests have been added.');
-                cell.colSpan = 7;
+                cell.colSpan = 9;
                 tableBody.appendChild(row);
                 return;
             }
@@ -459,6 +665,8 @@
                 addCell(row, test.name);
                 addCell(row, test.category);
                 addCell(row, formatPrice(Number(test.price)));
+                addCell(row, test.normalRange || '-');
+                addCell(row, test.unit || '-');
                 addCell(row, test.description || '-');
                 const statusCell = document.createElement('td');
                 addStatus(statusCell, test.status || 'Active');
@@ -477,6 +685,8 @@
             nameInput.value = test.name || '';
             categoryInput.value = test.category || '';
             priceInput.value = test.price ?? '';
+            if (normalRangeInput) normalRangeInput.value = test.normalRange || '';
+            if (unitInput) unitInput.value = test.unit || '';
             descriptionInput.value = test.description || '';
             statusInput.value = test.status || 'Active';
             formTitle.textContent = 'Edit lab test ' + test.id;
@@ -504,9 +714,15 @@
             const tests = allTests.filter(test => test.recordType === 'master');
             const editId = form.dataset.editId;
             const name = nameInput.value.trim().replace(/\s+/g, ' ');
-            const duplicate = tests.some(item => item.id !== editId && normalizeName(item.name || '') === normalizeName(name));
+            const canonicalNew = findCanonicalMatch(name);
+            const duplicate = tests.some(item => {
+                if (item.id === editId) return false;
+                if (normalizeName(item.name || '') === normalizeName(name)) return true;
+                const c = findCanonicalMatch(item.name || '');
+                return c && canonicalNew && c.name === canonicalNew.name;
+            });
             if (duplicate) {
-                setMessage(message, 'A lab test with this name already exists.', 'error');
+                setMessage(message, 'A lab test with this name already exists in the master catalog.', 'error');
                 nameInput.focus();
                 return;
             }
@@ -517,6 +733,8 @@
                 name,
                 category: categoryInput.value,
                 price: Number(priceInput.value),
+                normalRange: normalRangeInput ? normalRangeInput.value.trim() : (existing ? existing.normalRange : ''),
+                unit: unitInput ? unitInput.value.trim() : (existing ? existing.unit : ''),
                 description: descriptionInput.value.trim(),
                 status: statusInput.value
             };

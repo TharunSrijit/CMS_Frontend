@@ -13,6 +13,7 @@
 
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
 
 </head>
 
@@ -52,11 +53,6 @@
             <a href="dashboard.html" class="nav-item">
                 <span class="nav-item-icon">⌂</span>
                 <span class="nav-item-label">Dashboard</span>
-            </a>
-
-            <a href="enter-new-test.html" class="nav-item">
-                <span class="nav-item-icon">＋</span>
-                <span class="nav-item-label">Enter New Test</span>
             </a>
 
             <a href="pending-lab-orders.html" class="nav-item">
@@ -128,7 +124,7 @@
                     </h1>
 
                     <p class="page-subtitle">
-                        Generate a bill for laboratory services.
+                        Generate billing for Doctor-requested laboratory tests.
                     </p>
 
                 </div>
@@ -136,7 +132,7 @@
             </div>
 
 
-            <form onsubmit="generateLabBill(event)">
+            <form id="labBillingForm" onsubmit="generateLabBill(event)">
 
                 <div class="form-section">
 
@@ -145,11 +141,11 @@
                         <div>
 
                             <div class="form-section-title">
-                                Billing Information
+                                Select Lab Order
                             </div>
 
                             <div class="form-section-subtitle">
-                                Enter laboratory billing details
+                                Choose an active or completed Doctor lab order to bill
                             </div>
 
                         </div>
@@ -161,6 +157,51 @@
 
                         <div class="form-grid form-grid-2">
 
+                            <div class="form-group col-span-2">
+
+                                <label
+                                    class="form-label"
+                                    for="labOrderSelect">
+
+                                    Select Doctor Lab Order
+                                    <span class="required">*</span>
+
+                                </label>
+
+                                <select
+                                    id="labOrderSelect"
+                                    class="form-control"
+                                    onchange="onLabOrderSelectChange(this.value)"
+                                    required>
+
+                                    <option value="">
+                                        -- Select a Doctor Lab Order --
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="orderId">
+
+                                    Order ID
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="orderId"
+                                    class="form-control"
+                                    placeholder="Order ID"
+                                    readonly>
+
+                            </div>
+
+
                             <div class="form-group">
 
                                 <label
@@ -168,7 +209,6 @@
                                     for="patientName">
 
                                     Patient Name
-                                    <span class="required">*</span>
 
                                 </label>
 
@@ -176,8 +216,48 @@
                                     type="text"
                                     id="patientName"
                                     class="form-control"
-                                    placeholder="Enter patient name"
-                                    required>
+                                    placeholder="Patient Name"
+                                    readonly>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="patientId">
+
+                                    Patient ID
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="patientId"
+                                    class="form-control"
+                                    placeholder="Patient ID"
+                                    readonly>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    class="form-label"
+                                    for="doctorName">
+
+                                    Doctor Name
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="doctorName"
+                                    class="form-control"
+                                    placeholder="Doctor Name"
+                                    readonly>
 
                             </div>
 
@@ -189,61 +269,37 @@
                                     for="labTest">
 
                                     Laboratory Test
-                                    <span class="required">*</span>
 
                                 </label>
 
-                                <select
+                                <input
+                                    type="text"
                                     id="labTest"
                                     class="form-control"
-                                    onchange="calculateLabBill()"
-                                    required>
+                                    placeholder="Test Name"
+                                    readonly>
 
-                                    <option value="">
-                                        Select test
-                                    </option>
+                                <input type="hidden" id="testId">
 
-                                    <option value="200">
-                                        Blood Test - ₹200
-                                    </option>
+                            </div>
 
-                                    <option value="300">
-                                        CBC - ₹300
-                                    </option>
 
-                                    <option value="150">
-                                        Blood Sugar - ₹150
-                                    </option>
+                            <div class="form-group">
 
-                                    <option value="500">
-                                        Lipid Profile - ₹500
-                                    </option>
+                                <label
+                                    class="form-label"
+                                    for="labPrice">
 
-                                    <option value="600">
-                                        Thyroid Test - ₹600
-                                    </option>
+                                    Test Rate (₹)
 
-                                    <option value="250">
-                                        Urine Test - ₹250
-                                    </option>
+                                </label>
 
-                                    <option value="700">
-                                        Liver Function Test - ₹700
-                                    </option>
-
-                                    <option value="800">
-                                        Kidney Function Test - ₹800
-                                    </option>
-
-                                    <option value="500">
-                                        X-Ray - ₹500
-                                    </option>
-
-                                    <option value="400">
-                                        ECG - ₹400
-                                    </option>
-
-                                </select>
+                                <input
+                                    type="text"
+                                    id="labPrice"
+                                    class="form-control"
+                                    placeholder="₹0.00"
+                                    readonly>
 
                             </div>
 
@@ -322,9 +378,10 @@
 
                     <button
                         type="submit"
+                        id="btnGenerateBill"
                         class="btn btn-primary">
 
-                        Generate Bill
+                        Generate Lab Bill
 
                     </button>
 
@@ -336,6 +393,63 @@
             <div
                 id="billMessage"
                 class="mt-20">
+            </div>
+
+
+            <!-- BILLING HISTORY -->
+            <div class="card mt-20">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <div class="card-title">
+                            Lab Billing Records
+                        </div>
+
+                        <div class="card-subtitle">
+                            Generated laboratory invoices stored in common billing
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="table-container">
+
+                        <div class="table-scroll">
+
+                            <table id="labBillingTable" class="data-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Bill ID</th>
+                                        <th>Patient</th>
+                                        <th>Test</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
         </main>

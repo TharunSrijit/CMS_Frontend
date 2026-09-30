@@ -36,10 +36,12 @@
                     <form id="labTestForm" class="doctor-form" novalidate>
                         <div class="doctor-form-grid master-form-grid">
                             <div class="doctor-field"><label for="labTestName">Test name</label><input class="doctor-input" id="labTestName" name="name" type="text" maxlength="120" required></div>
-                            <div class="doctor-field"><label for="labTestCategory">Category</label><select class="doctor-input" id="labTestCategory" name="category" required><option value="">Select category</option><option>Hematology</option><option>Biochemistry</option><option>Microbiology</option><option>Immunology</option><option>Pathology</option><option>Other</option></select></div>
+                            <div class="doctor-field"><label for="labTestCategory">Category</label><select class="doctor-input" id="labTestCategory" name="category" required><option value="">Select category</option><option>Hematology</option><option>Biochemistry</option><option>Microbiology</option><option>Immunology</option><option>Pathology</option><option>Endocrinology</option><option>Cardiology</option><option>Radiology</option><option>Other</option></select></div>
                             <div class="doctor-field"><label for="labTestPrice">Price</label><input class="doctor-input" id="labTestPrice" name="price" type="number" min="0" step="0.01" required></div>
-                            <div class="doctor-field master-field-wide"><label for="labTestDescription">Description <span class="master-optional">Optional</span></label><textarea class="doctor-input master-textarea" id="labTestDescription" name="description" rows="3" maxlength="500"></textarea></div>
+                            <div class="doctor-field"><label for="labTestNormalRange">Normal Range</label><input class="doctor-input" id="labTestNormalRange" name="normalRange" type="text" maxlength="120" placeholder="e.g. 70–100 or 4,000–11,000" required></div>
+                            <div class="doctor-field"><label for="labTestUnit">Unit <span class="master-optional">Optional</span></label><input class="doctor-input" id="labTestUnit" name="unit" type="text" maxlength="50" placeholder="e.g. mg/dL, /µL"></div>
                             <div class="doctor-field"><label for="labTestStatus">Status</label><select class="doctor-input" id="labTestStatus" name="status" required><option>Active</option><option>Inactive</option></select></div>
+                            <div class="doctor-field master-field-wide"><label for="labTestDescription">Description <span class="master-optional">Optional</span></label><textarea class="doctor-input master-textarea" id="labTestDescription" name="description" rows="3" maxlength="500"></textarea></div>
                         </div>
                         <div class="doctor-form-actions"><button class="doctor-submit" id="labTestSubmit" type="submit">Add lab test</button><button class="master-secondary-button" id="labTestCancelEdit" type="button" hidden>Cancel edit</button></div>
                         <p id="labTestMessage" class="master-message" role="status" aria-live="polite"></p>
@@ -47,7 +49,7 @@
                 </section>
                 <section class="doctor-panel" aria-labelledby="lab-test-list-title">
                     <div class="doctor-panel-heading doctor-list-heading"><div><p class="section-eyebrow">MASTER CATALOG</p><h2 id="lab-test-list-title">Lab tests</h2></div><label class="doctor-search-wrap" for="labTestSearch"><span class="visually-hidden">Search tests</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.3 4.3"/></svg><input type="search" id="labTestSearch" placeholder="Search test ID, name or category"></label></div>
-                    <div class="doctor-table-scroll"><table class="doctor-table lab-catalog-table"><thead><tr><th scope="col">ID</th><th scope="col">Test name</th><th scope="col">Category</th><th scope="col">Price</th><th scope="col">Description</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody id="labTestTableBody"></tbody></table></div>
+                    <div class="doctor-table-scroll"><table class="doctor-table lab-catalog-table"><thead><tr><th scope="col">ID</th><th scope="col">Test name</th><th scope="col">Category</th><th scope="col">Price</th><th scope="col">Normal Range</th><th scope="col">Unit</th><th scope="col">Description</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody id="labTestTableBody"></tbody></table></div>
                 </section>
             </main>
         </div>

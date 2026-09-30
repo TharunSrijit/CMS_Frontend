@@ -432,6 +432,239 @@ function findMedicineById(id) {
     }) || null;
 }
 
+var CANONICAL_LAB_TESTS = [
+    {
+        name: 'Complete Blood Count (CBC)',
+        aliases: ['complete blood count', 'cbc', 'complete blood count (cbc)', 'hemogram', 'full blood count'],
+        category: 'Hematology',
+        price: 350,
+        normalRange: '4,000–11,000',
+        unit: '/µL',
+        description: 'Complete blood count analysis',
+        status: 'Active'
+    },
+    {
+        name: 'Fasting Blood Sugar (FBS)',
+        aliases: ['fasting blood sugar', 'fbs', 'fasting blood sugar (fbs)', 'blood glucose', 'blood glucose fasting', 'blood sugar', 'fasting glucose', 'glucose fasting'],
+        category: 'Biochemistry',
+        price: 150,
+        normalRange: '70–100',
+        unit: 'mg/dL',
+        description: 'Blood glucose level test',
+        status: 'Active'
+    },
+    {
+        name: 'HbA1c Glycated Hemoglobin',
+        aliases: ['hba1c', 'hba1c glycated hemoglobin', 'glycated hemoglobin', 'hemoglobin a1c', 'hba1c test'],
+        category: 'Biochemistry',
+        price: 450,
+        normalRange: '< 5.7',
+        unit: '%',
+        description: '3-month average blood glucose',
+        status: 'Active'
+    },
+    {
+        name: 'Lipid Profile',
+        aliases: ['lipid profile', 'lipid panel', 'cholesterol profile', 'lipid profile test'],
+        category: 'Biochemistry',
+        price: 500,
+        normalRange: '< 200',
+        unit: 'mg/dL',
+        description: 'Cholesterol & triglyceride panel',
+        status: 'Active'
+    },
+    {
+        name: 'Liver Function Test (LFT)',
+        aliases: ['liver function test', 'lft', 'liver function test (lft)', 'liver panel', 'hepatic function test', 'hepatic enzyme assessment'],
+        category: 'Biochemistry',
+        price: 650,
+        normalRange: '0.2–1.2',
+        unit: 'mg/dL',
+        description: 'Hepatic enzyme assessment',
+        status: 'Active'
+    },
+    {
+        name: 'Renal Function Test (RFT)',
+        aliases: ['renal function test', 'rft', 'renal function test (rft)', 'kidney function test', 'kidney function test (rft)', 'kft', 'kidney function panel'],
+        category: 'Biochemistry',
+        price: 550,
+        normalRange: '0.6–1.2',
+        unit: 'mg/dL',
+        description: 'Kidney function panel',
+        status: 'Active'
+    },
+    {
+        name: 'Thyroid Profile (T3, T4, TSH)',
+        aliases: ['thyroid profile', 'thyroid profile (t3, t4, tsh)', 'thyroid function test', 'tft', 't3 t4 tsh', 'thyroid hormone assessment'],
+        category: 'Endocrinology',
+        price: 600,
+        normalRange: '0.4–4.0',
+        unit: 'µIU/mL',
+        description: 'Thyroid hormone assessment',
+        status: 'Active'
+    },
+    {
+        name: 'Urine Routine Examination',
+        aliases: ['urine routine examination', 'urine routine', 'urinalysis', 'urine routine & microscopy', 'urine routine and microscopy'],
+        category: 'Pathology',
+        price: 180,
+        normalRange: 'Normal / Pale Yellow',
+        unit: '',
+        description: 'Urine routine and microscopy',
+        status: 'Active'
+    },
+    {
+        name: '12-Lead ECG',
+        aliases: ['12-lead ecg', '12 lead ecg', 'ecg', 'electrocardiogram', 'electrocardiogram recording'],
+        category: 'Cardiology',
+        price: 300,
+        normalRange: 'Normal Sinus Rhythm',
+        unit: 'ECG',
+        description: 'Electrocardiogram recording',
+        status: 'Active'
+    },
+    {
+        name: 'Chest X-Ray PA View',
+        aliases: ['chest x-ray pa view', 'chest x-ray', 'chest x ray', 'chest radiography', 'chest radiography pa view', 'chest x-ray pa'],
+        category: 'Radiology',
+        price: 400,
+        normalRange: 'Normal Lung Fields & Cardiac Shadow',
+        unit: 'Film',
+        description: 'Chest radiography PA view',
+        status: 'Active'
+    }
+];
+
+function findCanonicalLabMatch(testName) {
+    if (!testName) return null;
+    var clean = String(testName).trim().toLowerCase();
+    var stripped = clean.replace(/\(.*?\)/g, '').trim();
+
+    for (var i = 0; i < CANONICAL_LAB_TESTS.length; i++) {
+        var canonical = CANONICAL_LAB_TESTS[i];
+        if (canonical.aliases.some(function (alias) { return alias === clean || alias === stripped; })) {
+            return canonical;
+        }
+    }
+    return null;
+}
+
+function cleanupMasterLabTests(masterTests) {
+    if (!Array.isArray(masterTests) || masterTests.length === 0) {
+        return { tests: [], modified: false };
+    }
+
+    var modified = false;
+    var processedTests = masterTests.map(function (t) { return Object.assign({}, t); });
+
+    var groups = {};
+
+    processedTests.forEach(function (test) {
+        var canonical = findCanonicalLabMatch(test.name || test.testName);
+        var groupKey;
+        if (canonical) {
+            groupKey = 'canonical:' + canonical.name;
+        } else {
+            var cleanName = String(test.name || test.testName || '').trim().replace(/\s+/g, ' ').toLowerCase();
+            var coreName = cleanName.replace(/\(.*?\)/g, '').trim();
+            groupKey = 'custom:' + (coreName || cleanName || test.id);
+        }
+
+        if (!groups[groupKey]) {
+            groups[groupKey] = [];
+        }
+        groups[groupKey].push(test);
+    });
+
+    Object.keys(groups).forEach(function (groupKey) {
+        var groupTests = groups[groupKey];
+        var canonical = groupKey.indexOf('canonical:') === 0
+            ? CANONICAL_LAB_TESTS.find(function (c) { return 'canonical:' + c.name === groupKey; })
+            : null;
+
+        // Sort so lowest numeric ID (e.g. LAB001 < LAB009) is the primary record
+        groupTests.sort(function (a, b) {
+            var numA = parseInt((String(a.id || '').match(/\d+/) || [999999])[0], 10);
+            var numB = parseInt((String(b.id || '').match(/\d+/) || [999999])[0], 10);
+            if (numA !== numB) return numA - numB;
+            return String(a.id).localeCompare(String(b.id));
+        });
+
+        var primary = groupTests[0];
+
+        var bestNormalRange = String(primary.normalRange || '').trim();
+        var bestUnit = String(primary.unit || '').trim();
+        var bestDescription = String(primary.description || '').trim();
+
+        for (var i = 1; i < groupTests.length; i++) {
+            var dup = groupTests[i];
+            if (!bestNormalRange && String(dup.normalRange || '').trim()) {
+                bestNormalRange = String(dup.normalRange).trim();
+            }
+            if (!bestUnit && String(dup.unit || '').trim()) {
+                bestUnit = String(dup.unit).trim();
+            }
+            if (!bestDescription && String(dup.description || '').trim()) {
+                bestDescription = String(dup.description).trim();
+            }
+        }
+
+        if (canonical) {
+            if (!bestNormalRange && canonical.normalRange) bestNormalRange = canonical.normalRange;
+            if (!bestUnit && canonical.unit) bestUnit = canonical.unit;
+            if (!bestDescription && canonical.description) bestDescription = canonical.description;
+        }
+
+        // Backfill missing properties on Primary record
+        if (bestNormalRange && String(primary.normalRange || '').trim() !== bestNormalRange) {
+            primary.normalRange = bestNormalRange;
+            modified = true;
+        }
+        if (bestUnit && String(primary.unit || '').trim() !== bestUnit) {
+            primary.unit = bestUnit;
+            modified = true;
+        }
+        if (bestDescription && String(primary.description || '').trim() !== bestDescription) {
+            primary.description = bestDescription;
+            modified = true;
+        }
+        if (canonical && (!primary.category || primary.category === 'General' || primary.category === 'Other')) {
+            primary.category = canonical.category;
+            modified = true;
+        }
+        if (canonical && (!primary.price || Number(primary.price) === 0)) {
+            primary.price = canonical.price;
+            modified = true;
+        }
+        if (!primary.status || primary.status.toLowerCase() !== 'active') {
+            primary.status = 'Active';
+            modified = true;
+        }
+
+        // Duplicate records are retained for historical references, but deactivated
+        for (var j = 1; j < groupTests.length; j++) {
+            var duplicate = groupTests[j];
+            if (duplicate.status !== 'Inactive') {
+                duplicate.status = 'Inactive';
+                modified = true;
+            }
+            if (!String(duplicate.normalRange || '').trim() && bestNormalRange) {
+                duplicate.normalRange = bestNormalRange;
+                modified = true;
+            }
+            if (!String(duplicate.unit || '').trim() && bestUnit) {
+                duplicate.unit = bestUnit;
+                modified = true;
+            }
+        }
+    });
+
+    return {
+        tests: processedTests,
+        modified: modified
+    };
+}
+
 function getMasterLabTests() {
     var raw = JSON.parse(localStorage.getItem('cms_lab_tests') || '[]');
     var master = raw.filter(function (t) {
@@ -442,25 +675,33 @@ function getMasterLabTests() {
 
     if (master.length === 0) {
         master = [
-            { id: 'LAB001', name: 'Complete Blood Count (CBC)', category: 'Hematology', price: 350, description: 'Complete blood count analysis', status: 'Active', recordType: 'master' },
-            { id: 'LAB002', name: 'Fasting Blood Sugar (FBS)', category: 'Biochemistry', price: 150, description: 'Blood glucose level test', status: 'Active', recordType: 'master' },
-            { id: 'LAB003', name: 'HbA1c Glycated Hemoglobin', category: 'Biochemistry', price: 450, description: '3-month average blood glucose', status: 'Active', recordType: 'master' },
-            { id: 'LAB004', name: 'Lipid Profile', category: 'Biochemistry', price: 500, description: 'Cholesterol & triglyceride panel', status: 'Active', recordType: 'master' },
-            { id: 'LAB005', name: 'Liver Function Test (LFT)', category: 'Biochemistry', price: 650, description: 'Hepatic enzyme assessment', status: 'Active', recordType: 'master' },
-            { id: 'LAB006', name: 'Renal Function Test (RFT)', category: 'Biochemistry', price: 550, description: 'Kidney function panel', status: 'Active', recordType: 'master' },
-            { id: 'LAB007', name: 'Thyroid Profile (T3, T4, TSH)', category: 'Endocrinology', price: 600, description: 'Thyroid hormone assessment', status: 'Active', recordType: 'master' },
-            { id: 'LAB008', name: 'Urine Routine Examination', category: 'Pathology', price: 180, description: 'Urine routine and microscopy', status: 'Active', recordType: 'master' },
-            { id: 'LAB009', name: '12-Lead ECG', category: 'Cardiology', price: 300, description: 'Electrocardiogram recording', status: 'Active', recordType: 'master' },
-            { id: 'LAB010', name: 'Chest X-Ray PA View', category: 'Radiology', price: 400, description: 'Chest radiography PA view', status: 'Active', recordType: 'master' }
+            { id: 'LAB001', name: 'Complete Blood Count (CBC)', category: 'Hematology', price: 350, normalRange: '4,000–11,000', unit: '/µL', description: 'Complete blood count analysis', status: 'Active', recordType: 'master' },
+            { id: 'LAB002', name: 'Fasting Blood Sugar (FBS)', category: 'Biochemistry', price: 150, normalRange: '70–100', unit: 'mg/dL', description: 'Blood glucose level test', status: 'Active', recordType: 'master' },
+            { id: 'LAB003', name: 'HbA1c Glycated Hemoglobin', category: 'Biochemistry', price: 450, normalRange: '< 5.7', unit: '%', description: '3-month average blood glucose', status: 'Active', recordType: 'master' },
+            { id: 'LAB004', name: 'Lipid Profile', category: 'Biochemistry', price: 500, normalRange: '< 200', unit: 'mg/dL', description: 'Cholesterol & triglyceride panel', status: 'Active', recordType: 'master' },
+            { id: 'LAB005', name: 'Liver Function Test (LFT)', category: 'Biochemistry', price: 650, normalRange: '0.2–1.2', unit: 'mg/dL', description: 'Hepatic enzyme assessment', status: 'Active', recordType: 'master' },
+            { id: 'LAB006', name: 'Renal Function Test (RFT)', category: 'Biochemistry', price: 550, normalRange: '0.6–1.2', unit: 'mg/dL', description: 'Kidney function panel', status: 'Active', recordType: 'master' },
+            { id: 'LAB007', name: 'Thyroid Profile (T3, T4, TSH)', category: 'Endocrinology', price: 600, normalRange: '0.4–4.0', unit: 'µIU/mL', description: 'Thyroid hormone assessment', status: 'Active', recordType: 'master' },
+            { id: 'LAB008', name: 'Urine Routine Examination', category: 'Pathology', price: 180, normalRange: 'Normal / Pale Yellow', unit: '', description: 'Urine routine and microscopy', status: 'Active', recordType: 'master' },
+            { id: 'LAB009', name: '12-Lead ECG', category: 'Cardiology', price: 300, normalRange: 'Normal Sinus Rhythm', unit: 'ECG', description: 'Electrocardiogram recording', status: 'Active', recordType: 'master' },
+            { id: 'LAB010', name: 'Chest X-Ray PA View', category: 'Radiology', price: 400, normalRange: 'Normal Lung Fields & Cardiac Shadow', unit: 'Film', description: 'Chest radiography PA view', status: 'Active', recordType: 'master' }
         ];
 
-        var existingOrders = raw.filter(function (t) {
-            return t.patientId || t.patientName || t.orderDate || t.requestedAt || t.recordType === 'request';
-        });
-        localStorage.setItem('cms_lab_tests', JSON.stringify(master.concat(existingOrders)));
+        localStorage.setItem('cms_lab_tests', JSON.stringify(master));
     }
 
-    return master;
+    var cleaned = cleanupMasterLabTests(master);
+    if (cleaned.modified) {
+        var legacyOrders = raw.filter(function (t) {
+            return t.recordType !== 'master' && (t.patientId || t.patientName || t.consultationId || t.requestedAt || t.orderDate);
+        });
+        var catalogRecords = cleaned.tests.map(function (test) {
+            return Object.assign({}, test, { recordType: 'master' });
+        });
+        localStorage.setItem('cms_lab_tests', JSON.stringify(legacyOrders.concat(catalogRecords)));
+    }
+
+    return cleaned.tests;
 }
 
 function getActiveMasterLabTests() {
@@ -471,16 +712,84 @@ function getActiveMasterLabTests() {
 
 function findLabTestById(id) {
     if (!id) return null;
+    var targetId = String(id).trim();
     return getMasterLabTests().find(function (t) {
-        return t.id === id;
+        return t && t.id !== undefined && t.id !== null && String(t.id).trim() === targetId;
     }) || null;
 }
 
 function getLabOrders() {
-    var raw = JSON.parse(localStorage.getItem('cms_lab_tests') || '[]');
-    return raw.filter(function (t) {
-        return t.recordType !== 'master' && (t.patientId || t.patientName || t.orderDate || t.requestedAt || t.testId);
+    var rawOrders = JSON.parse(localStorage.getItem('cms_lab_orders') || '[]');
+    // Safe migration fallback if cms_lab_orders is null/not yet initialized
+    if ((!rawOrders || rawOrders.length === 0) && localStorage.getItem('cms_lab_orders') === null) {
+        var rawTests = JSON.parse(localStorage.getItem('cms_lab_tests') || '[]');
+        var legacyOrders = rawTests.filter(function (t) {
+            return t.recordType !== 'master' && (t.patientId || t.patientName) && (t.consultationId || t.requestedAt || t.orderDate);
+        });
+        if (legacyOrders.length > 0) {
+            rawOrders = legacyOrders;
+            localStorage.setItem('cms_lab_orders', JSON.stringify(legacyOrders));
+        }
+    }
+
+    if (!Array.isArray(rawOrders)) {
+        return [];
+    }
+
+    var hasRepairs = false;
+    var normalizedOrders = rawOrders.map(function (order) {
+        var masterTest = findLabTestById(order.testId);
+        if (!masterTest && order.testName) {
+            var searchName = String(order.testName).trim().toLowerCase();
+            masterTest = getMasterLabTests().find(function (t) {
+                return t && String(t.name || t.testName || '').trim().toLowerCase() === searchName;
+            }) || null;
+            if (!masterTest) {
+                var cleanSearch = searchName.replace(/\(.*?\)/g, '').trim();
+                masterTest = getMasterLabTests().find(function (t) {
+                    var cleanName = String(t.name || t.testName || '').replace(/\(.*?\)/g, '').trim().toLowerCase();
+                    return cleanName === cleanSearch || cleanName.indexOf(cleanSearch) !== -1 || cleanSearch.indexOf(cleanName) !== -1;
+                }) || null;
+            }
+        }
+
+        var existingNormalRange = String(order.normalRange || '').trim();
+        var masterNormalRange = String((masterTest && masterTest.normalRange) || '').trim();
+        var resolvedNormalRange = existingNormalRange || masterNormalRange;
+
+        var existingUnit = String(order.unit || '').trim();
+        var masterUnit = String((masterTest && masterTest.unit) || '').trim();
+        var resolvedUnit = existingUnit || masterUnit;
+
+        if (
+            (!existingNormalRange && masterNormalRange) ||
+            (!existingUnit && masterUnit) ||
+            order.normalRange !== resolvedNormalRange ||
+            order.unit !== resolvedUnit ||
+            (!order.testId && masterTest && masterTest.id)
+        ) {
+            hasRepairs = true;
+        }
+
+        var updated = Object.assign({}, order);
+        updated.normalRange = resolvedNormalRange;
+        updated.unit = resolvedUnit;
+        if (masterTest) {
+            if (!updated.testId) updated.testId = masterTest.id;
+            if (!updated.testName) updated.testName = masterTest.name;
+            if (!updated.category) updated.category = masterTest.category;
+            if (updated.price === undefined || updated.price === null || updated.price === '') {
+                updated.price = Number(masterTest.price || 0);
+            }
+        }
+        return updated;
     });
+
+    if (hasRepairs && normalizedOrders.length > 0) {
+        localStorage.setItem('cms_lab_orders', JSON.stringify(normalizedOrders));
+    }
+
+    return normalizedOrders;
 }
 
 var DEFAULT_RX = [
@@ -523,11 +832,11 @@ var DEFAULT_RX = [
 ];
 
 var DEFAULT_LABS = [
-    { id:'LABREQ-1001', orderDate:TODAY, patientId:'PAT001', patientName:'Rahul Menon', testId:'LAB001', testName:'Complete Blood Count (CBC)', category:'Hematology', priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'Hb: 14.1 g/dL, WBC: 8,200/mcL, Platelets: 230,000/mcL. All counts within normal biological reference range.', requestedAt: TODAY + ' 09:15:00' },
-    { id:'LABREQ-1002', orderDate:TODAY, patientId:'PAT003', patientName:'Arjun Kumar', testId:'LAB004', testName:'Lipid Profile', category:'Biochemistry', priority:'Urgent', status:'Pending', doctorName:'Dr. Arun Kumar', summary:'Sample received at pathology lab; awaiting biochemistry autoanalyzer processing.', requestedAt: TODAY + ' 10:10:00' },
-    { id:'LABREQ-1003', orderDate:TODAY, patientId:'PAT005', patientName:'Suresh Babu', testId:'LAB003', testName:'HbA1c Glycated Hemoglobin', category:'Biochemistry', priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'HbA1c: 7.2% (Fair glycemic control). Estimated average blood glucose: 160 mg/dL.', requestedAt: TODAY + ' 11:20:00' },
-    { id:'LABREQ-1004', orderDate:TODAY, patientId:'PAT007', patientName:'Mohammed Rizwan', testId:'LAB008', testName:'Urine Routine Examination', category:'Pathology', priority:'Urgent', status:'Pending', doctorName:'Dr. Arun Kumar', summary:'Sample collection underway in diagnostic wing.', requestedAt: TODAY + ' 12:15:00' },
-    { id:'LABREQ-1005', orderDate:'2026-02-14', patientId:'PAT008', patientName:'Divya Krishnan', testId:'LAB007', testName:'Thyroid Profile (T3, T4, TSH)', category:'Endocrinology', priority:'Normal', status:'Completed', doctorName:'Dr. Arun Kumar', summary:'TSH: 3.14 mIU/L (Euthyroid state). Free T4: 1.2 ng/dL.', requestedAt: '2026-02-14 10:45:00' }
+    { id:'LABREQ-1001', orderNumber:'LABREQ-1001', orderDate:TODAY, patientId:'PAT001', patientName:'Rahul Menon', testId:'LAB001', testName:'Complete Blood Count (CBC)', category:'Hematology', price:350, priority:'Normal', status:'Completed', doctorId:'DOC001', doctorName:'Dr. Arun Kumar', appointmentId:'APT001', consultationId:'CNS-1001', summary:'Hb: 14.1 g/dL, WBC: 8,200/mcL, Platelets: 230,000/mcL.', result:'8,200', normalRange:'4,000–11,000', unit:'/µL', requestedAt: TODAY + ' 09:15:00', completedAt: TODAY + ' 10:30:00' },
+    { id:'LABREQ-1002', orderNumber:'LABREQ-1002', orderDate:TODAY, patientId:'PAT003', patientName:'Arjun Kumar', testId:'LAB004', testName:'Lipid Profile', category:'Biochemistry', price:500, priority:'Urgent', status:'Pending', doctorId:'DOC001', doctorName:'Dr. Arun Kumar', appointmentId:'APT003', consultationId:'CNS-1002', summary:'Sample received at pathology lab; awaiting biochemistry autoanalyzer processing.', normalRange:'< 200', unit:'mg/dL', requestedAt: TODAY + ' 10:10:00' },
+    { id:'LABREQ-1003', orderNumber:'LABREQ-1003', orderDate:TODAY, patientId:'PAT005', patientName:'Suresh Babu', testId:'LAB003', testName:'HbA1c Glycated Hemoglobin', category:'Biochemistry', price:450, priority:'Normal', status:'Completed', doctorId:'DOC001', doctorName:'Dr. Arun Kumar', appointmentId:'APT005', consultationId:'CNS-1003', summary:'HbA1c: 7.2% (Fair glycemic control).', result:'7.2', normalRange:'< 5.7', unit:'%', requestedAt: TODAY + ' 11:20:00', completedAt: TODAY + ' 12:45:00' },
+    { id:'LABREQ-1004', orderNumber:'LABREQ-1004', orderDate:TODAY, patientId:'PAT007', patientName:'Mohammed Rizwan', testId:'LAB008', testName:'Urine Routine Examination', category:'Pathology', price:180, priority:'Urgent', status:'Pending', doctorId:'DOC001', doctorName:'Dr. Arun Kumar', appointmentId:'APT007', consultationId:'CNS-1004', summary:'Sample collection underway in diagnostic wing.', normalRange:'Normal / Pale Yellow', unit:'', requestedAt: TODAY + ' 12:15:00' },
+    { id:'LABREQ-1005', orderNumber:'LABREQ-1005', orderDate:'2026-02-14', patientId:'PAT008', patientName:'Divya Krishnan', testId:'LAB007', testName:'Thyroid Profile (T3, T4, TSH)', category:'Endocrinology', price:600, priority:'Normal', status:'Completed', doctorId:'DOC001', doctorName:'Dr. Arun Kumar', appointmentId:'APT008', consultationId:'CNS-1005', summary:'TSH: 3.14 mIU/L (Euthyroid state). Free T4: 1.2 ng/dL.', result:'3.14', normalRange:'0.4–4.0', unit:'µIU/mL', requestedAt: '2026-02-14 10:45:00', completedAt: '2026-02-14 14:00:00' }
 ];
 
 
@@ -562,17 +871,10 @@ function seedAllData() {
         );
     }
 
-    var rawLabs = JSON.parse(
-        localStorage.getItem('cms_lab_tests') || '[]'
-    );
-    var hasOrders = rawLabs.some(function (l) {
-        return l.patientId || l.patientName;
-    });
-    if (!hasOrders) {
-        var masterTests = getMasterLabTests();
+    if (localStorage.getItem('cms_lab_orders') === null) {
         localStorage.setItem(
-            'cms_lab_tests',
-            JSON.stringify(masterTests.concat(DEFAULT_LABS))
+            'cms_lab_orders',
+            JSON.stringify(DEFAULT_LABS)
         );
     }
 }
@@ -1965,17 +2267,24 @@ function renderConsultationLabTests() {
 
     var activeTests = getActiveMasterLabTests();
     if (activeTests.length === 0) {
-        container.innerHTML = '<div style="font-size:12px;color:var(--text-muted);grid-column:1/-1;">No active lab investigations in master catalog.</div>';
+        container.innerHTML = '<div style="font-size:12px;color:var(--text-muted);grid-column:1/-1;">No active laboratory tests are available. Please contact Admin.</div>';
         return;
     }
 
     container.innerHTML = activeTests.map(function (t) {
         var testName = t.name || t.testName;
         var cat = t.category || 'General';
+        var price = Number(t.price || 0);
+        var normalRange = t.normalRange || '';
+        var unit = t.unit || '';
+        var metaDetails = [cat];
+        if (price > 0) metaDetails.push('₹' + price);
+        if (normalRange) metaDetails.push('Ref: ' + normalRange + (unit ? ' ' + unit : ''));
+
         return '<label class="lab-check-label">' +
-            '<input type="checkbox" name="labTest" value="' + t.id + '" data-name="' + testName + '" data-category="' + cat + '" />' +
+            '<input type="checkbox" name="labTest" value="' + t.id + '" data-name="' + testName + '" data-category="' + cat + '" data-price="' + price + '" data-normalrange="' + normalRange + '" data-unit="' + unit + '" />' +
             '<span>' + testName +
-            ' <small style="color:var(--text-muted);font-weight:400;display:block;font-size:11px;">' + cat + '</small></span>' +
+            ' <small style="color:var(--text-muted);font-weight:400;display:block;font-size:11px;">' + metaDetails.join(' · ') + '</small></span>' +
             '</label>';
     }).join('');
 }
@@ -2212,22 +2521,19 @@ function completeConsultation() {
     var labCheckboxes = document.querySelectorAll(
         'input[name="labTest"]:checked'
     );
-    var labOrdersToSave = Array.from(labCheckboxes).map(function (cb) {
+    var labOrdersToSave = Array.prototype.slice.call(labCheckboxes).map(function (cb) {
+        var master = findLabTestById(cb.value);
+        var nr = master ? String(master.normalRange || '').trim() : String(cb.getAttribute('data-normalrange') || cb.dataset.normalrange || '').trim();
+        var u = master ? String(master.unit || '').trim() : String(cb.getAttribute('data-unit') || cb.dataset.unit || '').trim();
         return {
-            testId:   cb.value,
-            testName: cb.dataset.name || cb.value,
-            category: cb.dataset.category || 'General'
+            testId:      master ? master.id : cb.value,
+            testName:    master ? (master.name || master.testName) : (cb.getAttribute('data-name') || cb.dataset.name || cb.value),
+            category:    master ? (master.category || 'General') : (cb.getAttribute('data-category') || cb.dataset.category || 'General'),
+            price:       master ? Number(master.price || 0) : Number(cb.getAttribute('data-price') || cb.dataset.price || 0),
+            normalRange: nr,
+            unit:        u
         };
     });
-
-    var customLab = document.getElementById('labCustom');
-    if (customLab && customLab.value.trim()) {
-        labOrdersToSave.push({
-            testId:   'LAB-CUSTOM',
-            testName: customLab.value.trim(),
-            category: 'General'
-        });
-    }
 
     // 1. Update appointment status
     var appts = JSON.parse(
@@ -2306,24 +2612,29 @@ function completeConsultation() {
 
     // 4. Save lab requests (Doctor creates requests only, NOT bills or results)
     if (labOrdersToSave.length > 0) {
-        var testList = JSON.parse(
-            localStorage.getItem('cms_lab_tests') || '[]'
+        var orderList = JSON.parse(
+            localStorage.getItem('cms_lab_orders') || '[]'
         );
         var reqTime = getToday() + ' ' + new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 
         labOrdersToSave.forEach(function (t, i) {
-            testList.unshift({
-                id:             'LABREQ-' + (Date.now() + i),
+            var orderId = 'LABREQ-' + (Date.now() + i);
+            orderList.unshift({
+                id:             orderId,
+                orderNumber:    orderId,
                 testId:         t.testId,
                 testName:       t.testName,
                 category:       t.category,
+                price:          t.price,
+                normalRange:    t.normalRange || '',
+                unit:           t.unit || '',
                 patientId:      consultRecord.patientId,
                 patientName:    consultRecord.patientName,
                 doctorId:       consultRecord.doctorId,
                 doctorName:     consultRecord.doctorName,
                 appointmentId:  activeAppt.id,
                 consultationId: consultRecord.id,
-                orderDate:      TODAY,
+                orderDate:      getToday(),
                 requestedAt:    reqTime,
                 status:         'Pending',
                 priority:       'Normal',
@@ -2331,8 +2642,8 @@ function completeConsultation() {
             });
         });
         localStorage.setItem(
-            'cms_lab_tests',
-            JSON.stringify(testList)
+            'cms_lab_orders',
+            JSON.stringify(orderList)
         );
     }
 
@@ -2408,10 +2719,6 @@ function openPrintModal() {
     var labs = Array.from(labChecks).map(function (c) {
         return (c.dataset.name || c.value) + (c.dataset.category ? ' (' + c.dataset.category + ')' : '');
     });
-    var customLab = document.getElementById('labCustom');
-    if (customLab && customLab.value.trim()) {
-        labs.push(customLab.value.trim());
-    }
 
     var labSec = document.getElementById('mLabSection');
     if (labSec) {
@@ -2842,16 +3149,6 @@ function detailsLoadClinical(p) {
         return l.patientId === p.id || l.patientName === p.name;
     });
 
-    if (patientLabs.length === 0) {
-        patientLabs = [{
-            id: 'LABREQ-1001', orderDate: '2026-02-14', testId: 'LAB001',
-            testName: 'Complete Blood Count (CBC)', category: 'Hematology',
-            status: 'Completed', priority: 'Normal',
-            doctorName: 'Dr. Arun Kumar',
-            summary: 'Hb: 14.2 g/dL, WBC: 7,800 /mcL, Platelets: 240,000 /mcL (Normal limits)'
-        }];
-    }
-
     var countLabs = document.getElementById('countLabs');
     if (countLabs) countLabs.textContent = patientLabs.length;
     detailsRenderLabs(patientLabs);
@@ -2968,26 +3265,28 @@ function detailsRenderLabs(labs) {
     if (!tbody) return;
 
     if (!labs || labs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">No lab investigations found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">No laboratory reports found.</td></tr>';
         return;
     }
 
     tbody.innerHTML = labs.map(function (l) {
-        var isCompleted = (l.status === 'Completed');
+        var isCompleted = (String(l.status || '').toUpperCase() === 'COMPLETED');
+        var normalDisplay = (l.normalRange || '—') + (l.unit && l.normalRange ? ' ' + l.unit : '');
+        var resultDisplay = isCompleted
+            ? (l.result ? ('<strong>' + escapeHTML(l.result) + (l.unit ? ' ' + escapeHTML(l.unit) : '') + '</strong>') : 'Report Available')
+            : '<span style="color:var(--text-muted);font-style:italic;">Pending</span>';
+
         return '<tr>' +
             '<td style="font-family:monospace;font-weight:600;color:var(--accent);">' +
-            (l.id || 'LAB-000') + '</td>' +
-            '<td>' + (l.orderDate || l.requestedAt || TODAY) + '</td>' +
+            (l.id || l.orderNumber || 'LABREQ') + '</td>' +
+            '<td>' + (l.orderDate || (l.requestedAt ? String(l.requestedAt).substring(0, 10) : '') || getToday()) + '</td>' +
             '<td style="font-weight:600;">🧪 ' + (l.testName || l.name || 'Lab Test') + '</td>' +
             '<td><span class="badge" style="background:#f0e9e4;">' + (l.category || 'General') + '</span></td>' +
-            '<td><span class="badge ' +
-            (isCompleted ? 'badge-success' : 'badge-warning') +
-            '">' + (l.status || 'Pending') + '</span></td>' +
-            '<td><span class="badge ' + (l.priority === 'Urgent' ? 'priority-urgent' : 'priority-normal') + '">' +
+            '<td><span class="badge ' + (isCompleted ? 'badge-success' : 'badge-warning') + '">' + (isCompleted ? 'Completed' : (l.status || 'Pending')) + '</span></td>' +
+            '<td><span class="badge ' + (String(l.priority || '').toLowerCase() === 'urgent' ? 'priority-urgent' : 'priority-normal') + '">' +
             (l.priority || 'Normal') + '</span></td>' +
-            '<td>' + (l.doctorName || 'Dr. Arun Kumar') + '</td>' +
-            '<td style="font-size:12px;color:' + (isCompleted ? 'var(--text-primary)' : 'var(--text-muted)') + ';">' +
-            (isCompleted ? (l.summary || 'Investigation completed.') : (l.summary || 'Awaiting lab processing')) + '</td></tr>';
+            '<td>' + resultDisplay + '</td>' +
+            '<td style="font-size:12px;color:var(--text-secondary);">' + escapeHTML(normalDisplay) + '</td></tr>';
     }).join('');
 }
 
@@ -3282,12 +3581,11 @@ function loadLabsData() {
 
     allLabTests = getLabOrders();
 
-    if (!allLabTests || allLabTests.length === 0) {
+    if (localStorage.getItem('cms_lab_orders') === null && (!allLabTests || allLabTests.length === 0)) {
         allLabTests = DEFAULT_LABS;
-        var masterTests = getMasterLabTests();
         localStorage.setItem(
-            'cms_lab_tests',
-            JSON.stringify(masterTests.concat(DEFAULT_LABS))
+            'cms_lab_orders',
+            JSON.stringify(DEFAULT_LABS)
         );
     }
 
@@ -3305,21 +3603,23 @@ function labUpdateStats() {
     if (el) el.textContent = allLabTests.length;
 
     var pending = allLabTests.filter(function (l) {
-        return l.status === 'Pending';
+        var s = String(l.status || '').toUpperCase();
+        return s !== 'COMPLETED' && s !== 'CANCELLED';
     }).length;
 
     el = document.getElementById('statPendingTests');
     if (el) el.textContent = pending;
 
     var completed = allLabTests.filter(function (l) {
-        return l.status === 'Completed';
+        var s = String(l.status || '').toUpperCase();
+        return s === 'COMPLETED';
     }).length;
 
     el = document.getElementById('statCompletedTests');
     if (el) el.textContent = completed;
 
     var urgent = allLabTests.filter(function (l) {
-        return l.priority === 'Urgent';
+        return (l.priority || '').toLowerCase() === 'urgent';
     }).length;
 
     el = document.getElementById('statUrgentTests');
@@ -3334,8 +3634,8 @@ function filterLabTests() {
     var priorityEl = document.getElementById('labPriorityFilter');
 
     var q        = searchEl   ? searchEl.value.trim().toLowerCase() : '';
-    var status   = statusEl   ? statusEl.value   : '';
-    var priority = priorityEl ? priorityEl.value : '';
+    var status   = statusEl   ? statusEl.value.trim().toLowerCase()   : '';
+    var priority = priorityEl ? priorityEl.value.trim().toLowerCase() : '';
 
     filteredLabTests = allLabTests.filter(function (l) {
 
@@ -3343,10 +3643,16 @@ function filterLabTests() {
             (l.patientName && l.patientName.toLowerCase().indexOf(q) !== -1) ||
             (l.testName && l.testName.toLowerCase().indexOf(q) !== -1) ||
             (l.id && l.id.toLowerCase().indexOf(q) !== -1) ||
+            (l.orderNumber && l.orderNumber.toLowerCase().indexOf(q) !== -1) ||
             (l.category && l.category.toLowerCase().indexOf(q) !== -1);
 
-        var matchS = !status   || l.status   === status;
-        var matchP = !priority || l.priority === priority;
+        var lStatus = String(l.status || '').toLowerCase();
+        var matchS = !status || lStatus === status ||
+            (status === 'pending' && lStatus !== 'completed' && lStatus !== 'cancelled') ||
+            (status === 'completed' && lStatus === 'completed');
+
+        var lPriority = String(l.priority || '').toLowerCase();
+        var matchP = !priority || lPriority === priority;
 
         return matchQ && matchS && matchP;
     });
@@ -3379,11 +3685,16 @@ function labRenderTable() {
     }
 
     tbody.innerHTML = filteredLabTests.map(function (l) {
-        var isCompleted = (l.status === 'Completed');
+        var s = String(l.status || '').toUpperCase();
+        var isCompleted = (s === 'COMPLETED');
+        var isUrgent = String(l.priority || '').toLowerCase() === 'urgent';
+        var displayId = l.orderNumber || l.id || 'LABREQ';
+        var statusLabel = (typeof getStatusLabel === 'function') ? getStatusLabel(l.status) : (isCompleted ? 'Completed' : (l.status || 'Pending'));
+
         return '<tr>' +
             '<td style="font-family:monospace;font-weight:600;color:var(--accent);">' +
-            l.id + '</td>' +
-            '<td>' + (l.orderDate || l.requestedAt || TODAY) + '</td>' +
+            displayId + '</td>' +
+            '<td>' + (l.orderDate || (l.requestedAt ? String(l.requestedAt).substring(0, 10) : '') || getToday()) + '</td>' +
             '<td><div style="font-weight:600;color:var(--text-primary);">' +
             (l.patientName || 'Unknown') + '</div>' +
             '<div style="font-size:11px;color:var(--text-muted);">' +
@@ -3391,17 +3702,17 @@ function labRenderTable() {
             '<td style="font-weight:600;">🧪 ' + (l.testName || 'Lab Test') + '</td>' +
             '<td><span class="badge" style="background:#f0e9e4;">' + (l.category || 'General') + '</span></td>' +
             '<td><span class="badge ' +
-            (l.priority === 'Urgent' ? 'priority-urgent' : 'priority-normal') +
+            (isUrgent ? 'priority-urgent' : 'priority-normal') +
             '">' + (l.priority || 'Normal') + '</span></td>' +
             '<td><span class="badge ' +
             (isCompleted ? 'badge-success' : 'badge-warning') +
-            '">' + (l.status || 'Pending') + '</span></td>' +
+            '">' + statusLabel + '</span></td>' +
             '<td style="font-size:12px;color:var(--text-secondary);' +
-            'max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
-            (isCompleted ? (l.summary || 'Report ready') : (l.summary || 'Pending sample processing')) + '</td>' +
+            'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+            (isCompleted ? (l.result ? (escapeHTML(l.result) + (l.unit ? ' ' + escapeHTML(l.unit) : '') + (l.normalRange ? ' <small style="color:var(--text-muted);">(Ref: ' + escapeHTML(l.normalRange) + ')</small>' : '')) : 'Report ready') : (l.summary || 'Pending sample processing')) + '</td>' +
             '<td style="text-align:right;">' +
             '<button class="btn btn-outline btn-sm" ' +
-            'onclick="viewReport(\'' + l.id + '\')">📋 View Report</button>' +
+            'onclick="viewReport(\'' + (l.id || l.orderNumber) + '\')">📋 View Report</button>' +
             '</td></tr>';
     }).join('');
 }
@@ -3410,7 +3721,7 @@ function labRenderTable() {
 function viewReport(id) {
 
     var lab = allLabTests.find(function (l) {
-        return l.id === id;
+        return l.id === id || l.orderNumber === id;
     });
     if (!lab) return;
 
@@ -3419,24 +3730,45 @@ function viewReport(id) {
         if (el) el.textContent = val;
     };
 
+    var isCompleted = (String(lab.status || '').toUpperCase() === 'COMPLETED');
+
     setEl('repTestTitle', lab.testName || 'Lab Investigation');
-    setEl('repSub',       'Request ID: ' + lab.id + (lab.testId ? ' · Test ID: ' + lab.testId : ''));
+    setEl('repSub',       'Request ID: ' + (lab.id || lab.orderNumber) + (lab.testId ? ' · Test ID: ' + lab.testId : ''));
     setEl('repPatient',   (lab.patientName || '—') + (lab.patientId ? ' (' + lab.patientId + ')' : ''));
-    setEl('repDate',      lab.orderDate || lab.requestedAt || TODAY);
+    setEl('repDate',      lab.orderDate || (lab.requestedAt ? String(lab.requestedAt).substring(0, 10) : '') || TODAY);
     setEl('repDoc',       lab.doctorName || 'Dr. Arun Kumar');
     setEl('repPriority',  (lab.priority || 'Normal') + (lab.category ? ' · ' + lab.category : ''));
 
     var badge = document.getElementById('repBadge');
     if (badge) {
-        badge.textContent = lab.status || 'Pending';
+        badge.textContent = isCompleted ? 'Completed' : (lab.status || 'Pending');
         badge.className   = 'badge ' +
-            (lab.status === 'Completed' ? 'badge-success' : 'badge-warning');
+            (isCompleted ? 'badge-success' : 'badge-warning');
     }
 
     var body = document.getElementById('repBody');
     if (body) {
-        body.textContent = lab.summary ||
-            (lab.status === 'Completed' ? 'Investigation complete. Diagnostic report verified.' : 'Lab request is pending laboratory intake and processing.');
+        if (isCompleted) {
+            var findings = 'Test: ' + (lab.testName || 'Lab Test') +
+                '\nResult: ' + (lab.result || 'Report ready') + (lab.unit ? ' ' + lab.unit : '') +
+                '\nNormal Range: ' + (lab.normalRange || '—') + (lab.unit && lab.normalRange ? ' ' + lab.unit : '') +
+                '\nUnit: ' + (lab.unit || '—') +
+                '\nStatus: Completed' +
+                '\nCompleted Date: ' + (lab.completedAt || lab.orderDate || TODAY);
+            if (lab.resultEnteredBy) {
+                findings += '\nLab Technician: ' + lab.resultEnteredBy;
+            }
+            if (lab.remarks) {
+                findings += '\nRemarks: ' + lab.remarks;
+            }
+            body.style.whiteSpace = 'pre-line';
+            body.textContent = findings;
+        } else {
+            var pendingInfo = 'Status: Pending\nLab request is awaiting sample intake and processing.' +
+                (lab.normalRange ? '\nReference Normal Range: ' + lab.normalRange + (lab.unit ? ' ' + lab.unit : '') : '');
+            body.style.whiteSpace = 'pre-line';
+            body.textContent = pendingInfo;
+        }
     }
 
     var modal = document.getElementById('reportModal');
@@ -3531,37 +3863,42 @@ function submitNewLabOrder(e) {
         return;
     }
 
+    var orderId = 'LABREQ-' + Date.now();
     var newOrder = {
-        id:          'LABREQ-' + Date.now(),
-        testId:      testId,
-        testName:    testName,
-        category:    category,
-        orderDate:   TODAY,
+        id:          orderId,
+        orderNumber: orderId,
+        testId:      masterTest.id,
+        testName:    masterTest.name || testName,
+        category:    masterTest.category || category,
+        price:       Number(masterTest.price || 0),
+        normalRange: String(masterTest.normalRange || '').trim(),
+        unit:        String(masterTest.unit || '').trim(),
+        orderDate:   getToday(),
         requestedAt: getToday() + ' ' + new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }),
         patientId:   patId,
         patientName: patName,
         priority:    priority,
         status:      'Pending',
         doctorId:    (loggedInUser && loggedInUser.id) || 'DOC001',
-        doctorName:  loggedInUser.name || loggedInUser.username || 'Dr. Arun Kumar',
+        doctorName:  (loggedInUser && (loggedInUser.name || loggedInUser.username)) || 'Dr. Arun Kumar',
         summary:     notes
             ? 'Clinical note: ' + notes
             : 'Order requested by physician; awaiting diagnostic lab collection.'
     };
 
-    var rawAll = JSON.parse(localStorage.getItem('cms_lab_tests') || '[]');
-    rawAll.unshift(newOrder);
+    var rawOrders = JSON.parse(localStorage.getItem('cms_lab_orders') || '[]');
+    rawOrders.unshift(newOrder);
     localStorage.setItem(
-        'cms_lab_tests',
-        JSON.stringify(rawAll)
+        'cms_lab_orders',
+        JSON.stringify(rawOrders)
     );
 
-    allLabTests.unshift(newOrder);
+    allLabTests = rawOrders;
 
     closeOrderModal();
     filterLabTests();
     labUpdateStats();
-    showToast('Lab request for ' + testName + ' submitted!', 'success');
+    showToast('Lab request for ' + (masterTest.name || testName) + ' submitted!', 'success');
 }
 
 

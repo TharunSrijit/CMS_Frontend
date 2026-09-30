@@ -27,6 +27,7 @@ const STORAGE_KEYS = {
 
     // Lab
     labTests: "cms_lab_tests",
+    labOrders: "cms_lab_orders",
     labReports: "cms_lab_reports",
 
     // Pharmacy
@@ -305,6 +306,21 @@ function saveLabTests(labTests) {
     return saveData(
         STORAGE_KEYS.labTests,
         labTests
+    );
+}
+
+
+function getLabOrders() {
+
+    return getData(STORAGE_KEYS.labOrders);
+}
+
+
+function saveLabOrders(labOrders) {
+
+    return saveData(
+        STORAGE_KEYS.labOrders,
+        labOrders
     );
 }
 
