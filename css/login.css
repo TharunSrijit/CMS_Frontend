@@ -83,9 +83,10 @@ a {
     align-items: center;
     gap: 11px;
     color: inherit;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 700;
     text-decoration: none;
+    line-height: 1;
 }
 
 .brand-mark {
@@ -97,12 +98,12 @@ a {
     border: 1px solid rgba(255, 255, 255, .55);
     border-radius: 50%;
     font-family: 'DM Serif Display', serif;
-    font-size: 23px;
+    font-size: 22px;
     font-weight: 400;
+    line-height: 1;
 }
 
 .brand-light {
-    margin-left: -8px;
     font-weight: 400;
 }
 
@@ -174,7 +175,6 @@ a {
 }
 
 .mobile-brand > span:last-child {
-    margin-left: -11px;
     font-weight: 400;
 }
 

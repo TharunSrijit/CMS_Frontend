@@ -321,8 +321,16 @@
 <script>
 function openSidebar()  { const sb = document.getElementById('sidebar') || document.getElementById('menu'); const sbo = document.getElementById('sidebarOverlay'); if(sb) sb.classList.add('open'); if(sbo) sbo.classList.add('open'); }
 function closeSidebar() { const sb = document.getElementById('sidebar') || document.getElementById('menu'); const sbo = document.getElementById('sidebarOverlay'); if(sb) sb.classList.remove('open'); if(sbo) sbo.classList.remove('open'); }
-function toggleSidebar(){ const sb = document.getElementById('sidebar') || document.getElementById('menu'); if(sb && sb.classList.contains('open')) closeSidebar(); else openSidebar(); }
-function logout() { sessionStorage.removeItem("loggedInUser"); localStorage.removeItem("currentUser"); window.location.href = "../login.html"; }
+function logout() {
+  if (typeof confirm === "function" && !confirm("Are you sure you want to logout?")) {
+    return;
+  }
+  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("fd_access");
+  localStorage.removeItem("fd_refresh");
+  localStorage.removeItem("fd_name");
+  window.location.href = "../index.html";
+}
 </script>
 
 <!-- Scripts -->

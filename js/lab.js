@@ -18,8 +18,45 @@
    ========================================================= */
 
 /* =========================================================
-   STORAGE KEYS
+   STORAGE KEYS & AUTH GUARD
    ========================================================= */
+var loggedInUser = (function () {
+  try {
+    return JSON.parse(localStorage.getItem("loggedInUser") || "null");
+  } catch (e) {
+    return null;
+  }
+})();
+
+function isAuthorizedLabRole(user) {
+  if (!user) return false;
+  const role = String(user.role || "").trim().toLowerCase();
+  const userRole = String(user.userRole || "").trim().toLowerCase();
+  const validRoles = ["lab", "lab_technician", "lab technician", "admin"];
+  return validRoles.includes(role) || validRoles.includes(userRole);
+}
+
+if (typeof window !== "undefined" && window.location && window.location.pathname) {
+  if (!isAuthorizedLabRole(loggedInUser)) {
+    window.location.href = "../index.html";
+  }
+}
+
+function logout() {
+  if (typeof confirm === "function" && !confirm("Are you sure you want to logout?")) {
+    return;
+  }
+  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("fd_access");
+  localStorage.removeItem("fd_refresh");
+  localStorage.removeItem("fd_name");
+  if (typeof sessionStorage !== "undefined") {
+    sessionStorage.removeItem("loggedInUser");
+  }
+  localStorage.removeItem("currentUser");
+  window.location.href = "../index.html";
+}
+
 const LAB_TEST_MASTER_KEY = "cms_lab_tests";
 const LAB_ORDERS_KEY = "cms_lab_orders";
 const BILLING_KEY = "cms_billing";
@@ -2050,6 +2087,7 @@ document.addEventListener("DOMContentLoaded", function () {
    GLOBAL FUNCTION EXPORTS
    ========================================================= */
 window.toggleSidebar = toggleSidebar;
+window.logout = logout;
 window.initLabUI = initLabUI;
 window.addNewLabTest = addNewLabTest;
 window.updateLabDashboard = updateLabDashboard;
