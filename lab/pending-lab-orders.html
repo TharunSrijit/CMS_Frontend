@@ -1,354 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Pending Lab Orders — Clinic Management System" />
+  <title>Pending Orders | Laboratory — CMS</title>
 
-  <title>Pending Lab Orders</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Common Project CSS -->
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/tables.css">
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tables.css" />
+  <link rel="stylesheet" href="../css/forms.css" />
 </head>
 
 <body>
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <div class="app-wrapper">
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<div class="sidebar" id="sidebar">
 
-    <!-- ================= SIDEBAR ================= -->
-    <aside class="sidebar" id="menu">
+  <a class="sidebar-brand" href="dashboard.html">
+    <div class="sidebar-brand-icon">🧪</div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">MediCare CMS</span>
+      <span class="sidebar-brand-sub">Laboratory Portal</span>
+    </div>
+  </a>
 
-      <a href="dashboard.html" class="sidebar-brand">
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
 
-        <div class="sidebar-brand-icon">
-          ⚕
+    <a class="nav-item" href="dashboard.html" id="nav-dashboard">
+      <span class="nav-item-icon">📊</span>
+      <span class="nav-item-label">Dashboard</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <span class="nav-section-label">Orders & Testing</span>
+
+    <a class="nav-item active" href="pending-lab-orders.html" id="nav-pending">
+      <span class="nav-item-icon">🕒</span>
+      <span class="nav-item-label">Pending Orders</span>
+      <span class="nav-badge" id="pendingSidebarCount">0</span>
+    </a>
+
+    <a class="nav-item" href="completed-tests.html" id="nav-completed">
+      <span class="nav-item-icon">✅</span>
+      <span class="nav-item-label">Completed Tests</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <span class="nav-section-label">Billing</span>
+
+    <a class="nav-item" href="lab-billing.html" id="nav-billing">
+      <span class="nav-item-icon">💰</span>
+      <span class="nav-item-label">Lab Billing</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="sidebar-avatar" id="sidebarAvatar">LT</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name" id="sidebarName">Lab Technician</div>
+      <div class="sidebar-user-role">Laboratory Staff</div>
+    </div>
+    <button class="sidebar-logout-btn" onclick="logout()" title="Logout">⏏</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="topbar-toggle" onclick="openSidebar()" aria-label="Open menu">☰</button>
+      <div>
+        <div class="topbar-page-title">Pending Orders</div>
+        <div class="topbar-breadcrumb">
+          <span>Laboratory</span>
+          <span class="topbar-breadcrumb-sep">›</span>
+          <span>Pending Orders</span>
         </div>
+      </div>
+    </div>
 
-        <div class="sidebar-brand-text">
-          <span class="sidebar-brand-name">
-            Clinic Management
-          </span>
+    <div class="topbar-right">
+      <div style="font-size:var(--text-xs);color:var(--text-muted);font-weight:600;white-space:nowrap;" id="topbarDate"></div>
+      <div class="user-chip">
+        <div class="user-chip-avatar" id="topbarAvatar">LT</div>
+        <span class="user-chip-name" id="topbarName">Lab Technician</span>
+        <span class="user-chip-role">Laboratory</span>
+      </div>
+    </div>
+  </header>
 
-          <span class="sidebar-brand-sub">
-            Laboratory
-          </span>
-        </div>
+  <!-- PAGE CONTENT -->
+  <main class="page-content">
 
-      </a>
-
-
-      <nav class="sidebar-nav">
-
-        <div class="nav-section-label">
-          LABORATORY
-        </div>
-
-
-        <a href="dashboard.html" class="nav-item">
-
-          <span class="nav-item-icon">
-            ⌂
-          </span>
-
-          <span class="nav-item-label">
-            Dashboard
-          </span>
-
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Pending Laboratory Orders</h1>
+        <p class="page-subtitle">Diagnostic tests ordered by doctors awaiting specimen analysis and result entry</p>
+      </div>
+      <div class="page-actions">
+        <a href="dashboard.html" class="btn btn-outline">
+          ← Dashboard
         </a>
+      </div>
+    </div>
 
+    <!-- PENDING ORDERS TABLE CONTAINER -->
+    <div class="table-container">
 
-        <a href="pending-lab-orders.html" class="nav-item active">
-
-          <span class="nav-item-icon">
-            ◷
-          </span>
-
-          <span class="nav-item-label">
-            Pending Orders
-          </span>
-
-        </a>
-
-
-        <a href="completed-tests.html" class="nav-item">
-
-          <span class="nav-item-icon">
-            ✓
-          </span>
-
-          <span class="nav-item-label">
-            Completed Tests
-          </span>
-
-        </a>
-
-
-        <a href="lab-billing.html" class="nav-item">
-
-          <span class="nav-item-icon">
-            ₹
-          </span>
-
-          <span class="nav-item-label">
-            Lab Billing
-          </span>
-
-        </a>
-
-      </nav>
-
-
-      <!-- Sidebar User -->
-      <div class="sidebar-user">
-
-        <div class="sidebar-avatar">
-          L
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-title">Active Test Queue</div>
         </div>
-
-        <div class="sidebar-user-info">
-
-          <div class="sidebar-user-name">
-            Lab Technician
-          </div>
-
-          <div class="sidebar-user-role">
-            Laboratory Staff
-          </div>
-
-        </div>
-
       </div>
 
-    </aside>
-
-
-    <!-- ================= MAIN CONTENT ================= -->
-    <div class="main-content">
-
-
-      <!-- ================= TOPBAR ================= -->
-      <header class="topbar">
-
-        <div class="topbar-left">
-
-          <button
-            class="topbar-toggle"
-            type="button"
-            onclick="toggleSidebar()">
-            ☰
-          </button>
-
-
-          <div>
-
-            <div class="topbar-page-title">
-              Pending Lab Orders
-            </div>
-
-            <div class="topbar-breadcrumb">
-
-              <span>
-                Laboratory
-              </span>
-
-              <span class="topbar-breadcrumb-sep">
-                /
-              </span>
-
-              <span>
-                Pending Orders
-              </span>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="topbar-right">
-
-          <div class="user-chip">
-
-            <div class="user-chip-avatar">
-              L
-            </div>
-
-            <span class="user-chip-name">
-              Lab Technician
-            </span>
-
-          </div>
-
-        </div>
-
-      </header>
-
-
-      <!-- ================= PAGE CONTENT ================= -->
-      <main class="page-content">
-
-
-        <!-- Page Header -->
-        <div class="page-header">
-
-          <div class="page-header-left">
-
-            <h1 class="page-title">
-              Pending Laboratory Orders
-            </h1>
-
-            <p class="page-subtitle">
-              Tests waiting for laboratory results.
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <!-- ================= PENDING TESTS CARD ================= -->
-        <div class="card">
-
-
-          <!-- Card Header -->
-          <div class="card-header">
-
-            <div>
-
-              <div class="card-title">
-                Pending Tests
-              </div>
-
-              <div class="card-subtitle">
-                Laboratory tests awaiting completion
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- Card Body -->
-          <div class="card-body">
-
-
-            <!-- Table -->
-            <div class="table-container">
-
-              <div class="table-scroll">
-
-                <table
-                  id="pendingTestsTable"
-                  class="data-table">
-
-                  <thead>
-
-                    <tr>
-
-                      <th>
-                        Test ID
-                      </th>
-
-                      <th>
-                        Patient
-                      </th>
-
-                      <th>
-                        Doctor
-                      </th>
-
-                      <th>
-                        Test
-                      </th>
-
-                      <th>
-                        Date
-                      </th>
-
-                      <th>
-                        Priority
-                      </th>
-
-                      <th>
-                        Status
-                      </th>
-
-                      <th>
-                        Action
-                      </th>
-
-                    </tr>
-
-                  </thead>
-
-
-                  <!-- IMPORTANT:
-                       JavaScript inserts rows here -->
-                  <tbody id="pendingTestsBody">
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </div>
-
-
-          </div>
-
-        </div>
-
-
-        <!-- ================= BOTTOM ACTIONS ================= -->
-        <div class="page-actions mt-20">
-
-          <a
-            href="dashboard.html"
-            class="btn btn-secondary">
-            ← Back to Dashboard
-          </a>
-
-          <a
-            href="completed-tests.html"
-            class="btn btn-outline">
-            Completed Tests →
-          </a>
-
-        </div>
-
-
-      </main>
+      <div class="table-scroll">
+        <table id="pendingTestsTable" class="data-table">
+          <thead>
+            <tr>
+              <th>Test ID</th>
+              <th>Patient</th>
+              <th>Doctor</th>
+              <th>Test</th>
+              <th>Date</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTestsBody">
+            <!-- Populated dynamically by js/lab.js -->
+          </tbody>
+        </table>
+      </div>
 
     </div>
 
-  </div>
+    <div class="page-actions mt-20" style="display:flex;gap:12px;">
+      <a href="dashboard.html" class="btn btn-secondary">
+        ← Back to Dashboard
+      </a>
+      <a href="completed-tests.html" class="btn btn-outline">
+        Completed Tests →
+      </a>
+    </div>
 
+  </main>
+</div>
 
-  <!-- ================= SIDEBAR TOGGLE ================= -->
-  <script>
+<!-- Mobile Sidebar & Logout Helpers -->
+<script>
+function openSidebar()  { const sb = document.getElementById('sidebar') || document.getElementById('menu'); const sbo = document.getElementById('sidebarOverlay'); if(sb) sb.classList.add('open'); if(sbo) sbo.classList.add('open'); }
+function closeSidebar() { const sb = document.getElementById('sidebar') || document.getElementById('menu'); const sbo = document.getElementById('sidebarOverlay'); if(sb) sb.classList.remove('open'); if(sbo) sbo.classList.remove('open'); }
+function toggleSidebar(){ const sb = document.getElementById('sidebar') || document.getElementById('menu'); if(sb && sb.classList.contains('open')) closeSidebar(); else openSidebar(); }
+function logout() { sessionStorage.removeItem("loggedInUser"); localStorage.removeItem("currentUser"); window.location.href = "../login.html"; }
+</script>
 
-    function toggleSidebar() {
-
-      const sidebar =
-        document.getElementById("menu");
-
-      if (sidebar) {
-
-        sidebar.classList.toggle("open");
-
-      }
-
-    }
-
-  </script>
-
-
-  <!-- ================= LAB JAVASCRIPT ================= -->
-  <script src="../js/lab.js"></script>
-
+<!-- Scripts -->
+<script src="../js/lab.js"></script>
+<script src="../js/validation.js"></script>
 </body>
-
 </html>

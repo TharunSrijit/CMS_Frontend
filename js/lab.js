@@ -138,6 +138,60 @@ function formatDateTime(dateValue) {
   return date.toLocaleString();
 }
 
+function initLabUI() {
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+  } catch (e) {
+    user = null;
+  }
+
+  const name =
+    (user && (user.fullName || user.name || user.username)) ||
+    "Lab Technician";
+
+  const welcomeName = document.getElementById("welcomeName");
+  if (welcomeName) {
+    welcomeName.textContent = "Welcome back, " + name + "!";
+  }
+
+  const initials = name
+    .split(" ")
+    .map(function (w) {
+      return w[0];
+    })
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "LT";
+
+  const sidebarAvatar = document.getElementById("sidebarAvatar");
+  const sidebarName = document.getElementById("sidebarName");
+  const topbarAvatar = document.getElementById("topbarAvatar");
+  const topbarName = document.getElementById("topbarName");
+  const topbarDate = document.getElementById("topbarDate");
+  const timeOfDay = document.getElementById("timeOfDay");
+
+  if (sidebarAvatar) sidebarAvatar.textContent = initials;
+  if (sidebarName) sidebarName.textContent = name;
+  if (topbarAvatar) topbarAvatar.textContent = initials;
+  if (topbarName) topbarName.textContent = name;
+
+  const now = new Date();
+  const hour = now.getHours();
+  if (timeOfDay) {
+    timeOfDay.textContent =
+      hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+  }
+  if (topbarDate) {
+    topbarDate.textContent = now.toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+}
+
 function getTodayString() {
   const now = new Date();
   return (
@@ -654,6 +708,12 @@ function loadDashboard() {
   setElementText("completedCount", completed.length);
   setElementText("todayTestCount", todayTests.length);
   setElementText("totalTestCount", orders.length);
+
+  setElementText("bannerPending", pending.length);
+  setElementText("bannerCompleted", completed.length);
+  setElementText("bannerTotal", orders.length);
+
+  initLabUI();
 }
 
 function updateLabDashboard() {
@@ -1758,7 +1818,8 @@ function initializeLabSearch() {
 function refreshDashboardCounts() {
   if (
     document.getElementById("pendingCount") ||
-    document.getElementById("completedCount")
+    document.getElementById("completedCount") ||
+    document.getElementById("bannerPending")
   ) {
     loadDashboard();
   }
@@ -1872,19 +1933,6 @@ function printCurrentLabBill() {
   printLabBill(billId);
 }
 
-function clearLabOrders() {
-  localStorage.removeItem(LAB_ORDERS_KEY);
-  labOrders = [];
-  loadDashboard();
-  loadPendingLabOrders();
-  loadCompletedTests();
-}
-
-function clearLabBills() {
-  localStorage.removeItem(BILLING_KEY);
-  loadLabBillingHistory();
-}
-
 function refreshLabData() {
   labOrders = loadLabOrdersFromStorage();
   loadDashboard();
@@ -1931,6 +1979,7 @@ function goToBilling() {
    DOM READY INITIALIZATION
    ========================================================= */
 document.addEventListener("DOMContentLoaded", function () {
+  initLabUI();
   labOrders = loadLabOrdersFromStorage();
 
   if (
@@ -2001,6 +2050,7 @@ document.addEventListener("DOMContentLoaded", function () {
    GLOBAL FUNCTION EXPORTS
    ========================================================= */
 window.toggleSidebar = toggleSidebar;
+window.initLabUI = initLabUI;
 window.addNewLabTest = addNewLabTest;
 window.updateLabDashboard = updateLabDashboard;
 window.loadDashboard = loadDashboard;

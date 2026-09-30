@@ -73,11 +73,29 @@ function initPharmacyUI() {
     const sidebarName = document.getElementById("sidebarName");
     const topbarAvatar = document.getElementById("topbarAvatar");
     const topbarName = document.getElementById("topbarName");
+    const topbarDate = document.getElementById("topbarDate");
+    const timeOfDay = document.getElementById("timeOfDay");
+    const welcomeName = document.getElementById("welcomeName");
 
     if (sidebarAvatar) sidebarAvatar.textContent = initials;
     if (sidebarName) sidebarName.textContent = name;
     if (topbarAvatar) topbarAvatar.textContent = initials;
     if (topbarName) topbarName.textContent = name;
+    if (welcomeName) welcomeName.textContent = "Welcome back, " + name + "!";
+
+    const now = new Date();
+    const hour = now.getHours();
+    if (timeOfDay) {
+        timeOfDay.textContent = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+    }
+    if (topbarDate) {
+        topbarDate.textContent = now.toLocaleDateString("en-IN", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    }
 }
 
 
@@ -2230,27 +2248,45 @@ function updateDashboard() {
     medicines = currentMedicines;
 
     const pendingElement = document.getElementById("pendingPrescriptions");
+    const bannerPendingElement = document.getElementById("bannerPrescriptions");
     const medicineCountElement = document.getElementById("medicineCount");
+    const bannerMedicinesElement = document.getElementById("bannerMedicines");
     const lowStockElement = document.getElementById("lowStock");
+    const bannerLowStockElement = document.getElementById("bannerLowStock");
 
+    const totalMedicines = currentMedicines.length;
     if (medicineCountElement) {
-        medicineCountElement.innerText = currentMedicines.length;
+        medicineCountElement.innerText = totalMedicines;
+    }
+    if (bannerMedicinesElement) {
+        bannerMedicinesElement.innerText = totalMedicines;
     }
 
+    const lowStockCount = currentMedicines.filter(function (medicine) {
+        return Number(medicine.stock || 0) <= Number(medicine.reorderLevel || 0);
+    }).length;
     if (lowStockElement) {
-        lowStockElement.innerText = currentMedicines.filter(function (medicine) {
-            return Number(medicine.stock || 0) <= Number(medicine.reorderLevel || 0);
-        }).length;
+        lowStockElement.innerText = lowStockCount;
+    }
+    if (bannerLowStockElement) {
+        bannerLowStockElement.innerText = lowStockCount;
     }
 
-    if (pendingElement) {
+    if (pendingElement || bannerPendingElement) {
         const prescriptions = getStoredPrescriptions();
         const pendingCount = prescriptions.filter(function (rx) {
             return rx.status === "Pending" || rx.status === "Pending Dispensation";
         }).length;
 
-        pendingElement.innerText = pendingCount;
+        if (pendingElement) {
+            pendingElement.innerText = pendingCount;
+        }
+        if (bannerPendingElement) {
+            bannerPendingElement.innerText = pendingCount;
+        }
     }
+
+    initPharmacyUI();
 }
 
 

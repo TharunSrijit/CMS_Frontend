@@ -441,20 +441,40 @@ p { color: var(--text-secondary); line-height: 1.75; }
   align-items: center;
   gap: 14px;
   flex: 1;
+  min-width: 0;
 }
 
-.topbar-page-title {
+.topbar-left > div:not(.topbar-toggle):not(.topbar-menu-btn) {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.topbar-page-title,
+.topbar-title {
   font-size: var(--text-lg);
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.25;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.topbar-breadcrumb {
+.topbar-breadcrumb,
+.topbar-subtitle {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: var(--text-xs);
   color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .topbar-breadcrumb span:last-child { color: var(--accent); font-weight: 500; }
 .topbar-breadcrumb-sep { color: var(--clr-mauve); }
@@ -1325,8 +1345,23 @@ p { color: var(--text-secondary); line-height: 1.75; }
 }
 
 /* ─────────────────────────────────────────
-   25. RESPONSIVE BREAKPOINTS
+   25. RESPONSIVE BREAKPOINTS & TOGGLE
    ───────────────────────────────────────── */
+/* Desktop (width >= 993px): Permanently hide toggle and reclaim all space */
+@media (min-width: 993px) {
+  .topbar-toggle,
+  .topbar-menu-btn {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    border: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+}
+
 @media (max-width: 1200px) {
   :root { --sidebar-width: 220px; }
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
@@ -1343,13 +1378,47 @@ p { color: var(--text-secondary); line-height: 1.75; }
 
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
   .page-content { padding: 20px; }
+
+  /* Mobile sidebar toggle button integrated into header */
+  .topbar-toggle,
+  .topbar-menu-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--clr-espresso);
+    font-size: 1.25rem;
+    line-height: 1;
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .topbar-toggle:hover,
+  .topbar-menu-btn:hover {
+    background: var(--clr-blush);
+    border-color: var(--clr-mauve);
+    color: var(--accent);
+  }
+  .topbar-toggle:active,
+  .topbar-menu-btn:active {
+    background: var(--accent-light);
+  }
 }
 
 @media (max-width: 768px) {
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-  .topbar { padding: 0 16px; }
-  .topbar-search { display: none; }
-  .topbar-subtitle { display: none; }
+  .topbar { padding: 0 16px; gap: 12px; }
+  .topbar-left { gap: 10px; }
+  .topbar-page-title, .topbar-title { font-size: 1.05rem; }
+  .topbar-breadcrumb, .topbar-subtitle { font-size: 0.72rem; }
+  .topbar-search { display: none !important; }
   .user-chip-info { display: none; }
   .page-content, .page-body { padding: 16px; }
   .page-header { flex-direction: column; gap: 12px; }
@@ -1365,6 +1434,10 @@ p { color: var(--text-secondary); line-height: 1.75; }
 
 @media (max-width: 480px) {
   :root { --header-height: 58px; }
+  .topbar { padding: 0 12px; gap: 8px; }
+  .topbar-left { gap: 8px; }
+  .topbar-page-title, .topbar-title { font-size: 0.95rem; }
+  .topbar-toggle, .topbar-menu-btn { width: 34px; height: 34px; font-size: 1.15rem; }
   .page-content, .page-body { padding: 12px; }
   .card-body { padding: 14px; }
   .card-header { padding: 12px 14px; }
@@ -1382,32 +1455,6 @@ p { color: var(--text-secondary); line-height: 1.75; }
 }
 @media (max-width: 992px) {
   .sidebar-overlay.open { display: block; }
-}
-
-/* Hamburger toggle */
-.topbar-toggle,
-.topbar-menu-btn {
-  display: none;
-  width: 36px;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  color: var(--text-secondary);
-  font-size: 1.15rem;
-  background: transparent;
-  border: 1px solid var(--border-light);
-  transition: background var(--transition), color var(--transition);
-  padding: 0;
-  flex-shrink: 0;
-}
-.topbar-toggle:hover,
-.topbar-menu-btn:hover { background: var(--clr-blush); color: var(--accent); }
-
-@media (max-width: 992px) {
-  .topbar-toggle,
-  .topbar-menu-btn { display: inline-flex; }
 }
 
 /* Responsive Table scroll containers */

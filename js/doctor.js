@@ -1386,8 +1386,12 @@ function apptApplyFilters() {
 
 
 function handleSearch(val) {
+    if (document.getElementById('patientSearchInput')) {
+        patientsApplyFilters();
+        return;
+    }
 
-    searchQuery = val.trim();
+    searchQuery = (val || '').trim();
 
     var tableSearch = document.getElementById('tableSearchInput');
     var topSearch   = document.getElementById('topbarSearch');
@@ -1398,6 +1402,13 @@ function handleSearch(val) {
     apptApplyFilters();
 }
 
+function applyFilters() {
+    if (document.getElementById('patientSearchInput')) {
+        patientsApplyFilters();
+    } else if (typeof filterLabTests === 'function' && document.getElementById('mFilterStatus')) {
+        filterLabTests();
+    }
+}
 
 function handleTopbarSearch(val) {
     handleSearch(val);

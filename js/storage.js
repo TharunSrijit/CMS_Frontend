@@ -28,11 +28,13 @@ const STORAGE_KEYS = {
     // Lab
     labTests: "cms_lab_tests",
     labOrders: "cms_lab_orders",
-    labReports: "cms_lab_reports",
 
     // Pharmacy
     medicines: "cms_medicines",
     pharmacyPrescriptions: "cms_pharmacy_prescriptions",
+
+    // Billing
+    billing: "cms_billing",
 
     // Common
     notifications: "cms_notifications"
@@ -326,20 +328,20 @@ function saveLabOrders(labOrders) {
 
 
 // ============================================================
-// 16. LAB REPORT FUNCTIONS
+// 16. BILLING FUNCTIONS
 // ============================================================
 
-function getLabReports() {
+function getBilling() {
 
-    return getData(STORAGE_KEYS.labReports);
+    return getData(STORAGE_KEYS.billing);
 }
 
 
-function saveLabReports(labReports) {
+function saveBilling(bills) {
 
     return saveData(
-        STORAGE_KEYS.labReports,
-        labReports
+        STORAGE_KEYS.billing,
+        bills
     );
 }
 

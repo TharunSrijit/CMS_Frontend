@@ -1,480 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Laboratory Billing — Clinic Management System" />
+  <title>Lab Billing | Laboratory — CMS</title>
 
-    <meta charset="UTF-8">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
+  <!-- Shared CSS -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/forms.css" />
+  <link rel="stylesheet" href="../css/tables.css" />
 
-    <title>Lab Billing</title>
-
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/forms.css">
-    <link rel="stylesheet" href="../css/tables.css">
-
+  <style>
+    .total-highlight-card {
+      background: linear-gradient(135deg, var(--clr-espresso) 0%, #6b3d33 100%);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      color: var(--clr-cream);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+    .total-highlight-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--clr-mauve);
+      margin-bottom: 2px;
+    }
+    .total-highlight-value {
+      font-size: var(--text-2xl);
+      font-weight: 800;
+      color: #fff;
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="app-wrapper">
-
-    <aside class="sidebar" id="menu">
-
-        <a href="dashboard.html" class="sidebar-brand">
-
-            <div class="sidebar-brand-icon">
-                ⚕
-            </div>
-
-            <div class="sidebar-brand-text">
-
-                <span class="sidebar-brand-name">
-                    Clinic Management
-                </span>
-
-                <span class="sidebar-brand-sub">
-                    Laboratory
-                </span>
-
-            </div>
-
-        </a>
-
-
-        <nav class="sidebar-nav">
-
-            <div class="nav-section-label">
-                Laboratory
-            </div>
-
-            <a href="dashboard.html" class="nav-item">
-                <span class="nav-item-icon">⌂</span>
-                <span class="nav-item-label">Dashboard</span>
-            </a>
-
-            <a href="pending-lab-orders.html" class="nav-item">
-                <span class="nav-item-icon">◷</span>
-                <span class="nav-item-label">Pending Orders</span>
-            </a>
-
-            <a href="completed-tests.html" class="nav-item">
-                <span class="nav-item-icon">✓</span>
-                <span class="nav-item-label">Completed Tests</span>
-            </a>
-
-            <a
-                href="lab-billing.html"
-                class="nav-item active">
-
-                <span class="nav-item-icon">₹</span>
-                <span class="nav-item-label">Lab Billing</span>
-
-            </a>
-
-        </nav>
-
-    </aside>
-
-
-    <div class="main-content">
-
-        <header class="topbar">
-
-            <div class="topbar-left">
-
-                <button
-                    class="topbar-toggle"
-                    type="button"
-                    onclick="toggleSidebar()">
-
-                    ☰
-
-                </button>
-
-                <div>
-
-                    <div class="topbar-page-title">
-                        Lab Billing
-                    </div>
-
-                    <div class="topbar-breadcrumb">
-                        <span>Laboratory</span>
-                        <span class="topbar-breadcrumb-sep">/</span>
-                        <span>Billing</span>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <main class="page-content">
-
-            <div class="page-header">
-
-                <div class="page-header-left">
-
-                    <h1 class="page-title">
-                        Laboratory Billing
-                    </h1>
-
-                    <p class="page-subtitle">
-                        Generate billing for Doctor-requested laboratory tests.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <form id="labBillingForm" onsubmit="generateLabBill(event)">
-
-                <div class="form-section">
-
-                    <div class="form-section-header">
-
-                        <div>
-
-                            <div class="form-section-title">
-                                Select Lab Order
-                            </div>
-
-                            <div class="form-section-subtitle">
-                                Choose an active or completed Doctor lab order to bill
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-section-body">
-
-                        <div class="form-grid form-grid-2">
-
-                            <div class="form-group col-span-2">
-
-                                <label
-                                    class="form-label"
-                                    for="labOrderSelect">
-
-                                    Select Doctor Lab Order
-                                    <span class="required">*</span>
-
-                                </label>
-
-                                <select
-                                    id="labOrderSelect"
-                                    class="form-control"
-                                    onchange="onLabOrderSelectChange(this.value)"
-                                    required>
-
-                                    <option value="">
-                                        -- Select a Doctor Lab Order --
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="orderId">
-
-                                    Order ID
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="orderId"
-                                    class="form-control"
-                                    placeholder="Order ID"
-                                    readonly>
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="patientName">
-
-                                    Patient Name
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="patientName"
-                                    class="form-control"
-                                    placeholder="Patient Name"
-                                    readonly>
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="patientId">
-
-                                    Patient ID
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="patientId"
-                                    class="form-control"
-                                    placeholder="Patient ID"
-                                    readonly>
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="doctorName">
-
-                                    Doctor Name
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="doctorName"
-                                    class="form-control"
-                                    placeholder="Doctor Name"
-                                    readonly>
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="labTest">
-
-                                    Laboratory Test
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="labTest"
-                                    class="form-control"
-                                    placeholder="Test Name"
-                                    readonly>
-
-                                <input type="hidden" id="testId">
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="labPrice">
-
-                                    Test Rate (₹)
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="labPrice"
-                                    class="form-control"
-                                    placeholder="₹0.00"
-                                    readonly>
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label
-                                    class="form-label"
-                                    for="labQuantity">
-
-                                    Quantity
-                                    <span class="required">*</span>
-
-                                </label>
-
-                                <input
-                                    type="number"
-                                    id="labQuantity"
-                                    class="form-control"
-                                    value="1"
-                                    min="1"
-                                    onchange="calculateLabBill()"
-                                    oninput="calculateLabBill()"
-                                    required>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card card-accent-left">
-
-                    <div class="card-body">
-
-                        <div class="d-flex justify-between align-center">
-
-                            <div>
-
-                                <div class="card-title">
-                                    Total Amount
-                                </div>
-
-                                <div class="card-subtitle">
-                                    Calculated laboratory charges
-                                </div>
-
-                            </div>
-
-                            <div
-                                class="stat-card-value">
-
-                                ₹<span id="labTotal">0</span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="form-actions mt-20">
-
-                    <a
-                        href="dashboard.html"
-                        class="btn btn-secondary">
-
-                        Cancel
-
-                    </a>
-
-                    <button
-                        type="submit"
-                        id="btnGenerateBill"
-                        class="btn btn-primary">
-
-                        Generate Lab Bill
-
-                    </button>
-
-                </div>
-
-            </form>
-
-
-            <div
-                id="billMessage"
-                class="mt-20">
-            </div>
-
-
-            <!-- BILLING HISTORY -->
-            <div class="card mt-20">
-
-                <div class="card-header">
-
-                    <div>
-
-                        <div class="card-title">
-                            Lab Billing Records
-                        </div>
-
-                        <div class="card-subtitle">
-                            Generated laboratory invoices stored in common billing
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="card-body">
-
-                    <div class="table-container">
-
-                        <div class="table-scroll">
-
-                            <table id="labBillingTable" class="data-table">
-
-                                <thead>
-
-                                    <tr>
-
-                                        <th>Bill ID</th>
-                                        <th>Patient</th>
-                                        <th>Test</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </main>
-
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<div class="sidebar" id="sidebar">
+
+  <a class="sidebar-brand" href="dashboard.html">
+    <div class="sidebar-brand-icon">🧪</div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">MediCare CMS</span>
+      <span class="sidebar-brand-sub">Laboratory Portal</span>
     </div>
+  </a>
 
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Main</span>
+
+    <a class="nav-item" href="dashboard.html" id="nav-dashboard">
+      <span class="nav-item-icon">📊</span>
+      <span class="nav-item-label">Dashboard</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <span class="nav-section-label">Orders & Testing</span>
+
+    <a class="nav-item" href="pending-lab-orders.html" id="nav-pending">
+      <span class="nav-item-icon">🕒</span>
+      <span class="nav-item-label">Pending Orders</span>
+      <span class="nav-badge" id="pendingSidebarCount">0</span>
+    </a>
+
+    <a class="nav-item" href="completed-tests.html" id="nav-completed">
+      <span class="nav-item-icon">✅</span>
+      <span class="nav-item-label">Completed Tests</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <span class="nav-section-label">Billing</span>
+
+    <a class="nav-item active" href="lab-billing.html" id="nav-billing">
+      <span class="nav-item-icon">💰</span>
+      <span class="nav-item-label">Lab Billing</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="sidebar-avatar" id="sidebarAvatar">LT</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name" id="sidebarName">Lab Technician</div>
+      <div class="sidebar-user-role">Laboratory Staff</div>
+    </div>
+    <button class="sidebar-logout-btn" onclick="logout()" title="Logout">⏏</button>
+  </div>
 </div>
 
+<!-- ═══════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════ -->
+<div class="main-content">
 
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="topbar-toggle" onclick="openSidebar()" aria-label="Open menu">☰</button>
+      <div>
+        <div class="topbar-page-title">Lab Billing</div>
+        <div class="topbar-breadcrumb">
+          <span>Laboratory</span>
+          <span class="topbar-breadcrumb-sep">›</span>
+          <span>Billing</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div style="font-size:var(--text-xs);color:var(--text-muted);font-weight:600;white-space:nowrap;" id="topbarDate"></div>
+      <div class="user-chip">
+        <div class="user-chip-avatar" id="topbarAvatar">LT</div>
+        <span class="user-chip-name" id="topbarName">Lab Technician</span>
+        <span class="user-chip-role">Laboratory</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main class="page-content">
+
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Laboratory Billing</h1>
+        <p class="page-subtitle">Generate invoice records for Doctor-ordered diagnostic tests and monitor lab revenue</p>
+      </div>
+      <div class="page-actions">
+        <a href="dashboard.html" class="btn btn-outline">
+          ← Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- LAB BILLING FORM -->
+    <form id="labBillingForm" onsubmit="generateLabBill(event)">
+
+      <div class="form-section mb-20">
+        <div class="form-section-header">
+          <div class="form-section-icon">💰</div>
+          <div>
+            <div class="form-section-title">Select Lab Order</div>
+            <div class="form-section-subtitle">Choose an active or completed Doctor lab order to bill</div>
+          </div>
+        </div>
+
+        <div class="form-section-body">
+          <div class="form-grid form-grid-2">
+
+            <div class="form-group form-grid-full">
+              <label class="form-label" for="labOrderSelect">
+                Select Doctor Lab Order <span class="required" style="color:var(--danger);">*</span>
+              </label>
+              <select
+                id="labOrderSelect"
+                class="form-control"
+                onchange="onLabOrderSelectChange(this.value)"
+                required>
+                <option value="">-- Select a Doctor Lab Order --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="orderId">Order ID</label>
+              <input
+                type="text"
+                id="orderId"
+                class="form-control"
+                placeholder="Order ID"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="patientName">Patient Name</label>
+              <input
+                type="text"
+                id="patientName"
+                class="form-control"
+                placeholder="Patient Name"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="patientId">Patient ID</label>
+              <input
+                type="text"
+                id="patientId"
+                class="form-control"
+                placeholder="Patient ID"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="doctorName">Doctor Name</label>
+              <input
+                type="text"
+                id="doctorName"
+                class="form-control"
+                placeholder="Doctor Name"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="labTest">Laboratory Test</label>
+              <input
+                type="text"
+                id="labTest"
+                class="form-control"
+                placeholder="Test Name"
+                readonly
+              />
+              <input type="hidden" id="testId" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="labPrice">Test Rate (₹)</label>
+              <input
+                type="text"
+                id="labPrice"
+                class="form-control"
+                placeholder="₹0.00"
+                readonly
+              />
+            </div>
+
+            <div class="form-group form-grid-full">
+              <label class="form-label" for="labQuantity">
+                Quantity <span class="required" style="color:var(--danger);">*</span>
+              </label>
+              <input
+                type="number"
+                id="labQuantity"
+                class="form-control"
+                value="1"
+                min="1"
+                onchange="calculateLabBill()"
+                oninput="calculateLabBill()"
+                required
+              />
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- TOTAL AMOUNT HIGHLIGHT -->
+      <div class="total-highlight-card">
+        <div>
+          <div class="total-highlight-label">Total Calculated Charges</div>
+          <div class="total-highlight-value">₹<span id="labTotal">0</span></div>
+        </div>
+        <div style="font-size:2rem;opacity:0.2;">🧪</div>
+      </div>
+
+      <!-- FORM ACTIONS -->
+      <div class="form-actions mt-20" style="display:flex;gap:12px;align-items:center;">
+        <a href="dashboard.html" class="btn btn-secondary">
+          Cancel
+        </a>
+
+        <button
+          type="submit"
+          id="btnGenerateBill"
+          class="btn btn-primary">
+          📄 Generate Lab Bill
+        </button>
+      </div>
+
+    </form>
+
+    <div id="billMessage" class="mt-20"></div>
+
+    <!-- BILLING HISTORY TABLE -->
+    <div class="table-container mt-28">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-title">Lab Billing Records</div>
+          <span class="table-count">Generated Invoices</span>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table id="labBillingTable" class="data-table">
+          <thead>
+            <tr>
+              <th>Bill ID</th>
+              <th>Patient</th>
+              <th>Test</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated dynamically by js/lab.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Mobile Sidebar & Logout Helpers -->
 <script>
-
-function toggleSidebar() {
-
-    const sidebar =
-        document.getElementById("menu");
-
-    if (sidebar) {
-        sidebar.classList.toggle("open");
-    }
-
-}
-
+function openSidebar()  { const sb = document.getElementById('sidebar') || document.getElementById('menu'); const sbo = document.getElementById('sidebarOverlay'); if(sb) sb.classList.add('open'); if(sbo) sbo.classList.add('open'); }
+function closeSidebar() { const sb = document.getElementById('sidebar') || document.getElementById('menu'); const sbo = document.getElementById('sidebarOverlay'); if(sb) sb.classList.remove('open'); if(sbo) sbo.classList.remove('open'); }
+function toggleSidebar(){ const sb = document.getElementById('sidebar') || document.getElementById('menu'); if(sb && sb.classList.contains('open')) closeSidebar(); else openSidebar(); }
+function logout() { sessionStorage.removeItem("loggedInUser"); localStorage.removeItem("currentUser"); window.location.href = "../login.html"; }
 </script>
 
+<!-- Scripts -->
 <script src="../js/lab.js"></script>
-
+<script src="../js/validation.js"></script>
 </body>
 </html>
