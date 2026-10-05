@@ -39,6 +39,31 @@
       font-weight: 800;
       color: #fff;
     }
+
+    /* Bill detail & payment panels — hidden by default */
+    #billDetailPanel  { display: none; }
+    #paymentPanel     { display: none; }
+
+    .bill-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px 24px;
+      margin-bottom: 20px;
+    }
+    .bill-detail-item label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .bill-detail-item span {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
   </style>
 </head>
 
@@ -141,6 +166,148 @@
         <a href="dashboard.html" class="btn btn-outline">
           ← Dashboard
         </a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         BILL DETAIL PANEL
+         Shown when ?billId= is present in URL.
+         loadLabBillDetails() (lab.js) populates the hidden #billId input
+         and we display values in the read-only spans below.
+    ═══════════════════════════════════════ -->
+    <div id="billDetailPanel" class="form-section mb-20">
+      <div class="form-section-header">
+        <div class="form-section-icon">🧾</div>
+        <div>
+          <div class="form-section-title">Lab Bill Details</div>
+          <div class="form-section-subtitle">Viewing an existing laboratory bill — no changes will be made</div>
+        </div>
+      </div>
+
+      <div class="form-section-body">
+        <!-- Hidden input consumed by processLabBillPayment() & printCurrentLabBill() -->
+        <input type="hidden" id="billId" />
+
+        <div class="bill-detail-grid">
+          <div class="bill-detail-item">
+            <label>Bill ID</label>
+            <span id="bd-billId">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Bill Date</label>
+            <span id="bd-billDate">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Patient Name</label>
+            <span id="bd-patientName">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Patient ID</label>
+            <span id="bd-patientId">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Doctor</label>
+            <span id="bd-doctorName">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Laboratory Test</label>
+            <span id="bd-testName">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Test ID</label>
+            <span id="bd-testId">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Quantity</label>
+            <span id="bd-quantity">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Unit Price</label>
+            <span id="bd-unitPrice">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Total Amount</label>
+            <span id="bd-total">—</span>
+          </div>
+          <div class="bill-detail-item">
+            <label>Payment Status</label>
+            <span id="bd-status">—</span>
+          </div>
+          <div class="bill-detail-item" id="bd-methodRow" style="display:none;">
+            <label>Payment Method</label>
+            <span id="bd-method">—</span>
+          </div>
+          <div class="bill-detail-item" id="bd-refRow" style="display:none;">
+            <label>Payment Reference</label>
+            <span id="bd-ref">—</span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <button type="button" class="btn btn-outline" onclick="printCurrentLabBill()">🖨 Print Bill</button>
+          <a href="lab-billing.html" class="btn btn-secondary">← Generate New Bill</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         PAYMENT PANEL
+         Shown beneath bill details when the bill is Unpaid.
+         Calls the existing processLabBillPayment() from lab.js.
+    ═══════════════════════════════════════ -->
+    <div id="paymentPanel" class="form-section mb-20">
+      <div class="form-section-header">
+        <div class="form-section-icon">💳</div>
+        <div>
+          <div class="form-section-title">Process Payment</div>
+          <div class="form-section-subtitle">Select a payment method to mark this bill as Paid</div>
+        </div>
+      </div>
+
+      <div class="form-section-body">
+        <!-- Summary of which bill is being paid; set by showInlineLabPayment() -->
+        <div id="paymentBillSummary" style="display:none;padding:10px 16px;margin-bottom:16px;background:var(--bg-page,#f8fafc);border:1px solid var(--border-light,#e2e8f0);border-radius:var(--radius-sm,6px);font-size:var(--text-sm);">
+          <strong>Paying Bill:</strong> <span id="paymentBillInfo" style="font-weight:600;color:var(--text-primary);"></span>
+        </div>
+        <div class="form-grid form-grid-2 mb-16">
+
+          <div class="form-group">
+            <label class="form-label" for="paymentMethod">
+              Payment Method <span style="color:var(--danger);">*</span>
+            </label>
+            <select id="paymentMethod" class="form-control" onchange="onLabPaymentMethodChange(this.value)">
+              <option value="">— Select Payment Method —</option>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="paymentReference">
+              Payment Reference
+              <span id="labPayRefRequired" style="color:var(--danger);display:none;">*</span>
+              <span id="labPayRefOptional" style="color:var(--text-muted);font-size:var(--text-xs);">(optional for Cash)</span>
+            </label>
+            <input
+              type="text"
+              id="paymentReference"
+              class="form-control"
+              placeholder="UPI Txn ID / Card reference (optional for Cash)"
+            />
+          </div>
+
+        </div>
+
+        <div id="paymentMessage" style="margin-bottom:12px;"></div>
+
+        <button
+          type="button"
+          id="btnProcessPayment"
+          class="btn btn-primary"
+          onclick="handleLabPayment()">
+          💳 Process Payment
+        </button>
       </div>
     </div>
 
@@ -305,6 +472,7 @@
               <th>Total</th>
               <th>Status</th>
               <th>Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -336,5 +504,216 @@ function logout() {
 <!-- Scripts -->
 <script src="../js/lab.js"></script>
 <script src="../js/validation.js"></script>
+
+<!-- ═══════════════════════════════════════
+     LAB BILLING PAGE CONTROLLER
+     Runs AFTER lab.js so all its functions are available.
+     1. Overrides loadLabBillingHistory() to add the Actions column (7 cols).
+        - Unpaid bills: 💳 Pay button (inline, no navigation) + 🖨 Print
+        - Paid bills:   🖨 Print only
+     2. showInlineLabPayment() — wires Pay button to the payment panel on the
+        same page; sets #billId so processLabBillPayment() (lab.js) works.
+     3. Wraps processLabBillPayment to refresh the table and hide the panel
+        after a successful payment.
+     Does NOT create/modify any bill data.
+═══════════════════════════════════════ -->
+<script>
+/* ── Helper: toggle payment-reference required label ─────────────────── */
+function onLabPaymentMethodChange(method) {
+  var req = document.getElementById('labPayRefRequired');
+  var opt = document.getElementById('labPayRefOptional');
+  var inp = document.getElementById('paymentReference');
+  if (req) req.style.display = (method === 'UPI' || method === 'Card') ? 'inline' : 'none';
+  if (opt) opt.style.display = (method === 'UPI' || method === 'Card') ? 'none'  : 'inline';
+  if (inp) inp.placeholder   = method === 'UPI'  ? 'Enter UPI Transaction ID'
+                             : method === 'Card' ? 'Enter Card last 4 digits / Reference'
+                             : 'Reference (optional for Cash)';
+}
+
+/* ── Show the inline payment panel for the given bill ────────────────── */
+/* Called by the 💳 Pay button in the history table.                      */
+/* Does NOT create or modify any bill — only surfaces the payment UI.     */
+function showInlineLabPayment(billId, billInfo) {
+  /* 1. Set the hidden #billId so processLabBillPayment() (lab.js) can read it */
+  var hiddenId = document.getElementById('billId');
+  if (hiddenId) hiddenId.value = billId;
+
+  /* 2. Show which bill is being paid */
+  var summaryEl = document.getElementById('paymentBillSummary');
+  var infoEl    = document.getElementById('paymentBillInfo');
+  if (infoEl)    infoEl.textContent    = billInfo || billId;
+  if (summaryEl) summaryEl.style.display = '';
+
+  /* 3. Reset the form fields so previous entries don't linger */
+  var methodEl = document.getElementById('paymentMethod');
+  var refEl    = document.getElementById('paymentReference');
+  var msgEl    = document.getElementById('paymentMessage');
+  if (methodEl) methodEl.value    = '';
+  if (refEl)    refEl.value       = '';
+  if (msgEl)    msgEl.textContent = '';
+  onLabPaymentMethodChange('');
+
+  /* 4. Reveal and scroll to the payment panel */
+  var panel = document.getElementById('paymentPanel');
+  if (panel) {
+    panel.style.display = '';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+/* ── handleLabPayment: directly marks the bill Paid ─────────────────────
+   Reads billId from the hidden #billId input (set by showInlineLabPayment),
+   reads paymentMethod and paymentReference from the form fields, then calls
+   markLabBillPaid() which is exported on window by lab.js. No wrappers,
+   no redirect, no new bill created.                                       */
+function handleLabPayment() {
+  var billId = '';
+  var hidEl  = document.getElementById('billId');
+  if (hidEl) billId = String(hidEl.value || '').trim();
+
+  var method = '';
+  var methEl = document.getElementById('paymentMethod');
+  if (methEl) method = String(methEl.value || '').trim();
+
+  var ref = '';
+  var refEl = document.getElementById('paymentReference');
+  if (refEl) ref = String(refEl.value || '').trim();
+
+  var msgEl = document.getElementById('paymentMessage');
+
+  function showErr(msg) {
+    if (!msgEl) { alert(msg); return; }
+    msgEl.textContent = msg;
+    msgEl.className = 'error message-error';
+  }
+  function showOk(msg) {
+    if (!msgEl) return;
+    msgEl.textContent = msg;
+    msgEl.className = 'success message-success';
+  }
+
+  if (!billId) {
+    showErr('Bill ID is missing. Please click ’💳 Pay’ on a bill row first.');
+    return;
+  }
+  if (!method) {
+    showErr('Please select a payment method.');
+    return;
+  }
+  if ((method === 'UPI' || method === 'Card') && !ref) {
+    showErr('Payment Reference is required for ' + method + '.');
+    return;
+  }
+
+  /* markLabBillPaid is exported by lab.js: window.markLabBillPaid */
+  if (typeof markLabBillPaid !== 'function') {
+    showErr('Payment system error: markLabBillPaid not available.');
+    return;
+  }
+
+  var bill = markLabBillPaid(billId, method, ref);
+  if (!bill) {
+    showErr('Bill “' + billId + '” not found. It may have already been paid or deleted.');
+    return;
+  }
+
+  showOk('✅ Payment successful! Bill ' + billId + ' is now Paid.');
+
+  /* Hide the payment panel after a brief moment */
+  setTimeout(function () {
+    var panel = document.getElementById('paymentPanel');
+    if (panel) panel.style.display = 'none';
+  }, 1200);
+
+  /* Refresh the history table immediately so the badge flips to Paid */
+  if (typeof loadLabBillingHistory === 'function') loadLabBillingHistory();
+}
+
+/* ── On page load: keep both side panels hidden ──────────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+  var detailPanel  = document.getElementById('billDetailPanel');
+  var paymentPanel = document.getElementById('paymentPanel');
+  if (detailPanel)  detailPanel.style.display  = 'none';
+  if (paymentPanel) paymentPanel.style.display = 'none';
+});
+
+/* ── Override loadLabBillingHistory to add Actions column (7 cols) ────── */
+/* Unpaid bills → 💳 Pay (inline) + 🖨 Print                              */
+/* Paid bills   → 🖨 Print only                                            */
+(function () {
+  window.loadLabBillingHistory = function () {
+    var table = document.getElementById('labBillingTable') || document.getElementById('billingTable');
+    if (!table) return;
+    var tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    var bills = ((typeof getBills === 'function') ? getBills() : []).filter(function (b) {
+      return String(b.type || b.billType || '').toUpperCase() === 'LAB';
+    });
+
+    if (bills.length === 0) {
+      var r = tbody.insertRow(); var c = r.insertCell();
+      c.colSpan = 7; c.style.textAlign = 'center'; c.style.padding = '20px';
+      c.style.color = 'var(--text-muted, #64748b)';
+      c.textContent = 'No lab bills generated yet.';
+      return;
+    }
+
+    bills.forEach(function (bill) {
+      var row    = tbody.insertRow();
+      var billId = bill.billId || bill.id || '';
+      var paid   = String(bill.paymentStatus || bill.status || '').toLowerCase() === 'paid';
+
+      /* Col 1-4: ID, Patient, Test, Total */
+      row.insertCell().textContent = billId;
+      row.insertCell().textContent = bill.patientName || '—';
+      row.insertCell().textContent = bill.testName || (bill.items && bill.items[0] ? bill.items[0].testName : 'Lab Investigation');
+      row.insertCell().textContent = '₹' + Number(bill.total !== undefined ? bill.total : (bill.amount !== undefined ? bill.amount : 0)).toFixed(2);
+
+      /* Col 5: Status badge */
+      var sc    = row.insertCell();
+      var badge = document.createElement('span');
+      badge.className   = 'badge ' + (paid ? 'badge-success' : 'badge-warning');
+      badge.textContent = paid ? 'Paid' : 'Unpaid';
+      sc.appendChild(badge);
+
+      /* Col 6: Date */
+      var dv = bill.billDate || bill.createdAt;
+      var dt = dv ? (function(){ var d = new Date(dv); return isNaN(d.getTime()) ? String(dv) : d.toLocaleDateString(); })() : '';
+      row.insertCell().textContent = dt;
+
+      /* Col 7: Actions */
+      var ac = row.insertCell();
+      ac.style.whiteSpace = 'nowrap';
+
+      /* 💳 Pay — only for Unpaid bills; opens payment panel inline, no navigation */
+      if (!paid) {
+        var payBtn = document.createElement('button');
+        payBtn.type      = 'button';
+        payBtn.className = 'btn btn-primary btn-sm';
+        payBtn.textContent = '💳 Pay';
+        payBtn.title     = 'Process payment for this bill';
+        payBtn.style.marginRight = '6px';
+        (function (id, info) {
+          payBtn.onclick = function () { showInlineLabPayment(id, info); };
+        })(billId, billId + ' — ' + (bill.patientName || '') + ' — ₹' + Number(bill.total !== undefined ? bill.total : (bill.amount !== undefined ? bill.amount : 0)).toFixed(2));
+        ac.appendChild(payBtn);
+      }
+
+      /* 🖨 Print — always shown; calls existing printLabBill() */
+      var pBtn = document.createElement('button');
+      pBtn.type      = 'button';
+      pBtn.className = 'btn btn-outline btn-sm';
+      pBtn.textContent = '🖨 Print';
+      pBtn.title     = 'Print / Save as PDF';
+      (function (id) {
+        pBtn.onclick = function () { if (typeof printLabBill === 'function') printLabBill(id); };
+      })(billId);
+      ac.appendChild(pBtn);
+    });
+  };
+})();
+</script>
 </body>
 </html>
