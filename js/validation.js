@@ -91,11 +91,79 @@
 			if (!/\p{L}/u.test(localPart)) return 'Email must include a letter before @.';
 		}
 
-		if (field.dataset.validate === 'date-not-future' && field.type === 'date') {
-			const selectedDate = new Date(value + 'T00:00:00');
+		if (field.type === 'date' || (field.dataset && field.dataset.validate && field.dataset.validate.startsWith('date-'))) {
+			if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+				return 'Enter a valid date in YYYY-MM-DD format.';
+			}
+
+			const parts = value.split('-');
+			const year = parseInt(parts[0], 10);
+			const month = parseInt(parts[1], 10);
+			const day = parseInt(parts[2], 10);
+
+			if (month < 1 || month > 12 || day < 1 || day > 31) {
+				return 'Enter a valid calendar date.';
+			}
+
+			const selectedDate = new Date(year, month - 1, day);
+			if (isNaN(selectedDate.getTime()) || selectedDate.getFullYear() !== year || selectedDate.getMonth() !== month - 1 || selectedDate.getDate() !== day) {
+				return 'Enter a valid calendar date.';
+			}
+
+			if (year < 1900 || year > 2100) {
+				return 'Enter a year between 1900 and 2100.';
+			}
+
 			const today = new Date();
 			today.setHours(0, 0, 0, 0);
-			if (selectedDate > today) return 'Date cannot be in the future.';
+
+			if (field.min && value < field.min) {
+				return 'Date cannot be earlier than ' + field.min + '.';
+			}
+			if (field.max && value > field.max) {
+				return 'Date cannot be later than ' + field.max + '.';
+			}
+
+			const validateType = (field.dataset && field.dataset.validate) || '';
+
+			if (validateType === 'date-not-future' || validateType === 'dob' || field.id === 'dob' || field.name === 'dob') {
+				if (selectedDate > today) {
+					return 'Date of birth cannot be in the future.';
+				}
+				const minDobYear = today.getFullYear() - 130;
+				if (year < minDobYear) {
+					return 'Enter a realistic date of birth (within the last 130 years).';
+				}
+			}
+
+			if (validateType === 'date-not-past' || validateType === 'appointment-date' || field.id === 'apptDate' || field.name === 'apptDate') {
+				if (selectedDate < today) {
+					return 'Appointment date cannot be in the past.';
+				}
+				const maxAppt = new Date(today);
+				maxAppt.setFullYear(today.getFullYear() + 1);
+				if (selectedDate > maxAppt) {
+					return 'Appointment date cannot be more than 1 year in advance.';
+				}
+			}
+
+			if (validateType === 'date-future') {
+				if (selectedDate < today) {
+					return 'Date must be in the future.';
+				}
+			}
+		}
+
+		if (field.type === 'time') {
+			if (!/^\d{1,2}:\d{2}$/.test(value)) {
+				return 'Enter a valid time in HH:MM format.';
+			}
+			const timeParts = value.split(':');
+			const hours = parseInt(timeParts[0], 10);
+			const minutes = parseInt(timeParts[1], 10);
+			if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+				return 'Enter a valid time.';
+			}
 		}
 
 		const validity = field.validity;

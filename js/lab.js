@@ -475,7 +475,7 @@ function cleanupMasterLabTests(masterTests) {
       primary.price = canonical.price;
       modified = true;
     }
-    if (!primary.status || primary.status.toLowerCase() !== "active") {
+    if (!primary.status) {
       primary.status = "Active";
       modified = true;
     }
@@ -930,13 +930,31 @@ function renderTestDetailsActions(order) {
     };
     container.appendChild(printBtn);
 
+    const bills = getBills();
+    const existingBill = bills.find(function (b) {
+      return (
+        (b.orderId && String(b.orderId).trim().toLowerCase() === String(orderId).trim().toLowerCase()) ||
+        (order.billId && String(b.billId || b.id).trim().toLowerCase() === String(order.billId).trim().toLowerCase())
+      );
+    });
+
     const billBtn = document.createElement("button");
     billBtn.type = "button";
     billBtn.className = "btn btn-primary";
-    billBtn.textContent = "Lab Billing →";
-    billBtn.onclick = function () {
-      window.location.href = "lab-billing.html?orderId=" + encodeURIComponent(orderId);
-    };
+
+    if (existingBill) {
+      const isPaid = String(existingBill.paymentStatus || existingBill.status || "").toLowerCase() === "paid";
+      const bId = existingBill.billId || existingBill.id;
+      billBtn.textContent = isPaid ? "🧾 View Paid Bill (" + bId + ")" : "💳 Pay Lab Bill (" + bId + ") →";
+      billBtn.onclick = function () {
+        window.location.href = "lab-billing.html?billId=" + encodeURIComponent(bId);
+      };
+    } else {
+      billBtn.textContent = "💰 Generate Lab Bill →";
+      billBtn.onclick = function () {
+        window.location.href = "lab-billing.html?orderId=" + encodeURIComponent(orderId);
+      };
+    }
     container.appendChild(billBtn);
   }
 }
@@ -1212,14 +1230,49 @@ function loadCompletedTests() {
     statusCell.appendChild(badge);
 
     const actionCell = row.insertCell();
+    actionCell.style.whiteSpace = "nowrap";
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = "btn btn-primary btn-sm";
     button.textContent = "View Report";
+    button.style.marginRight = "6px";
     button.onclick = function () {
       window.location.href = "test-details.html?orderId=" + encodeURIComponent(orderId);
     };
     actionCell.appendChild(button);
+
+    const bills = getBills();
+    const existingBill = bills.find(function (b) {
+      return (
+        (b.orderId && String(b.orderId).trim().toLowerCase() === String(orderId).trim().toLowerCase()) ||
+        (order.billId && String(b.billId || b.id).trim().toLowerCase() === String(order.billId).trim().toLowerCase())
+      );
+    });
+
+    if (existingBill) {
+      const isPaid = String(existingBill.paymentStatus || existingBill.status || "").toLowerCase() === "paid";
+      const bId = existingBill.billId || existingBill.id;
+      const billBtn = document.createElement("button");
+      billBtn.type = "button";
+      billBtn.className = isPaid ? "btn btn-outline btn-sm" : "btn btn-secondary btn-sm";
+      billBtn.textContent = isPaid ? "🧾 Bill Paid" : "💳 Pay Bill";
+      billBtn.title = isPaid ? "Bill is Paid (" + bId + ")" : "Process Payment for " + bId;
+      billBtn.onclick = function () {
+        window.location.href = "lab-billing.html?billId=" + encodeURIComponent(bId);
+      };
+      actionCell.appendChild(billBtn);
+    } else {
+      const billBtn = document.createElement("button");
+      billBtn.type = "button";
+      billBtn.className = "btn btn-outline btn-sm";
+      billBtn.textContent = "💰 Bill Test";
+      billBtn.title = "Generate Bill for this test";
+      billBtn.onclick = function () {
+        window.location.href = "lab-billing.html?orderId=" + encodeURIComponent(orderId);
+      };
+      actionCell.appendChild(billBtn);
+    }
   });
 }
 
@@ -1398,7 +1451,8 @@ function generateLabBill(event) {
   }
 
   const order = findOrder(orderId);
-  const now = new Date().toISOString();
+  const now = new Date();
+  const nowIso = now.toISOString();
   const billNumber = generateLabBillNumber();
 
   const bill = {
@@ -1431,11 +1485,13 @@ function generateLabBill(event) {
     status: "Unpaid",
     paymentStatus: "Unpaid",
     paymentMethod: "",
+    method: "",
     paymentReference: "",
     reference: "",
-    billDate: now,
-    createdAt: now,
-    paidAt: ""
+    billDate: nowIso,
+    createdAt: nowIso,
+    paidAt: "",
+    paidDate: ""
   };
 
   const bills = getBills();
@@ -1450,17 +1506,28 @@ function generateLabBill(event) {
   if (order) {
     const allOrders = loadLabOrdersFromStorage();
     const idx = allOrders.findIndex(function (o) {
-      return String(o.id || o.orderNumber) === String(orderId);
+      return String(o.id || o.orderNumber).trim().toLowerCase() === String(orderId).trim().toLowerCase();
     });
     if (idx !== -1) {
       allOrders[idx].billId = billNumber;
+      allOrders[idx].billStatus = "Unpaid";
+      allOrders[idx].paymentStatus = "Unpaid";
+      allOrders[idx].isPaid = false;
       writeJSON(LAB_ORDERS_KEY, allOrders);
     }
   }
 
-  showMessage("billMessage", "Lab bill generated successfully. Bill No: " + billNumber, "success");
+  showMessage("billMessage", "✅ Lab bill generated successfully! Bill No: " + billNumber, "success");
 
   loadLabBillingHistory();
+
+  // Automatically open the payment panel for this bill so technician can pay right away
+  if (typeof showInlineLabPayment === "function") {
+    showInlineLabPayment(
+      billNumber,
+      billNumber + " — " + patientName + " — ₹" + total.toFixed(2)
+    );
+  }
 
   return bill;
 }
@@ -1476,14 +1543,18 @@ function loadLabBillingHistory() {
   tbody.innerHTML = "";
 
   const bills = getBills().filter(function (bill) {
+    if (!bill) return false;
     const t = String(bill.type || bill.billType || "").toUpperCase();
-    return t === "LAB";
+    if (t === "LAB") return true;
+    if (!bill.type && String(bill.billId || bill.id || "").startsWith("LAB-")) return true;
+    if (bill.testId || bill.testName) return true;
+    return false;
   });
 
   if (bills.length === 0) {
     const row = tbody.insertRow();
     const cell = row.insertCell();
-    cell.colSpan = 6;
+    cell.colSpan = 7;
     cell.style.textAlign = "center";
     cell.style.padding = "20px";
     cell.style.color = "var(--text-muted, #64748b)";
@@ -1494,20 +1565,54 @@ function loadLabBillingHistory() {
   bills.forEach(function (bill) {
     const row = tbody.insertRow();
     const billId = bill.billId || bill.id || "";
+    const isPaid = String(bill.paymentStatus || bill.status || "").toLowerCase() === "paid";
+    const totalAmount = Number(bill.total !== undefined ? bill.total : (bill.amount !== undefined ? bill.amount : 0));
 
     row.insertCell().textContent = billId;
     row.insertCell().textContent = bill.patientName || "—";
     row.insertCell().textContent = bill.testName || (bill.items && bill.items[0] ? bill.items[0].testName : "Lab Investigation");
-    row.insertCell().textContent = formatCurrency(bill.total ?? bill.amount ?? 0);
+    row.insertCell().textContent = formatCurrency(totalAmount);
 
     const statusCell = row.insertCell();
     const badge = document.createElement("span");
-    const isPaid = String(bill.paymentStatus || bill.status || "").toLowerCase() === "paid";
     badge.className = "badge " + (isPaid ? "badge-success" : "badge-warning");
     badge.textContent = isPaid ? "Paid" : "Unpaid";
     statusCell.appendChild(badge);
 
     row.insertCell().textContent = formatDate(bill.billDate || bill.createdAt);
+
+    const actionCell = row.insertCell();
+    actionCell.style.whiteSpace = "nowrap";
+
+    if (!isPaid) {
+      const payBtn = document.createElement("button");
+      payBtn.type = "button";
+      payBtn.className = "btn btn-primary btn-sm";
+      payBtn.textContent = "💳 Pay";
+      payBtn.title = "Process payment for this bill";
+      payBtn.style.marginRight = "6px";
+      payBtn.onclick = function () {
+        if (typeof showInlineLabPayment === "function") {
+          showInlineLabPayment(
+            billId,
+            billId + " — " + (bill.patientName || "") + " — ₹" + totalAmount.toFixed(2)
+          );
+        } else {
+          viewLabBill(billId);
+        }
+      };
+      actionCell.appendChild(payBtn);
+    }
+
+    const printBtn = document.createElement("button");
+    printBtn.type = "button";
+    printBtn.className = "btn btn-outline btn-sm";
+    printBtn.textContent = "🖨 Print";
+    printBtn.title = "Print / Save as PDF";
+    printBtn.onclick = function () {
+      printLabBill(billId);
+    };
+    actionCell.appendChild(printBtn);
   });
 }
 
@@ -1522,7 +1627,7 @@ function loadLabBillDetails() {
 
   const bills = getBills();
   const bill = bills.find(function (item) {
-    return String(item.billId || item.id) === String(billId);
+    return String(item.billId || item.id).trim().toLowerCase() === String(billId).trim().toLowerCase();
   });
 
   if (!bill) {
@@ -1530,43 +1635,135 @@ function loadLabBillDetails() {
     return;
   }
 
-  setElementValue("billId", bill.billId || bill.id);
-  setElementValue("patientName", bill.patientName);
-  setElementValue("patientId", bill.patientId);
-  setElementValue("doctorName", bill.doctorName);
-  setElementValue("billingTest", bill.testId);
-  setElementValue("labTest", bill.testName);
-  setElementValue("labQuantity", bill.quantity || (bill.items && bill.items[0] ? bill.items[0].quantity : 1));
+  const idVal = bill.billId || bill.id || "";
+  const isPaid = String(bill.paymentStatus || bill.status || "").toLowerCase() === "paid";
+  const totalVal = Number(bill.total !== undefined ? bill.total : (bill.amount !== undefined ? bill.amount : 0));
+  const testNameVal = bill.testName || (bill.items && bill.items[0] ? bill.items[0].testName : "Lab Investigation");
+  const unitPriceVal = bill.price ?? bill.unitPrice ?? (bill.items && bill.items[0] ? bill.items[0].unitPrice : 0);
+  const qtyVal = bill.quantity || (bill.items && bill.items[0] ? bill.items[0].quantity : 1);
 
-  const historicalPrice = bill.price ?? bill.unitPrice ?? (bill.items && bill.items[0] ? bill.items[0].unitPrice : 0);
-  setElementValue("labPrice", historicalPrice);
-  setElementValue("billingPrice", historicalPrice);
-  setElementValue("labTotal", bill.total ?? bill.amount ?? 0);
-  setElementValue("totalAmount", bill.total ?? bill.amount ?? 0);
-  setElementValue("paymentStatus", bill.paymentStatus || bill.status || "Unpaid");
-  setElementValue("paymentMethod", bill.paymentMethod || "");
-  setElementValue("paymentReference", bill.paymentReference || bill.reference || "");
-  setElementText("billDate", formatDateTime(bill.billDate || bill.createdAt));
-  setElementText("billStatus", bill.paymentStatus || bill.status || "Unpaid");
+  // Set hidden input
+  setElementValue("billId", idVal);
+
+  // Populate billDetailPanel spans
+  setElementText("bd-billId", idVal);
+  setElementText("bd-billDate", formatDateTime(bill.billDate || bill.createdAt));
+  setElementText("bd-patientName", bill.patientName || "—");
+  setElementText("bd-patientId", bill.patientId || "—");
+  setElementText("bd-doctorName", bill.doctorName || "Dr. Arun Kumar");
+  setElementText("bd-testName", testNameVal);
+  setElementText("bd-testId", bill.testId || "—");
+  setElementText("bd-quantity", String(qtyVal));
+  setElementText("bd-unitPrice", formatCurrency(unitPriceVal));
+  setElementText("bd-total", formatCurrency(totalVal));
+  setElementText("bd-status", isPaid ? "Paid" : "Unpaid");
+
+  const methodRow = document.getElementById("bd-methodRow");
+  const refRow = document.getElementById("bd-refRow");
+  if (isPaid && (bill.paymentMethod || bill.method)) {
+    if (methodRow) methodRow.style.display = "";
+    setElementText("bd-method", bill.paymentMethod || bill.method || "—");
+  } else if (methodRow) {
+    methodRow.style.display = "none";
+  }
+
+  if (isPaid && (bill.paymentReference || bill.reference)) {
+    if (refRow) refRow.style.display = "";
+    setElementText("bd-ref", bill.paymentReference || bill.reference || "—");
+  } else if (refRow) {
+    refRow.style.display = "none";
+  }
+
+  // Display the detail panel
+  const detailPanel = document.getElementById("billDetailPanel");
+  if (detailPanel) {
+    detailPanel.style.display = "";
+  }
+
+  // If unpaid, display and pre-fill payment panel
+  const paymentPanel = document.getElementById("paymentPanel");
+  if (!isPaid) {
+    if (typeof showInlineLabPayment === "function") {
+      showInlineLabPayment(idVal, idVal + " — " + (bill.patientName || "") + " — ₹" + totalVal.toFixed(2));
+    } else if (paymentPanel) {
+      paymentPanel.style.display = "";
+    }
+  } else if (paymentPanel) {
+    paymentPanel.style.display = "none";
+  }
 }
 
 function markLabBillPaid(billId, paymentMethod, paymentReference) {
   const bills = getBills();
   const index = bills.findIndex(function (bill) {
-    return String(bill.billId || bill.id) === String(billId);
+    return String(bill.billId || bill.id).trim().toLowerCase() === String(billId).trim().toLowerCase();
   });
 
   if (index === -1) return null;
   const bill = bills[index];
 
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const todayStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+
   bill.status = "Paid";
   bill.paymentStatus = "Paid";
-  bill.paymentMethod = paymentMethod || "";
+  bill.paymentMethod = paymentMethod || "Cash";
+  bill.method = paymentMethod || "Cash";
   bill.paymentReference = paymentReference || "";
   bill.reference = paymentReference || "";
-  bill.paidAt = new Date().toISOString();
+  bill.paidAt = nowIso;
+  bill.paidDate = todayStr;
 
   saveBills(bills);
+
+  // Sync with cms_lab_orders if orderId exists
+  if (bill.orderId) {
+    const orders = loadLabOrdersFromStorage();
+    const oIdx = orders.findIndex(function (o) {
+      return String(o.id || o.orderNumber).trim().toLowerCase() === String(bill.orderId).trim().toLowerCase();
+    });
+    if (oIdx !== -1) {
+      orders[oIdx].paymentStatus = "Paid";
+      orders[oIdx].billStatus = "Paid";
+      orders[oIdx].isPaid = true;
+      orders[oIdx].billId = bill.billId || bill.id;
+      writeJSON(LAB_ORDERS_KEY, orders);
+    }
+  }
+
+  // Record in cms_receipts
+  try {
+    const receipts = readJSON("cms_receipts", []);
+    const targetId = String(bill.billId || bill.id);
+    const existingIdx = receipts.findIndex(function (r) {
+      return String(r.billId) === targetId;
+    });
+    const receiptObj = {
+      id: "RCT-" + Date.now(),
+      billId: targetId,
+      type: "Lab",
+      patientId: bill.patientId || "",
+      patientName: bill.patientName || "",
+      doctorName: bill.doctorName || "Dr. Arun Kumar",
+      testName: bill.testName || (bill.items && bill.items[0] ? bill.items[0].testName : "Lab Investigation"),
+      amount: bill.total ?? bill.amount ?? 0,
+      method: paymentMethod || "Cash",
+      reference: paymentReference || "",
+      date: todayStr,
+      status: "Paid",
+      createdAt: nowIso
+    };
+    if (existingIdx !== -1) {
+      receipts[existingIdx] = receiptObj;
+    } else {
+      receipts.unshift(receiptObj);
+    }
+    writeJSON("cms_receipts", receipts);
+  } catch (e) {
+    console.error("Error writing cms_receipts:", e);
+  }
+
   return bill;
 }
 
@@ -1584,7 +1781,7 @@ function processLabBillPayment(event) {
     getElementValue("reference");
 
   if (!billId) {
-    showMessage("paymentMessage", "Bill ID is required.", "error");
+    showMessage("paymentMessage", "Bill ID is required. Please select a bill to pay.", "error");
     return false;
   }
 
@@ -1593,15 +1790,36 @@ function processLabBillPayment(event) {
     return false;
   }
 
+  if ((paymentMethod === "UPI" || paymentMethod === "Card") && !paymentReference) {
+    showMessage("paymentMessage", "Payment reference is required for " + paymentMethod + ".", "error");
+    return false;
+  }
+
   const bill = markLabBillPaid(billId, paymentMethod, paymentReference);
   if (!bill) {
-    showMessage("paymentMessage", "Bill could not be updated.", "error");
+    showMessage("paymentMessage", "Bill “" + billId + "” could not be updated.", "error");
     return false;
   }
 
   setElementValue("paymentStatus", "Paid");
   setElementText("billStatus", "Paid");
-  showMessage("paymentMessage", "Lab bill marked as paid successfully.", "success");
+  setElementText("bd-status", "Paid");
+
+  const methodRow = document.getElementById("bd-methodRow");
+  const refRow = document.getElementById("bd-refRow");
+  if (methodRow) {
+    methodRow.style.display = "";
+    setElementText("bd-method", paymentMethod);
+  }
+  if (refRow && paymentReference) {
+    refRow.style.display = "";
+    setElementText("bd-ref", paymentReference);
+  }
+
+  showMessage("paymentMessage", "✅ Payment of ₹" + Number(bill.total ?? bill.amount ?? 0).toFixed(2) + " processed successfully! Bill is now Paid.", "success");
+
+  loadLabBillingHistory();
+
   return true;
 }
 

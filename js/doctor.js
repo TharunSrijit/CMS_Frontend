@@ -647,7 +647,7 @@ function cleanupMasterLabTests(masterTests) {
             primary.price = canonical.price;
             modified = true;
         }
-        if (!primary.status || primary.status.toLowerCase() !== 'active') {
+        if (!primary.status) {
             primary.status = 'Active';
             modified = true;
         }

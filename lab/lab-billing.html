@@ -525,47 +525,45 @@ function onLabPaymentMethodChange(method) {
   var inp = document.getElementById('paymentReference');
   if (req) req.style.display = (method === 'UPI' || method === 'Card') ? 'inline' : 'none';
   if (opt) opt.style.display = (method === 'UPI' || method === 'Card') ? 'none'  : 'inline';
-  if (inp) inp.placeholder   = method === 'UPI'  ? 'Enter UPI Transaction ID'
-                             : method === 'Card' ? 'Enter Card last 4 digits / Reference'
-                             : 'Reference (optional for Cash)';
+  if (inp) {
+    inp.placeholder = method === 'UPI'  ? 'Enter UPI Transaction ID'
+                    : method === 'Card' ? 'Enter Card last 4 digits / Reference'
+                    : 'Reference (optional for Cash)';
+  }
 }
 
 /* ── Show the inline payment panel for the given bill ────────────────── */
-/* Called by the 💳 Pay button in the history table.                      */
-/* Does NOT create or modify any bill — only surfaces the payment UI.     */
 function showInlineLabPayment(billId, billInfo) {
-  /* 1. Set the hidden #billId so processLabBillPayment() (lab.js) can read it */
   var hiddenId = document.getElementById('billId');
   if (hiddenId) hiddenId.value = billId;
 
-  /* 2. Show which bill is being paid */
   var summaryEl = document.getElementById('paymentBillSummary');
   var infoEl    = document.getElementById('paymentBillInfo');
   if (infoEl)    infoEl.textContent    = billInfo || billId;
   if (summaryEl) summaryEl.style.display = '';
 
-  /* 3. Reset the form fields so previous entries don't linger */
   var methodEl = document.getElementById('paymentMethod');
   var refEl    = document.getElementById('paymentReference');
   var msgEl    = document.getElementById('paymentMessage');
   if (methodEl) methodEl.value    = '';
   if (refEl)    refEl.value       = '';
-  if (msgEl)    msgEl.textContent = '';
+  if (msgEl) {
+    msgEl.textContent = '';
+    msgEl.className = '';
+  }
   onLabPaymentMethodChange('');
 
-  /* 4. Reveal and scroll to the payment panel */
   var panel = document.getElementById('paymentPanel');
   if (panel) {
     panel.style.display = '';
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (methodEl) {
+      setTimeout(function () { methodEl.focus(); }, 100);
+    }
   }
 }
 
-/* ── handleLabPayment: directly marks the bill Paid ─────────────────────
-   Reads billId from the hidden #billId input (set by showInlineLabPayment),
-   reads paymentMethod and paymentReference from the form fields, then calls
-   markLabBillPaid() which is exported on window by lab.js. No wrappers,
-   no redirect, no new bill created.                                       */
+/* ── handleLabPayment: processes payment for the selected bill ───────── */
 function handleLabPayment() {
   var billId = '';
   var hidEl  = document.getElementById('billId');
@@ -583,137 +581,82 @@ function handleLabPayment() {
 
   function showErr(msg) {
     if (!msgEl) { alert(msg); return; }
-    msgEl.textContent = msg;
-    msgEl.className = 'error message-error';
+    msgEl.innerHTML = '<div style="color:var(--danger,#e53e3e);font-weight:600;padding:8px 12px;background:#fff5f5;border:1px solid #fed7d7;border-radius:6px;">⚠️ ' + msg + '</div>';
   }
-  function showOk(msg) {
-    if (!msgEl) return;
-    msgEl.textContent = msg;
-    msgEl.className = 'success message-success';
+  function showOk(msg, bId) {
+    if (!msgEl) { alert(msg); return; }
+    msgEl.innerHTML = '<div style="color:#22543d;font-weight:600;padding:10px 14px;background:#f0fff4;border:1px solid #c6f6d5;border-radius:6px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">' +
+      '<span>' + msg + '</span>' +
+      '<button type="button" class="btn btn-outline btn-sm" onclick="printLabBill(\'' + bId + '\')" style="background:#fff;">🖨 Print Bill / Receipt</button>' +
+      '</div>';
   }
 
   if (!billId) {
-    showErr('Bill ID is missing. Please click ’💳 Pay’ on a bill row first.');
+    showErr('Bill ID is missing. Please click “💳 Pay” on a bill row in the table below.');
     return;
   }
   if (!method) {
-    showErr('Please select a payment method.');
+    showErr('Please select a payment method (Cash, UPI, or Card).');
     return;
   }
   if ((method === 'UPI' || method === 'Card') && !ref) {
-    showErr('Payment Reference is required for ' + method + '.');
+    showErr('Payment Reference is required for ' + method + ' payments.');
     return;
   }
 
-  /* markLabBillPaid is exported by lab.js: window.markLabBillPaid */
   if (typeof markLabBillPaid !== 'function') {
-    showErr('Payment system error: markLabBillPaid not available.');
+    showErr('Payment system error: markLabBillPaid function is unavailable.');
     return;
   }
 
   var bill = markLabBillPaid(billId, method, ref);
   if (!bill) {
-    showErr('Bill “' + billId + '” not found. It may have already been paid or deleted.');
+    showErr('Bill “' + billId + '” was not found or could not be updated.');
     return;
   }
 
-  showOk('✅ Payment successful! Bill ' + billId + ' is now Paid.');
+  var totalPaid = Number(bill.total !== undefined ? bill.total : (bill.amount !== undefined ? bill.amount : 0)).toFixed(2);
+  showOk('✅ Payment of ₹' + totalPaid + ' via ' + method + ' received! Bill ' + billId + ' is now Paid.', billId);
 
-  /* Hide the payment panel after a brief moment */
-  setTimeout(function () {
-    var panel = document.getElementById('paymentPanel');
-    if (panel) panel.style.display = 'none';
-  }, 1200);
+  // Update status in billDetailPanel if visible
+  var statusSpan = document.getElementById('bd-status');
+  if (statusSpan) statusSpan.textContent = 'Paid';
+  var mRow = document.getElementById('bd-methodRow');
+  var mSpan = document.getElementById('bd-method');
+  if (mRow && mSpan) {
+    mRow.style.display = '';
+    mSpan.textContent = method;
+  }
+  var rRow = document.getElementById('bd-refRow');
+  var rSpan = document.getElementById('bd-ref');
+  if (rRow && rSpan && ref) {
+    rRow.style.display = '';
+    rSpan.textContent = ref;
+  }
 
-  /* Refresh the history table immediately so the badge flips to Paid */
+  // Refresh history table
   if (typeof loadLabBillingHistory === 'function') loadLabBillingHistory();
+
+  // Scroll to message
+  if (msgEl) msgEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-/* ── On page load: keep both side panels hidden ──────────────────────── */
+/* ── Page load lifecycle: handle ?billId= or hide panels ─────────────── */
 document.addEventListener('DOMContentLoaded', function () {
-  var detailPanel  = document.getElementById('billDetailPanel');
-  var paymentPanel = document.getElementById('paymentPanel');
-  if (detailPanel)  detailPanel.style.display  = 'none';
-  if (paymentPanel) paymentPanel.style.display = 'none';
-});
+  var params = new URLSearchParams(window.location.search);
+  var billId = params.get('billId') || params.get('id');
 
-/* ── Override loadLabBillingHistory to add Actions column (7 cols) ────── */
-/* Unpaid bills → 💳 Pay (inline) + 🖨 Print                              */
-/* Paid bills   → 🖨 Print only                                            */
-(function () {
-  window.loadLabBillingHistory = function () {
-    var table = document.getElementById('labBillingTable') || document.getElementById('billingTable');
-    if (!table) return;
-    var tbody = table.querySelector('tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    var bills = ((typeof getBills === 'function') ? getBills() : []).filter(function (b) {
-      return String(b.type || b.billType || '').toUpperCase() === 'LAB';
-    });
-
-    if (bills.length === 0) {
-      var r = tbody.insertRow(); var c = r.insertCell();
-      c.colSpan = 7; c.style.textAlign = 'center'; c.style.padding = '20px';
-      c.style.color = 'var(--text-muted, #64748b)';
-      c.textContent = 'No lab bills generated yet.';
-      return;
+  if (billId) {
+    // If a billId is requested in the URL, loadLabBillDetails() sets up the detail & payment panels
+    if (typeof loadLabBillDetails === 'function') {
+      loadLabBillDetails();
     }
-
-    bills.forEach(function (bill) {
-      var row    = tbody.insertRow();
-      var billId = bill.billId || bill.id || '';
-      var paid   = String(bill.paymentStatus || bill.status || '').toLowerCase() === 'paid';
-
-      /* Col 1-4: ID, Patient, Test, Total */
-      row.insertCell().textContent = billId;
-      row.insertCell().textContent = bill.patientName || '—';
-      row.insertCell().textContent = bill.testName || (bill.items && bill.items[0] ? bill.items[0].testName : 'Lab Investigation');
-      row.insertCell().textContent = '₹' + Number(bill.total !== undefined ? bill.total : (bill.amount !== undefined ? bill.amount : 0)).toFixed(2);
-
-      /* Col 5: Status badge */
-      var sc    = row.insertCell();
-      var badge = document.createElement('span');
-      badge.className   = 'badge ' + (paid ? 'badge-success' : 'badge-warning');
-      badge.textContent = paid ? 'Paid' : 'Unpaid';
-      sc.appendChild(badge);
-
-      /* Col 6: Date */
-      var dv = bill.billDate || bill.createdAt;
-      var dt = dv ? (function(){ var d = new Date(dv); return isNaN(d.getTime()) ? String(dv) : d.toLocaleDateString(); })() : '';
-      row.insertCell().textContent = dt;
-
-      /* Col 7: Actions */
-      var ac = row.insertCell();
-      ac.style.whiteSpace = 'nowrap';
-
-      /* 💳 Pay — only for Unpaid bills; opens payment panel inline, no navigation */
-      if (!paid) {
-        var payBtn = document.createElement('button');
-        payBtn.type      = 'button';
-        payBtn.className = 'btn btn-primary btn-sm';
-        payBtn.textContent = '💳 Pay';
-        payBtn.title     = 'Process payment for this bill';
-        payBtn.style.marginRight = '6px';
-        (function (id, info) {
-          payBtn.onclick = function () { showInlineLabPayment(id, info); };
-        })(billId, billId + ' — ' + (bill.patientName || '') + ' — ₹' + Number(bill.total !== undefined ? bill.total : (bill.amount !== undefined ? bill.amount : 0)).toFixed(2));
-        ac.appendChild(payBtn);
-      }
-
-      /* 🖨 Print — always shown; calls existing printLabBill() */
-      var pBtn = document.createElement('button');
-      pBtn.type      = 'button';
-      pBtn.className = 'btn btn-outline btn-sm';
-      pBtn.textContent = '🖨 Print';
-      pBtn.title     = 'Print / Save as PDF';
-      (function (id) {
-        pBtn.onclick = function () { if (typeof printLabBill === 'function') printLabBill(id); };
-      })(billId);
-      ac.appendChild(pBtn);
-    });
-  };
-})();
+  } else {
+    // Keep detail panel hidden when starting fresh
+    var detailPanel = document.getElementById('billDetailPanel');
+    if (detailPanel) detailPanel.style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
