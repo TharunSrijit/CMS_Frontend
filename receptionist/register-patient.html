@@ -876,6 +876,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initNextPatientId();
   bindLivePreview();
+  const dobInput = document.getElementById('dob');
+  if (dobInput) dobInput.max = TODAY;
 });
 
 function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('open'); }

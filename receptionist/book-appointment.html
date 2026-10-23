@@ -146,7 +146,7 @@
             <div class="form-grid-2">
               <div class="form-group">
                 <label class="form-label required" for="apptDate">Date</label>
-                <input class="form-input" type="date" id="apptDate" required />
+                <input class="form-input" type="date" id="apptDate" data-validate="appointment-date" required />
               </div>
               <div class="form-group">
                 <label class="form-label required" for="apptTime">Time</label>
@@ -251,8 +251,12 @@ function loadDoctorOptions() {
 
 function pageInit() {
   loadDoctorOptions();
-  // Set default date to today
-  document.getElementById('apptDate').value = TODAY;
+  // Set default date to today and prevent past date selection
+  const apptDateInput = document.getElementById('apptDate');
+  if (apptDateInput) {
+    apptDateInput.value = TODAY;
+    apptDateInput.min = TODAY;
+  }
   // Check URL for pre-selected patient
   const params = new URLSearchParams(location.search);
   const pid = params.get('patient');
