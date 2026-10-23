@@ -96,7 +96,7 @@
                             </div>
                             <div class="staff-field" id="doctor-specialization-field" hidden>
                                 <label for="staffSpecialization">Doctor specialization</label>
-                                <select class="staff-input" id="staffSpecialization" data-validate="medical-specialty">
+                                <select class="staff-input" id="staffSpecialization" onchange="handleSpecializationChange(this)">
                                     <option value="">Select a specialty</option>
                                     <option>General</option>
                                     <option>General Medicine</option>
@@ -121,7 +121,12 @@
                                     <option>Emergency Medicine</option>
                                     <option>Anesthesiology</option>
                                     <option>Pathology</option>
+                                    <option value="__add_specialization__">+ Add new specialization…</option>
                                 </select>
+                            </div>
+                            <div class="staff-field" id="doctor-license-field" hidden>
+                                <label for="staffDoctorLicense">Medical license / registration number</label>
+                                <input class="staff-input" type="text" id="staffDoctorLicense" maxlength="80" placeholder="Enter license number">
                             </div>
                         </div>
                         <div class="staff-form-actions">

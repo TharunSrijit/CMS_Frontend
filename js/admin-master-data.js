@@ -49,6 +49,15 @@
         return today.getFullYear() + '-' + month + '-' + day;
     }
 
+    function getDaysUntilExpiry(expiryDate) {
+        if (!expiryDate) return null;
+        const difference = (
+            Date.parse(expiryDate + 'T00:00:00Z') -
+            Date.parse(getToday() + 'T00:00:00Z')
+        ) / 86400000;
+        return Number.isFinite(difference) ? difference : null;
+    }
+
     function setMessage(element, text, type) {
         element.textContent = text;
         element.className = 'master-message' + (type ? ' is-' + type : '');
@@ -63,7 +72,14 @@
 
     function addStatus(cell, status) {
         const badge = document.createElement('span');
-        badge.className = 'master-status ' + (status === 'Active' ? 'is-active' : 'is-inactive');
+        const statusClass = status === 'Active'
+            ? 'is-active'
+            : status === 'Expired'
+                ? 'is-danger'
+                : status === 'Expires in 1 day'
+                    ? 'is-warning'
+                    : 'is-inactive';
+        badge.className = 'master-status ' + statusClass;
         badge.textContent = status;
         cell.appendChild(badge);
     }
@@ -482,6 +498,36 @@
         const submitButton = document.getElementById('medicineSubmit');
         const cancelButton = document.getElementById('medicineCancelEdit');
         const message = document.getElementById('medicineMessage');
+        const expiryAlertForm = document.getElementById('medicineExpiryAlertForm');
+        const expiryAlertDaysInput = document.getElementById('medicineExpiryAlertDays');
+        const expiryAlertMessage = document.getElementById('medicineExpiryAlertMessage');
+        const expiryAlertSettingKey = 'cms_medicine_near_expiry_alert_days';
+        const storedExpiryAlertDays = Number(localStorage.getItem(expiryAlertSettingKey));
+        let expiryAlertDays = Number.isInteger(storedExpiryAlertDays) && storedExpiryAlertDays >= 1 && storedExpiryAlertDays <= 3650
+            ? storedExpiryAlertDays
+            : 30;
+        expiryAlertDaysInput.value = String(expiryAlertDays);
+
+        expiryAlertForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const selectedDays = Number(expiryAlertDaysInput.value);
+            if (!Number.isInteger(selectedDays) || selectedDays < 1 || selectedDays > 3650) {
+                setMessage(expiryAlertMessage, 'Enter a whole number of days between 1 and 3650.', 'error');
+                expiryAlertDaysInput.focus();
+                return;
+            }
+
+            try {
+                localStorage.setItem(expiryAlertSettingKey, String(selectedDays));
+            } catch (error) {
+                setMessage(expiryAlertMessage, 'The near-expiry alert setting could not be saved.', 'error');
+                return;
+            }
+
+            expiryAlertDays = selectedDays;
+            render();
+            setMessage(expiryAlertMessage, 'Near-expiry alert set to ' + selectedDays + ' days.', 'success');
+        });
 
         function resetForm() {
             form.reset();
@@ -494,6 +540,17 @@
 
         function render() {
             const medicines = getMedicines();
+            let statusChanged = false;
+            medicines.forEach(medicine => {
+                const isExpired = medicine.expiryDate && medicine.expiryDate <= getToday();
+                const nextStatus = isExpired ? 'Expired' : medicine.status === 'Expired' ? 'Inactive' : medicine.status;
+                if (medicine.status !== nextStatus) {
+                    medicine.status = nextStatus;
+                    statusChanged = true;
+                }
+            });
+            if (statusChanged && !saveMedicines(medicines)) return;
+
             const query = searchInput.value.trim().toLocaleLowerCase();
             const filtered = medicines.filter(medicine => [medicine.id, medicine.name, medicine.category, medicine.batchNo]
                 .some(value => String(value || '').toLocaleLowerCase().includes(query)));
@@ -526,7 +583,7 @@
                 addCell(row, medicine.reorderLevel);
                 addCell(row, medicine.batchNo || '-');
                 const expiryCell = addCell(row, medicine.expiryDate || '-');
-                if (medicine.expiryDate && medicine.expiryDate < getToday()) {
+                if (medicine.expiryDate && medicine.expiryDate <= getToday()) {
                     const flag = document.createElement('div');
                     flag.className = 'master-status is-danger';
                     flag.textContent = 'Expired';
@@ -534,12 +591,21 @@
                 }
                 const statusCell = document.createElement('td');
                 addStatus(statusCell, medicine.status || 'Active');
+                const daysUntilExpiry = getDaysUntilExpiry(medicine.expiryDate);
+                if (daysUntilExpiry >= 1 && daysUntilExpiry <= expiryAlertDays) {
+                    addStatus(
+                        statusCell,
+                        'Expires in ' + daysUntilExpiry + (daysUntilExpiry === 1 ? ' day' : ' days')
+                    );
+                }
                 row.appendChild(statusCell);
 
                 const actions = document.createElement('td');
                 actions.className = 'master-actions';
                 addAction(actions, 'Edit', () => edit(medicine));
-                addAction(actions, medicine.status === 'Active' ? 'Deactivate' : 'Activate', () => toggle(medicine.id));
+                if (!medicine.expiryDate || medicine.expiryDate > getToday()) {
+                    addAction(actions, medicine.status === 'Active' ? 'Deactivate' : 'Activate', () => toggle(medicine.id));
+                }
                 row.appendChild(actions);
                 tableBody.appendChild(row);
             });
@@ -555,7 +621,9 @@
             reorderInput.value = medicine.reorderLevel ?? '';
             batchInput.value = medicine.batchNo || '';
             expiryInput.value = medicine.expiryDate || '';
-            statusInput.value = medicine.status || 'Active';
+            statusInput.value = medicine.status === 'Expired'
+                ? 'Inactive'
+                : medicine.status || 'Active';
             formTitle.textContent = 'Edit medicine ' + medicine.id;
             submitButton.textContent = 'Save changes';
             cancelButton.hidden = false;
@@ -567,6 +635,10 @@
             const medicines = getMedicines();
             const medicine = medicines.find(item => item.id === id);
             if (!medicine) return;
+            if (medicine.expiryDate && medicine.expiryDate <= getToday()) {
+                setMessage(message, medicine.name + ' is expired and cannot be activated.', 'error');
+                return;
+            }
             medicine.status = medicine.status === 'Active' ? 'Inactive' : 'Active';
             if (!saveMedicines(medicines)) return;
             setMessage(message, medicine.name + ' is now ' + medicine.status.toLowerCase() + '.', 'success');
@@ -598,7 +670,9 @@
                 reorderLevel: Number(reorderInput.value),
                 batchNo: batchInput.value.trim(),
                 expiryDate: expiryInput.value,
-                status: statusInput.value
+                status: expiryInput.value && expiryInput.value <= getToday()
+                    ? 'Expired'
+                    : statusInput.value
             };
 
             const updated = existing
@@ -634,6 +708,121 @@
         const submitButton = document.getElementById('labTestSubmit');
         const cancelButton = document.getElementById('labTestCancelEdit');
         const message = document.getElementById('labTestMessage');
+        const categoryStorageKey = 'cms_custom_lab_test_categories';
+        const addCategoryOptionValue = '__add_new_lab_category__';
+        const defaultCategories = [
+            'Hematology',
+            'Biochemistry',
+            'Microbiology',
+            'Immunology',
+            'Pathology',
+            'Endocrinology',
+            'Cardiology',
+            'Radiology',
+            'Other'
+        ];
+
+        function getCategories() {
+            let customCategories = [];
+            try {
+                const saved = JSON.parse(localStorage.getItem(categoryStorageKey) || '[]');
+                if (Array.isArray(saved)) customCategories = saved;
+            } catch (error) {
+                console.error('Unable to read custom lab test categories:', error);
+                setMessage(message, 'Saved custom categories could not be loaded.', 'error');
+            }
+
+            const testCategories = getMasterLabTests()
+                .map(test => String(test.category || '').trim())
+                .filter(Boolean);
+            return Array.from(new Set(defaultCategories.concat(customCategories, testCategories)
+                .map(category => String(category).trim())
+                .filter(Boolean)
+                .sort((left, right) => {
+                    const leftDefault = defaultCategories.indexOf(left);
+                    const rightDefault = defaultCategories.indexOf(right);
+                    if (leftDefault !== -1 || rightDefault !== -1) {
+                        if (leftDefault === -1) return 1;
+                        if (rightDefault === -1) return -1;
+                        return leftDefault - rightDefault;
+                    }
+                    return left.localeCompare(right);
+                })));
+        }
+
+        function renderCategories(selectedCategory) {
+            const categories = getCategories();
+            categoryInput.textContent = '';
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Select category';
+            categoryInput.appendChild(placeholder);
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryInput.appendChild(option);
+            });
+            if (selectedCategory && !categories.includes(selectedCategory)) {
+                const option = document.createElement('option');
+                option.value = selectedCategory;
+                option.textContent = selectedCategory;
+                categoryInput.appendChild(option);
+            }
+            const addCategoryOption = document.createElement('option');
+            addCategoryOption.value = addCategoryOptionValue;
+            addCategoryOption.textContent = '+ Add a new category...';
+            categoryInput.appendChild(addCategoryOption);
+            categoryInput.value = selectedCategory || '';
+        }
+
+        renderCategories();
+
+        categoryInput.addEventListener('change', () => {
+            if (categoryInput.value !== addCategoryOptionValue) return;
+
+            const enteredCategory = window.prompt('Enter the new lab test category:');
+            if (enteredCategory === null) {
+                categoryInput.value = '';
+                return;
+            }
+
+            const category = enteredCategory.trim().replace(/\s+/g, ' ');
+            if (!category) {
+                categoryInput.value = '';
+                setMessage(message, 'Enter a category name.', 'error');
+                return;
+            }
+            if (category.length > 60) {
+                categoryInput.value = '';
+                setMessage(message, 'Category names must be 60 characters or fewer.', 'error');
+                return;
+            }
+
+            const categories = getCategories();
+            const existingCategory = categories.find(item => normalizeName(item) === normalizeName(category));
+            if (existingCategory) {
+                renderCategories(existingCategory);
+                setMessage(message, 'This category already exists and is selected.', 'error');
+                return;
+            }
+
+            let customCategories;
+            try {
+                const saved = JSON.parse(localStorage.getItem(categoryStorageKey) || '[]');
+                customCategories = Array.isArray(saved) ? saved : [];
+                customCategories.push(category);
+                localStorage.setItem(categoryStorageKey, JSON.stringify(customCategories));
+            } catch (error) {
+                console.error('Unable to save custom lab test category:', error);
+                categoryInput.value = '';
+                setMessage(message, 'The new category could not be saved.', 'error');
+                return;
+            }
+
+            renderCategories(category);
+            setMessage(message, 'Category added.', 'success');
+        });
 
         function resetForm() {
             form.reset();
@@ -683,7 +872,7 @@
         function edit(test) {
             form.dataset.editId = test.id;
             nameInput.value = test.name || '';
-            categoryInput.value = test.category || '';
+            renderCategories(test.category || '');
             priceInput.value = test.price ?? '';
             if (normalRangeInput) normalRangeInput.value = test.normalRange || '';
             if (unitInput) unitInput.value = test.unit || '';

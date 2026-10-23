@@ -17,6 +17,7 @@ if (!loggedInUser || loggedInUser.role !== 'admin') {
     });
 
 document.addEventListener('DOMContentLoaded', () => {
+    renderMedicineExpiryAlerts('adminExpiryAlerts', 'medicine-master.html');
     const doctors = getDoctors();
     const staff = getStaff();
     const users = getUsers();

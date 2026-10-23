@@ -49,6 +49,14 @@
                         <p id="medicineMessage" class="master-message" role="status" aria-live="polite"></p>
                     </form>
                 </section>
+                <section class="doctor-panel" aria-labelledby="medicine-alert-settings-title">
+                    <div class="doctor-panel-heading"><div><p class="section-eyebrow">INVENTORY ALERTS</p><h2 id="medicine-alert-settings-title">Near-expiry alert</h2></div></div>
+                    <form id="medicineExpiryAlertForm" class="master-settings-form">
+                        <div class="doctor-field master-settings-field"><label for="medicineExpiryAlertDays">Near-expiry alert days</label><input class="doctor-input" id="medicineExpiryAlertDays" name="nearExpiryAlertDays" type="number" min="1" max="3650" step="1" required><small>Show an alert when a medicine expires within this many days. Default: 30 days.</small></div>
+                        <button class="doctor-submit" type="submit">Save setting</button>
+                        <p id="medicineExpiryAlertMessage" class="master-message" role="status" aria-live="polite"></p>
+                    </form>
+                </section>
                 <section class="doctor-panel" aria-labelledby="medicine-list-title">
                     <div class="doctor-panel-heading doctor-list-heading"><div><p class="section-eyebrow">MASTER CATALOG</p><h2 id="medicine-list-title">Medicines</h2></div><label class="doctor-search-wrap" for="medicineSearch"><span class="visually-hidden">Search medicines</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.3 4.3"/></svg><input type="search" id="medicineSearch" placeholder="Search medicine ID, name, category or batch"></label></div>
                     <div class="doctor-table-scroll"><table class="doctor-table master-catalog-table"><thead><tr><th scope="col">ID</th><th scope="col">Medicine</th><th scope="col">Category</th><th scope="col">Unit</th><th scope="col">Price</th><th scope="col">Stock</th><th scope="col">Reorder</th><th scope="col">Batch</th><th scope="col">Expiry</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody id="medicineTableBody"></tbody></table></div>

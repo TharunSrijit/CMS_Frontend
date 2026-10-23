@@ -85,8 +85,12 @@
                                 <input class="doctor-input" type="tel" id="doctorPhone" placeholder="Enter phone number" autocomplete="tel" required>
                             </div>
                             <div class="doctor-field">
+                                <label for="doctorLicense">Medical license / registration number</label>
+                                <input class="doctor-input" type="text" id="doctorLicense" maxlength="80" placeholder="Enter license number" required>
+                            </div>
+                            <div class="doctor-field">
                                 <label for="doctorSpecialization">Specialization</label>
-                                <select class="doctor-input" id="doctorSpecialization" data-validate="medical-specialty" required>
+                                <select class="doctor-input" id="doctorSpecialization" onchange="handleSpecializationChange(this)" required>
                                     <option value="">Select a specialty</option>
                                     <option>General</option>
                                     <option>General Medicine</option>
@@ -111,7 +115,32 @@
                                     <option>Emergency Medicine</option>
                                     <option>Anesthesiology</option>
                                     <option>Pathology</option>
+                                    <option value="__add_specialization__">+ Add new specialization…</option>
                                 </select>
+                            </div>
+                            <fieldset class="doctor-field doctor-availability-field">
+                                <legend>Available days (weekly)</legend>
+                                <div class="doctor-availability-days">
+                                    <label><input type="checkbox" name="doctorAvailabilityDay" value="1" checked> Mon</label>
+                                    <label><input type="checkbox" name="doctorAvailabilityDay" value="2" checked> Tue</label>
+                                    <label><input type="checkbox" name="doctorAvailabilityDay" value="3" checked> Wed</label>
+                                    <label><input type="checkbox" name="doctorAvailabilityDay" value="4" checked> Thu</label>
+                                    <label><input type="checkbox" name="doctorAvailabilityDay" value="5" checked> Fri</label>
+                                    <label><input type="checkbox" name="doctorAvailabilityDay" value="6"> Sat</label>
+                                    <label><input type="checkbox" name="doctorAvailabilityDay" value="0"> Sun</label>
+                                </div>
+                            </fieldset>
+                            <div class="doctor-field">
+                                <label for="doctorStartTime">Available from</label>
+                                <input class="doctor-input" type="time" id="doctorStartTime" value="09:00" required>
+                            </div>
+                            <div class="doctor-field">
+                                <label for="doctorEndTime">Available until</label>
+                                <input class="doctor-input" type="time" id="doctorEndTime" value="17:00" required>
+                            </div>
+                            <div class="doctor-field">
+                                <label for="doctorDefaultAppointmentTime">Default appointment time</label>
+                                <input class="doctor-input" type="time" id="doctorDefaultAppointmentTime" value="09:00" required>
                             </div>
                         </div>
                         <div class="doctor-form-actions">
@@ -140,7 +169,10 @@
                                     <th scope="col">Name</th>
                                     <th scope="col">Email</th>
                                     <th scope="col">Phone</th>
+                                    <th scope="col">License</th>
                                     <th scope="col">Specialization</th>
+                                    <th scope="col">Availability</th>
+                                    <th scope="col">Default appointment</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Actions</th>
                                 </tr>

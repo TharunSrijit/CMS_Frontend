@@ -53,10 +53,48 @@
   gap: 7px;
 }
 
+.user-field.doctor-user-field[hidden] {
+  display: none;
+}
+
+.user-field#userDoctorDaysField {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.user-field legend {
+  margin-bottom: 7px;
+  color: #59433b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .user-field label {
   color: #59433b;
   font-size: 12px;
   font-weight: 600;
+}
+
+.doctor-availability-days {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.doctor-availability-days label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #59433b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.doctor-availability-days input {
+  accent-color: #8f5f4e;
 }
 
 .user-input,

@@ -53,10 +53,44 @@
   gap: 7px;
 }
 
+.doctor-availability-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.doctor-availability-field legend {
+  margin-bottom: 7px;
+  color: #59433b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .doctor-field label {
   color: #59433b;
   font-size: 12px;
   font-weight: 600;
+}
+
+.doctor-availability-days {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.doctor-availability-days label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #59433b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.doctor-availability-days input {
+  accent-color: #8f5f4e;
 }
 
 .doctor-input,
@@ -153,7 +187,7 @@
 
 .doctor-table {
   width: 100%;
-  min-width: 820px;
+  min-width: 1240px;
   border-collapse: collapse;
   font-size: 12px;
 }
@@ -200,7 +234,7 @@
   white-space: nowrap;
 }
 
-.doctor-table td:nth-child(6) {
+.doctor-table td:nth-child(9) {
   color: #38745a;
   font-weight: 600;
 }

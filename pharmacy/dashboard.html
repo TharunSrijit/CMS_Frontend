@@ -201,6 +201,16 @@
       </div>
     </div>
 
+    <section class="medicine-expiry-alerts" aria-labelledby="pharmacy-expiry-alert-title">
+      <div class="medicine-expiry-alert-heading">
+        <div>
+          <h2 id="pharmacy-expiry-alert-title">Medicine expiry alerts</h2>
+          <p>Review expired medicines and items approaching their expiry date.</p>
+        </div>
+      </div>
+      <ul class="medicine-expiry-alert-list" id="pharmacyExpiryAlerts" aria-live="polite"></ul>
+    </section>
+
     <!-- STAT CARDS -->
     <div class="stats-grid">
 
@@ -323,6 +333,7 @@ function closeSidebar() { document.getElementById('sidebar').classList.remove('o
 </script>
 
 <!-- Scripts -->
+<script src="../js/medicine-expiry-alerts.js"></script>
 <script src="../js/pharmacy.js"></script>
 <script src="../js/validation.js"></script>
 </body>

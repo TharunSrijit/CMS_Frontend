@@ -2296,6 +2296,7 @@ function updateDashboard() {
 
 document.addEventListener("DOMContentLoaded", function () {
     initPharmacyUI();
+    renderMedicineExpiryAlerts("pharmacyExpiryAlerts", "medicine-inventory.html");
 
     medicines = getStoredMedicines();
 

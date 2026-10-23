@@ -6,6 +6,28 @@
   grid-column: span 2;
 }
 
+.master-settings-form {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.master-settings-field {
+  flex: 0 1 260px;
+}
+
+.master-settings-field small {
+  color: #806e65;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.master-settings-form .master-message {
+  flex-basis: 100%;
+  margin: 0;
+}
+
 .master-textarea {
   min-height: 92px;
   resize: vertical;
@@ -127,4 +149,10 @@
   .master-secondary-button {
     width: 100%;
   }
+
+  .master-settings-field,
+  .master-settings-form .doctor-submit {
+    width: 100%;
+  }
+
 }

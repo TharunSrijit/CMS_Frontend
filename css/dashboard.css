@@ -144,6 +144,101 @@
 
 .dashboard-col { display: flex; flex-direction: column; gap: 20px; }
 
+.medicine-expiry-alerts {
+  margin-bottom: 24px;
+  padding: 18px 22px;
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--warning);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.medicine-expiry-alert-heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+}
+
+.medicine-expiry-alert-heading p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.medicine-expiry-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.medicine-expiry-alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--warning-light);
+}
+
+.medicine-expiry-alert-item.is-expired {
+  background: var(--danger-light);
+}
+
+.medicine-expiry-alert-details {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+
+.medicine-expiry-alert-details small {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.medicine-expiry-alert-label {
+  flex-shrink: 0;
+  color: var(--warning);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.medicine-expiry-alert-item.is-expired .medicine-expiry-alert-label {
+  color: var(--danger);
+}
+
+.medicine-expiry-empty,
+.medicine-expiry-error {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.medicine-expiry-error {
+  color: var(--danger);
+}
+
+.medicine-expiry-alert-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.medicine-expiry-alert-footer a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* ─────────────────────────────────────────
    3. CHART / GRAPH PLACEHOLDER AREA
    ───────────────────────────────────────── */
