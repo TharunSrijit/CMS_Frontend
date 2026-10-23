@@ -66,7 +66,7 @@
                 <section class="doctor-panel" aria-labelledby="add-doctor-title">
                     <div class="doctor-panel-heading">
                         <div>
-                            <p class="section-eyebrow">NEW RECORD</p>
+                            <p class="section-eyebrow">DOCTOR PROFILE</p>
                             <h2 id="add-doctor-title">Add a doctor</h2>
                         </div>
                     </div>
@@ -118,7 +118,11 @@
                                     <option value="__add_specialization__">+ Add new specialization…</option>
                                 </select>
                             </div>
-                            <fieldset class="doctor-field doctor-availability-field">
+                            <div class="doctor-field">
+                                <label for="doctorConsultationFee">Consultation fee (₹)</label>
+                                <input class="doctor-input" type="number" id="doctorConsultationFee" min="0" step="0.01" placeholder="Enter consultation fee">
+                            </div>
+                            <fieldset class="doctor-field doctor-availability-field" id="doctorAvailableDaysField">
                                 <legend>Available days (weekly)</legend>
                                 <div class="doctor-availability-days">
                                     <label><input type="checkbox" name="doctorAvailabilityDay" value="1" checked> Mon</label>
@@ -128,23 +132,39 @@
                                     <label><input type="checkbox" name="doctorAvailabilityDay" value="5" checked> Fri</label>
                                     <label><input type="checkbox" name="doctorAvailabilityDay" value="6"> Sat</label>
                                     <label><input type="checkbox" name="doctorAvailabilityDay" value="0"> Sun</label>
+                                    <label><input type="checkbox" name="doctorAvailabilityDay" value="none"> Unavailable</label>
                                 </div>
                             </fieldset>
-                            <div class="doctor-field">
+                            <div class="doctor-field" id="doctorUnavailableDatesField">
+                                <label for="doctorUnavailableDate">Unavailable on specific dates</label>
+                                <input class="doctor-input" type="date" id="doctorUnavailableDate">
+                                <button class="doctor-date-button" id="removeDoctorUnavailableDate" type="button" hidden>Remove selected date</button>
+                                <small>Select dates when this doctor cannot take appointments. These dates apply only to this doctor.</small>
+                            </div>
+                            <div class="doctor-field" id="doctorStartTimeField">
                                 <label for="doctorStartTime">Available from</label>
                                 <input class="doctor-input" type="time" id="doctorStartTime" value="09:00" required>
                             </div>
-                            <div class="doctor-field">
+                            <div class="doctor-field" id="doctorEndTimeField">
                                 <label for="doctorEndTime">Available until</label>
                                 <input class="doctor-input" type="time" id="doctorEndTime" value="17:00" required>
                             </div>
-                            <div class="doctor-field">
+                            <div class="doctor-field" id="doctorDefaultAppointmentTimeField">
                                 <label for="doctorDefaultAppointmentTime">Default appointment time</label>
                                 <input class="doctor-input" type="time" id="doctorDefaultAppointmentTime" value="09:00" required>
+                            </div>
+                            <div class="doctor-field">
+                                <label for="doctorStatus">Status</label>
+                                <select class="doctor-input" id="doctorStatus" onchange="updateDoctorAvailabilityFields()" required>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                                <small id="doctorInactiveAvailabilityNote" hidden>Inactive doctors are temporarily unavailable. Their saved weekly schedule will be kept.</small>
                             </div>
                         </div>
                         <div class="doctor-form-actions">
                             <button class="doctor-submit" type="submit"><span aria-hidden="true">+</span> Add doctor</button>
+                            <button class="master-secondary-button" id="cancelDoctorEdit" type="button" hidden>Cancel edit</button>
                         </div>
                     </form>
                 </section>
@@ -171,7 +191,9 @@
                                     <th scope="col">Phone</th>
                                     <th scope="col">License</th>
                                     <th scope="col">Specialization</th>
+                                    <th scope="col">Consultation fee</th>
                                     <th scope="col">Availability</th>
+                                    <th scope="col">Unavailable dates</th>
                                     <th scope="col">Default appointment</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Actions</th>

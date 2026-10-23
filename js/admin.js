@@ -24,6 +24,13 @@ loadUsers();
 loadCustomSpecializations();
 updateStaffRoleFields();
 updateDoctorUserFields();
+initializeDoctorAvailabilityOptions();
+initializeDoctorUnavailableDates();
+updateDoctorAvailabilityFields();
+const cancelDoctorEditButton = document.getElementById("cancelDoctorEdit");
+if (cancelDoctorEditButton) {
+    cancelDoctorEditButton.addEventListener("click", resetDoctorForm);
+}
 
 });
 
@@ -128,8 +135,7 @@ window.location.href =
 const CUSTOM_SPECIALIZATIONS_KEY = "cms_custom_specializations";
 const SPECIALIZATION_SELECT_IDS = [
     "doctorSpecialization",
-    "staffSpecialization",
-    "userDoctorSpecialization"
+    "staffSpecialization"
 ];
 
 function loadCustomSpecializations() {
@@ -245,17 +251,30 @@ function syncDirectoryRecords() {
 }
 
 function readDoctorAvailability(dayName, startId, endId, defaultTimeId) {
-    const days = Array.from(document.querySelectorAll(
+    const selectedDays = Array.from(document.querySelectorAll(
         'input[name="' + dayName + '"]:checked'
-    )).map(function (input) {
+    ));
+    const noAvailableDays = selectedDays.some(function (input) {
+        return input.value === "none";
+    });
+    const days = noAvailableDays ? [] : selectedDays.map(function (input) {
         return Number(input.value);
     });
+    if (noAvailableDays) {
+        return {
+            days: [],
+            startTime: "",
+            endTime: "",
+            defaultAppointmentTime: ""
+        };
+    }
+
     const startTime = document.getElementById(startId).value;
     const endTime = document.getElementById(endId).value;
     const defaultAppointmentTime = document.getElementById(defaultTimeId).value;
 
-    if (days.length === 0) {
-        alert("Select at least one available day.");
+    if (days.length === 0 && !noAvailableDays) {
+        alert("Select available days or choose Unavailable.");
         return null;
     }
 
@@ -280,6 +299,108 @@ function readDoctorAvailability(dayName, startId, endId, defaultTimeId) {
         endTime: endTime,
         defaultAppointmentTime: defaultAppointmentTime
     };
+}
+
+function initializeDoctorAvailabilityOptions() {
+    document.querySelectorAll('input[name="doctorAvailabilityDay"]').forEach(function (input) {
+        input.addEventListener("change", function () {
+            const isNoneOption = input.value === "none";
+            document.querySelectorAll('input[name="doctorAvailabilityDay"]').forEach(function (option) {
+                if (option === input) return;
+                if (isNoneOption && input.checked) option.checked = false;
+                else if (!isNoneOption && input.checked && option.value === "none") option.checked = false;
+            });
+        });
+    });
+}
+
+function initializeDoctorUnavailableDates() {
+    const dateInput = document.getElementById("doctorUnavailableDate");
+    const removeButton = document.getElementById("removeDoctorUnavailableDate");
+    if (!dateInput || !removeButton) return;
+
+    const today = new Date();
+    dateInput.min = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, "0"),
+        String(today.getDate()).padStart(2, "0")
+    ].join("-");
+    dateInput.addEventListener("change", addDoctorUnavailableDate);
+    removeButton.addEventListener("click", removeSelectedDoctorUnavailableDate);
+    renderDoctorUnavailableDates([]);
+}
+
+function getDoctorUnavailableDates() {
+    const input = document.getElementById("doctorUnavailableDate");
+    if (!input) return [];
+    try {
+        const dates = JSON.parse(input.dataset.unavailableDates || "[]");
+        return Array.isArray(dates) ? dates : [];
+    } catch (error) {
+        console.error("Unable to read doctor unavailable dates:", error);
+        return [];
+    }
+}
+
+function renderDoctorUnavailableDates(dates) {
+    const input = document.getElementById("doctorUnavailableDate");
+    if (!input) return;
+    input.dataset.unavailableDates = JSON.stringify(dates);
+    updateRemoveDoctorUnavailableDateButton();
+}
+
+function addDoctorUnavailableDate() {
+    const dateInput = document.getElementById("doctorUnavailableDate");
+    if (!dateInput || !dateInput.value) return;
+
+    const dates = getDoctorUnavailableDates();
+    if (!dates.includes(dateInput.value)) {
+        dates.push(dateInput.value);
+        dates.sort();
+        renderDoctorUnavailableDates(dates);
+    }
+    updateRemoveDoctorUnavailableDateButton();
+}
+
+function updateRemoveDoctorUnavailableDateButton() {
+    const dateInput = document.getElementById("doctorUnavailableDate");
+    const removeButton = document.getElementById("removeDoctorUnavailableDate");
+    if (!dateInput || !removeButton) return;
+    removeButton.hidden = !getDoctorUnavailableDates().includes(dateInput.value);
+}
+
+function removeSelectedDoctorUnavailableDate() {
+    const dateInput = document.getElementById("doctorUnavailableDate");
+    if (!dateInput || !dateInput.value) return;
+    renderDoctorUnavailableDates(getDoctorUnavailableDates().filter(function (date) {
+        return date !== dateInput.value;
+    }));
+    dateInput.value = "";
+    updateRemoveDoctorUnavailableDateButton();
+}
+
+function updateDoctorAvailabilityFields() {
+    const statusInput = document.getElementById("doctorStatus");
+    if (!statusInput) return;
+
+    const isInactive = statusInput.value === "Inactive";
+    [
+        "doctorAvailableDaysField",
+        "doctorStartTimeField",
+        "doctorEndTimeField",
+        "doctorDefaultAppointmentTimeField"
+    ].forEach(function (id) {
+        const field = document.getElementById(id);
+        if (field) field.hidden = isInactive;
+    });
+
+    ["doctorStartTime", "doctorEndTime", "doctorDefaultAppointmentTime"].forEach(function (id) {
+        const input = document.getElementById(id);
+        if (input) input.required = !isInactive;
+    });
+
+    const note = document.getElementById("doctorInactiveAvailabilityNote");
+    if (note) note.hidden = !isInactive;
 }
 
 function syncDoctorStaffRecord(doctor) {
@@ -343,19 +464,32 @@ function removeDoctorStaffRecord(doctor) {
 
 function addDoctor() {
 
+const form = document.getElementById("doctorForm");
+const editId = form.dataset.editId || "";
 const name = document.getElementById("doctorName").value.trim();
 const email = document.getElementById("doctorEmail").value.trim();
 const phone = document.getElementById("doctorPhone").value.trim();
 const licenseNumber = document.getElementById("doctorLicense").value.trim();
 const specialization = document.getElementById("doctorSpecialization").value.trim();
-const availability = readDoctorAvailability(
-    "doctorAvailabilityDay",
-    "doctorStartTime",
-    "doctorEndTime",
-    "doctorDefaultAppointmentTime"
-);
+const consultationFeeInput = document.getElementById("doctorConsultationFee").value.trim();
+const consultationFee = consultationFeeInput === "" ? null : Number(consultationFeeInput);
+const status = document.getElementById("doctorStatus").value;
+const existingDoctor = editId ? getDoctors().find(function (item) {
+    return item.id === editId;
+}) : null;
+const availability = status === "Inactive"
+    ? existingDoctor && existingDoctor.availability
+        ? existingDoctor.availability
+        : { days: [], startTime: "", endTime: "", defaultAppointmentTime: "" }
+    : readDoctorAvailability(
+        "doctorAvailabilityDay",
+        "doctorStartTime",
+        "doctorEndTime",
+        "doctorDefaultAppointmentTime"
+    );
 
-if (!name || !email || !phone || !licenseNumber || !specialization) {
+if (!name || !email || !phone || !licenseNumber || !specialization ||
+    (consultationFeeInput !== "" && (!Number.isFinite(consultationFee) || consultationFee < 0))) {
     alert("Please fill all doctor details.");
     return;
 }
@@ -364,7 +498,7 @@ if (!availability) return;
 const doctors = getDoctors();
 const staff = getStaff();
 const duplicateDoctor = doctors.some(function (item) {
-    return item.email.toLowerCase() === email.toLowerCase();
+    return item.id !== editId && item.email.toLowerCase() === email.toLowerCase();
 });
 const matchingStaff = staff.find(function (person) {
     return person.email.toLowerCase() === email.toLowerCase();
@@ -375,27 +509,58 @@ if (duplicateDoctor || (matchingStaff && matchingStaff.role !== "Doctor")) {
     return;
 }
 
-const doctor = {
-    id: generateId("DOC"),
-    staffId: matchingStaff ? matchingStaff.id : generateId("STAFF"),
+if (editId && !existingDoctor) {
+    alert("Doctor not found. Refresh the page and try again.");
+    resetDoctorForm();
+    return;
+}
+
+const doctor = Object.assign({}, existingDoctor || {}, {
+    id: existingDoctor ? existingDoctor.id : generateId("DOC"),
+    staffId: existingDoctor
+        ? existingDoctor.staffId
+        : matchingStaff ? matchingStaff.id : generateId("STAFF"),
     name: name,
     email: email,
     phone: phone,
     licenseNumber: licenseNumber,
     specialization: specialization,
-    availability: availability,
-    status: "Active",
-    createdAt: new Date().toLocaleDateString()
-};
+    consultationFee: consultationFee,
+    availability: Object.assign({}, availability, {
+        unavailableDates: getDoctorUnavailableDates()
+    }),
+    status: status,
+    createdAt: existingDoctor ? existingDoctor.createdAt : new Date().toLocaleDateString()
+});
 
-doctors.push(doctor);
-saveDoctors(doctors);
+if (existingDoctor) {
+    const doctorIndex = doctors.findIndex(function (item) {
+        return item.id === editId;
+    });
+    doctors[doctorIndex] = doctor;
+} else {
+    doctors.push(doctor);
+}
+if (!saveDoctors(doctors)) return;
 syncDoctorStaffRecord(doctor);
 
-alert("Doctor added successfully.");
-document.getElementById("doctorForm").reset();
+alert(existingDoctor ? "Doctor updated successfully." : "Doctor added successfully.");
+resetDoctorForm();
 loadDoctors();
 
+}
+
+function resetDoctorForm() {
+    const form = document.getElementById("doctorForm");
+    if (!form) return;
+
+    form.reset();
+    form.dataset.editId = "";
+    renderDoctorUnavailableDates([]);
+    document.getElementById("add-doctor-title").textContent = "Add a doctor";
+    form.querySelector(".doctor-submit").innerHTML = '<span aria-hidden="true">+</span> Add doctor';
+    document.getElementById("cancelDoctorEdit").hidden = true;
+    updateDoctorAvailabilityFields();
 }
 
 // LOAD DOCTORS
@@ -431,7 +596,7 @@ if (doctors.length === 0) {
 
         <tr>
 
-            <td colspan="10">
+            <td colspan="12">
                 No doctors found.
             </td>
 
@@ -466,9 +631,13 @@ doctors.forEach(function (doctor) {
 
         <td>${doctor.specialization}</td>
 
+        <td>${formatConsultationFee(doctor.consultationFee)}</td>
+
         <td>${formatDoctorAvailability(doctor.availability)}</td>
 
-        <td>${(doctor.availability && doctor.availability.defaultAppointmentTime) || (doctor.availability && doctor.availability.startTime) || "Not set"}</td>
+        <td>${formatDoctorUnavailableDates(doctor.availability)}</td>
+
+        <td>${doctor.availability && Array.isArray(doctor.availability.days) && doctor.availability.days.length === 0 ? "Unavailable" : (doctor.availability && doctor.availability.defaultAppointmentTime) || (doctor.availability && doctor.availability.startTime) || "Not set"}</td>
 
         <td>${doctor.status}</td>
 
@@ -506,6 +675,7 @@ doctors.forEach(function (doctor) {
 
 function formatDoctorAvailability(availability) {
     if (!availability || !Array.isArray(availability.days)) return "Not set";
+    if (availability.days.length === 0) return "Unavailable";
     const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const days = availability.days.map(function (day) {
         return dayLabels[day];
@@ -513,176 +683,69 @@ function formatDoctorAvailability(availability) {
     return days + " · " + availability.startTime + "–" + availability.endTime;
 }
 
+function formatDoctorUnavailableDates(availability) {
+    const unavailableDates = availability && Array.isArray(availability.unavailableDates)
+        ? availability.unavailableDates
+        : [];
+    if (unavailableDates.length === 0) return "None";
+    return unavailableDates.map(function (date) {
+        return new Date(date + "T00:00:00").toLocaleDateString();
+    }).join(", ");
+}
+
+function formatConsultationFee(fee) {
+    return fee == null || fee === ""
+        ? "Not set"
+        : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(Number(fee));
+}
+
 // EDIT DOCTOR
 
 function editDoctor(id) {
 
 const doctors = getDoctors();
-
-
 const doctor =
     doctors.find(function (item) {
-
         return item.id === id;
-
     });
 
-
 if (!doctor) {
-
     alert("Doctor not found.");
-
-    return;
-
-}
-
-
-const name =
-    prompt(
-        "Enter doctor name:",
-        doctor.name
-    );
-
-
-if (name === null) {
-
-    return;
-
-}
-
-
-const email =
-    prompt(
-        "Enter doctor email:",
-        doctor.email
-    );
-
-
-if (email === null) {
-
-    return;
-
-}
-
-
-const phone =
-    prompt(
-        "Enter doctor phone:",
-        doctor.phone
-    );
-
-
-if (phone === null) {
-
-    return;
-
-}
-
-const licenseNumber = prompt(
-    "Enter medical license / registration number:",
-    doctor.licenseNumber || ""
-);
-if (licenseNumber === null) return;
-if (!licenseNumber.trim()) {
-    alert("A medical license / registration number is required.");
     return;
 }
 
-const specialization =
-    prompt(
-        "Enter specialization:",
-        doctor.specialization
-    );
+const form = document.getElementById("doctorForm");
+const availability = doctor.availability || {};
 
+form.dataset.editId = doctor.id;
+document.getElementById("doctorName").value = doctor.name || "";
+document.getElementById("doctorEmail").value = doctor.email || "";
+document.getElementById("doctorPhone").value = doctor.phone || "";
+document.getElementById("doctorLicense").value = doctor.licenseNumber || "";
+document.getElementById("doctorSpecialization").value = doctor.specialization || "";
+document.getElementById("doctorConsultationFee").value = doctor.consultationFee ?? "";
+document.getElementById("doctorStatus").value = doctor.status || "Active";
+document.getElementById("doctorStartTime").value = availability.startTime || "";
+document.getElementById("doctorEndTime").value = availability.endTime || "";
+document.getElementById("doctorDefaultAppointmentTime").value =
+    availability.defaultAppointmentTime || availability.startTime || "";
+renderDoctorUnavailableDates(Array.isArray(availability.unavailableDates)
+    ? availability.unavailableDates
+    : []);
 
-if (specialization === null) {
-
-    return;
-
-}
-
-const currentAvailability = doctor.availability || {
-    days: [1, 2, 3, 4, 5],
-    startTime: "09:00",
-    endTime: "17:00",
-    defaultAppointmentTime: "09:00"
-};
-const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const daysInput = prompt(
-    "Available days (comma-separated): Sun, Mon, Tue, Wed, Thu, Fri, Sat",
-    currentAvailability.days.map(function (day) { return dayLabels[day]; }).join(", ")
-);
-if (daysInput === null) return;
-const selectedDays = daysInput.split(",").map(function (day) {
-    return dayLabels.indexOf(day.trim().slice(0, 3));
-}).filter(function (day, index, days) {
-    return day >= 0 && days.indexOf(day) === index;
+const availableDays = Array.isArray(availability.days) ? availability.days : [];
+document.querySelectorAll('input[name="doctorAvailabilityDay"]').forEach(function (input) {
+    input.checked = input.value === "none"
+        ? availableDays.length === 0
+        : availableDays.includes(Number(input.value));
 });
-if (selectedDays.length === 0) {
-    alert("Enter at least one valid available day.");
-    return;
-}
 
-const startTime = prompt("Available from (24-hour HH:MM):", currentAvailability.startTime);
-if (startTime === null) return;
-const endTime = prompt("Available until (24-hour HH:MM):", currentAvailability.endTime);
-if (endTime === null) return;
-const defaultAppointmentTime = prompt(
-    "Default appointment time (24-hour HH:MM):",
-    currentAvailability.defaultAppointmentTime || currentAvailability.startTime
-);
-if (defaultAppointmentTime === null) return;
-const validTime = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
-const startMinutes = validTime.test(startTime)
-    ? Number(startTime.slice(0, 2)) * 60 + Number(startTime.slice(3, 5))
-    : -1;
-const endMinutes = validTime.test(endTime)
-    ? Number(endTime.slice(0, 2)) * 60 + Number(endTime.slice(3, 5))
-    : -1;
-const defaultMinutes = validTime.test(defaultAppointmentTime)
-    ? Number(defaultAppointmentTime.slice(0, 2)) * 60 + Number(defaultAppointmentTime.slice(3, 5))
-    : -1;
-if (!validTime.test(startTime) || !validTime.test(endTime) ||
-    endMinutes <= startMinutes ||
-    !validTime.test(defaultAppointmentTime) ||
-    defaultMinutes < startMinutes || defaultMinutes >= endMinutes) {
-    alert("Enter a valid availability window and a default appointment time within it.");
-    return;
-}
-
-
-doctor.name =
-    name.trim();
-
-doctor.email =
-    email.trim();
-
-doctor.phone =
-    phone.trim();
-
-doctor.licenseNumber =
-    licenseNumber.trim();
-
-doctor.specialization =
-    specialization.trim();
-doctor.availability = {
-    days: selectedDays,
-    startTime: startTime,
-    endTime: endTime,
-    defaultAppointmentTime: defaultAppointmentTime
-};
-
-
-saveDoctors(doctors);
-syncDoctorStaffRecord(doctor);
-
-
-alert(
-    "Doctor updated successfully."
-);
-
-
-loadDoctors();
+document.getElementById("add-doctor-title").textContent = "Edit doctor";
+form.querySelector(".doctor-submit").innerHTML = "Save changes";
+document.getElementById("cancelDoctorEdit").hidden = false;
+updateDoctorAvailabilityFields();
+form.scrollIntoView({ behavior: "smooth", block: "start" });
+document.getElementById("doctorName").focus({ preventScroll: true });
 
 }
 
@@ -847,7 +910,7 @@ if (doctors.length === 0) {
 
         <tr>
 
-            <td colspan="10">
+            <td colspan="12">
                 No doctors found.
             </td>
 
@@ -880,9 +943,13 @@ doctors.forEach(function (doctor) {
 
         <td>${doctor.specialization}</td>
 
+        <td>${formatConsultationFee(doctor.consultationFee)}</td>
+
         <td>${formatDoctorAvailability(doctor.availability)}</td>
 
-        <td>${(doctor.availability && doctor.availability.defaultAppointmentTime) || (doctor.availability && doctor.availability.startTime) || "Not set"}</td>
+        <td>${formatDoctorUnavailableDates(doctor.availability)}</td>
+
+        <td>${doctor.availability && Array.isArray(doctor.availability.days) && doctor.availability.days.length === 0 ? "Unavailable" : (doctor.availability && doctor.availability.defaultAppointmentTime) || (doctor.availability && doctor.availability.startTime) || "Not set"}</td>
 
         <td>${doctor.status}</td>
 
@@ -942,29 +1009,96 @@ function updateStaffRoleFields() {
 
 function updateDoctorUserFields() {
     const roleInput = document.getElementById("userRole");
+    const nameInput = document.getElementById("userName");
     const emailInput = document.getElementById("userEmail");
-    const phoneInput = document.getElementById("userDoctorPhone");
-    const licenseInput = document.getElementById("userDoctorLicense");
-    const specializationInput = document.getElementById("userDoctorSpecialization");
-    const startInput = document.getElementById("userDoctorStartTime");
-    const endInput = document.getElementById("userDoctorEndTime");
-    const defaultTimeInput = document.getElementById("userDoctorDefaultAppointmentTime");
+    const profileField = document.getElementById("userProfileField");
+    const profileSelect = document.getElementById("userProfile");
+    const profileHint = document.getElementById("userProfileHint");
+    const profileDetails = document.getElementById("userProfileDetails");
 
-    if (!roleInput || !emailInput) return;
+    if (!roleInput || !nameInput || !emailInput || !profileField || !profileSelect) return;
 
-    const email = emailInput.value.trim().toLowerCase();
-    const matchingDoctor = email && getDoctors().some(function (doctor) {
-        return doctor.email.toLowerCase() === email;
+    const role = roleInput.value;
+    const requiresProfile = role !== "" && role !== "Admin";
+    const selectedProfileId = profileSelect.value;
+    nameInput.readOnly = requiresProfile;
+    emailInput.readOnly = requiresProfile;
+    profileField.hidden = !requiresProfile;
+
+    if (!requiresProfile) {
+        profileHint.hidden = true;
+        profileDetails.hidden = true;
+        return;
+    }
+
+    const users = getUsers();
+    const profiles = role === "Doctor"
+        ? getDoctors()
+        : getStaff().filter(function (person) { return person.role === role; });
+    const availableProfiles = profiles.filter(function (profile) {
+        if (!profile || profile.status !== "Active" || !profile.email) return false;
+        return !users.some(function (user) {
+            const correctRole = user.role === role;
+            const linkedById = correctRole && (
+                (user.profileType === (role === "Doctor" ? "doctor" : "staff") && user.profileId === profile.id) ||
+                (role === "Doctor" && user.profileType === "staff" && user.profileId === profile.staffId)
+            );
+            const linkedByEmail = correctRole &&
+                String(user.email || "").trim().toLowerCase() === String(profile.email).trim().toLowerCase();
+            return linkedById || linkedByEmail;
+        });
     });
-    const needsDoctorProfile = roleInput.value === "Doctor" && !matchingDoctor;
 
-    document.querySelectorAll(".doctor-user-field").forEach(function (field) {
-        field.hidden = !needsDoctorProfile;
+    profileSelect.textContent = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = role === "Doctor" ? "Select an existing doctor" : "Select an existing staff member";
+    profileSelect.appendChild(placeholder);
+    availableProfiles.forEach(function (profile) {
+        const option = document.createElement("option");
+        option.value = profile.id;
+        option.textContent = profile.name + " — " + profile.email;
+        profileSelect.appendChild(option);
     });
 
-    [phoneInput, licenseInput, specializationInput, startInput, endInput, defaultTimeInput].forEach(function (input) {
-        if (input) input.required = needsDoctorProfile;
+    const selectedProfile = availableProfiles.find(function (profile) {
+        return profile.id === selectedProfileId;
     });
+    profileSelect.value = selectedProfile ? selectedProfile.id : "";
+    profileHint.hidden = availableProfiles.length > 0;
+
+    if (!selectedProfile) {
+        nameInput.value = "";
+        emailInput.value = "";
+        profileDetails.textContent = "";
+        profileDetails.hidden = true;
+        profileHint.textContent = "";
+        profileHint.appendChild(document.createTextNode("No available " +
+            (role === "Doctor" ? "doctor" : role.toLowerCase()) + " profiles. "));
+        const addProfileLink = document.createElement("a");
+        addProfileLink.href = role === "Doctor" ? "doctor-management.html" : "staff-management.html";
+        addProfileLink.textContent = role === "Doctor" ? "Add a doctor profile first" : "Add a staff profile first";
+        profileHint.appendChild(addProfileLink);
+        profileHint.appendChild(document.createTextNode("."));
+        return;
+    }
+
+    profileHint.hidden = true;
+    nameInput.value = selectedProfile.name || "";
+    emailInput.value = selectedProfile.email || "";
+    const details = [
+        selectedProfile.phone ? "Phone: " + selectedProfile.phone : "",
+        selectedProfile.licenseNumber ? "License: " + selectedProfile.licenseNumber : "",
+        selectedProfile.specialization ? "Specialization: " + selectedProfile.specialization : "",
+        role === "Doctor"
+            ? "Availability: " + formatDoctorAvailability(selectedProfile.availability)
+            : "",
+        role === "Doctor"
+            ? "Unavailable dates: " + formatDoctorUnavailableDates(selectedProfile.availability)
+            : ""
+    ].filter(Boolean);
+    profileDetails.textContent = details.join(" · ");
+    profileDetails.hidden = details.length === 0;
 }
 
 function syncDoctorProfileFromStaff(person, specialization, licenseNumber) {
@@ -1162,6 +1296,11 @@ staff.forEach(function (person) {
         <td>
 
             <button
+                onclick="viewStaffDetails('${person.id}')">
+                View
+            </button>
+
+            <button
                 onclick="editStaff('${person.id}')">
                 Edit
             </button>
@@ -1189,6 +1328,67 @@ staff.forEach(function (person) {
 
 });
 
+}
+
+function viewStaffDetails(id) {
+    const person = getStaff().find(function (item) {
+        return item.id === id;
+    });
+    const dialog = document.getElementById("staffDetailsDialog");
+    const detailsList = document.getElementById("staffDetailsList");
+
+    if (!person || !dialog || !detailsList) {
+        alert("Staff details could not be loaded.");
+        return;
+    }
+
+    const doctor = person.role === "Doctor"
+        ? getDoctors().find(function (item) {
+            return item.id === person.doctorId || item.staffId === person.id;
+        })
+        : null;
+    const linkedUser = getUsers().find(function (user) {
+        return user.profileId === person.id && user.profileType === "staff" ||
+            doctor && user.profileId === doctor.id && user.profileType === "doctor" ||
+            String(user.email || "").trim().toLowerCase() === String(person.email || "").trim().toLowerCase();
+    });
+    const detailRows = [
+        ["Staff ID", person.id],
+        ["Name", person.name],
+        ["Email", person.email],
+        ["Phone", person.phone],
+        ["Role", person.role],
+        ["Status", person.status],
+        ["Created", person.createdAt]
+    ];
+
+    if (doctor) {
+        detailRows.push(
+            ["Specialization", doctor.specialization || person.specialization || "Not set"],
+            ["Medical license", doctor.licenseNumber || person.licenseNumber || "Not set"],
+            ["Availability", formatDoctorAvailability(doctor.availability)],
+            ["Unavailable dates", formatDoctorUnavailableDates(doctor.availability)],
+            ["Default appointment time", doctor.availability && doctor.availability.defaultAppointmentTime || "Not set"],
+            ["Consultation fee", formatConsultationFee(doctor.consultationFee)]
+        );
+    }
+
+    detailsList.textContent = "";
+    detailRows.forEach(function (detail) {
+        const term = document.createElement("dt");
+        const value = document.createElement("dd");
+        term.textContent = detail[0];
+        value.textContent = detail[1] == null || detail[1] === "" ? "Not set" : String(detail[1]);
+        detailsList.append(term, value);
+    });
+
+    document.getElementById("staffDetailsTitle").textContent = person.name + " — Staff details";
+    if (!dialog.open) dialog.showModal();
+}
+
+function closeStaffDetails() {
+    const dialog = document.getElementById("staffDetailsDialog");
+    if (dialog && dialog.open) dialog.close();
 }
 
 // EDIT STAFF
@@ -1533,6 +1733,11 @@ staff.forEach(function (person) {
         <td>
 
             <button
+                onclick="viewStaffDetails('${person.id}')">
+                View
+            </button>
+
+            <button
                 onclick="editStaff('${person.id}')">
                 Edit
             </button>
@@ -1570,12 +1775,12 @@ staff.forEach(function (person) {
 
 function addUser() {
 
-const name =
+let name =
     document.getElementById("userName")
         .value
         .trim();
 
-const email =
+let email =
     document.getElementById("userEmail")
         .value
         .trim();
@@ -1593,6 +1798,27 @@ const password =
 const role =
     document.getElementById("userRole")
         .value;
+
+let profile = null;
+let profileType = null;
+if (role !== "Admin") {
+    const selectedProfileId = document.getElementById("userProfile").value;
+    const matchingProfiles = role === "Doctor"
+        ? getDoctors()
+        : getStaff().filter(function (person) { return person.role === role; });
+    profile = matchingProfiles.find(function (item) {
+        return item.id === selectedProfileId;
+    });
+    if (!profile) {
+        alert(role === "Doctor"
+            ? "Select an existing active doctor profile before creating a Doctor account."
+            : "Select an existing active " + role.toLowerCase() + " profile before creating this account.");
+        return;
+    }
+    name = String(profile.name || "").trim();
+    email = String(profile.email || "").trim();
+    profileType = role === "Doctor" ? "doctor" : "staff";
+}
 
 if (!name || !email || !username || !password || !role) {
     alert("Please fill all user details.");
@@ -1625,64 +1851,6 @@ if (emailAlreadyExists) {
     return;
 }
 
-let profile = null;
-let profileType = null;
-let newDoctor = null;
-
-if (role === "Doctor") {
-    profile = getDoctors().find(function (doctor) {
-        return doctor.email.toLowerCase() === email.toLowerCase();
-    });
-    profileType = "doctor";
-    if (!profile) {
-        const matchingStaff = getStaff().find(function (person) {
-            return person.email.toLowerCase() === email.toLowerCase();
-        });
-        if (matchingStaff && matchingStaff.role !== "Doctor") {
-            alert("This email is already assigned to a different staff role.");
-            return;
-        }
-
-        const phone = document.getElementById("userDoctorPhone").value.trim();
-        const licenseNumber = document.getElementById("userDoctorLicense").value.trim();
-        const specialization = document.getElementById("userDoctorSpecialization").value.trim();
-        const availability = readDoctorAvailability(
-            "userDoctorAvailabilityDay",
-            "userDoctorStartTime",
-            "userDoctorEndTime",
-            "userDoctorDefaultAppointmentTime"
-        );
-        if (!phone || !licenseNumber || !specialization) {
-            alert("Enter the new doctor's phone number, license number, and specialization.");
-            return;
-        }
-        if (!availability) return;
-
-        newDoctor = {
-            id: generateId("DOC"),
-            staffId: matchingStaff ? matchingStaff.id : generateId("STAFF"),
-            name: name,
-            email: email,
-            phone: phone,
-            licenseNumber: licenseNumber,
-            specialization: specialization,
-            availability: availability,
-            status: "Active",
-            createdAt: new Date().toLocaleDateString()
-        };
-        const doctors = getDoctors();
-        doctors.push(newDoctor);
-        if (!saveDoctors(doctors)) return;
-        syncDoctorStaffRecord(newDoctor);
-        profile = newDoctor;
-    }
-} else if (role !== "Admin") {
-    profile = getStaff().find(function (person) {
-        return person.email.toLowerCase() === email.toLowerCase() && person.role === role;
-    });
-    profileType = "staff";
-}
-
 if (role !== "Admin" && !profile) {
     alert("Add this person to the matching staff or doctor directory before creating a login.");
     return;
@@ -1693,10 +1861,25 @@ if (profile && profile.status !== "Active") {
     return;
 }
 
+if (role !== "Admin") {
+    const alreadyLinked = users.some(function (user) {
+        return user.role === role && (
+            (user.profileType === profileType && user.profileId === profile.id) ||
+            (role === "Doctor" && user.profileType === "staff" && user.profileId === profile.staffId) ||
+            String(user.email || "").trim().toLowerCase() === String(profile.email || "").trim().toLowerCase()
+        );
+    });
+    if (alreadyLinked) {
+        alert("This " + role.toLowerCase() + " already has a user account.");
+        updateDoctorUserFields();
+        return;
+    }
+}
+
 const user = {
     id: generateId("USER"),
-    name: name,
-    email: email,
+    name: profile && role !== "Admin" ? profile.name : name,
+    email: profile && role !== "Admin" ? profile.email : email,
     username: username,
     password: password,
     role: role,

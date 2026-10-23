@@ -835,6 +835,9 @@
 .metric-staff { --metric-color: #b87b42; --metric-soft: #f7efe3; }
 .metric-users { --metric-color: #547a88; --metric-soft: #e8f0f2; }
 .metric-active { --metric-color: #56805d; --metric-soft: #eaf2e8; }
+.metric-medicines { --metric-color: #547a88; --metric-soft: #e8f0f2; }
+
+.admin-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .metric-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .metric-label { color: #647670; font-size: 12px; font-weight: 600; }

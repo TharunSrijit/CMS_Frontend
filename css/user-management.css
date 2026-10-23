@@ -53,7 +53,7 @@
   gap: 7px;
 }
 
-.user-field.doctor-user-field[hidden] {
+.user-field.linked-user-field[hidden] {
   display: none;
 }
 

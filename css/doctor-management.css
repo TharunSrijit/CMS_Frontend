@@ -93,6 +93,30 @@
   accent-color: #8f5f4e;
 }
 
+.doctor-date-button {
+  justify-self: start;
+  padding: 8px 11px;
+  border: 1px solid #d9ccc3;
+  border-radius: 4px;
+  color: #6f4639;
+  background: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.doctor-date-button:hover {
+  border-color: #b98f7c;
+  background: #fbf6f1;
+}
+
+.doctor-field small {
+  color: #84918c;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 .doctor-input,
 .doctor-search-wrap input {
   width: 100%;
@@ -187,7 +211,7 @@
 
 .doctor-table {
   width: 100%;
-  min-width: 1240px;
+  min-width: 1380px;
   border-collapse: collapse;
   font-size: 12px;
 }
@@ -234,7 +258,7 @@
   white-space: nowrap;
 }
 
-.doctor-table td:nth-child(9) {
+.doctor-table td:nth-child(10) {
   color: #38745a;
   font-weight: 600;
 }

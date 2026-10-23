@@ -147,6 +147,7 @@
               <div class="form-group">
                 <label class="form-label required" for="apptDate">Date</label>
                 <input class="form-input" type="date" id="apptDate" data-validate="appointment-date" required />
+                <small id="doctorUnavailableDateMessage" style="display:none;color:var(--danger);margin-top:6px;"></small>
               </div>
               <div class="form-group">
                 <label class="form-label required" for="apptTime">Time</label>
@@ -243,7 +244,7 @@ function loadDoctorOptions() {
       activeDoctors.map(d => {
         const spec = d.specialization || d.department || 'General';
         const label = `${d.name} — ${spec}`;
-        return `<option value="${d.name}">${label}</option>`;
+        return `<option value="${d.id}">${label}</option>`;
       }).join('');
     if (currentVal) docSelect.value = currentVal;
   }
@@ -256,7 +257,10 @@ function pageInit() {
   if (apptDateInput) {
     apptDateInput.value = TODAY;
     apptDateInput.min = TODAY;
+    apptDateInput.addEventListener('change', updateDoctorUnavailableDateMessage);
   }
+  document.getElementById('doctorSelect').addEventListener('change', updateDoctorUnavailableDateMessage);
+  updateDoctorUnavailableDateMessage();
   // Check URL for pre-selected patient
   const params = new URLSearchParams(location.search);
   const pid = params.get('patient');
@@ -265,6 +269,29 @@ function pageInit() {
     const p = patients.find(p => p.id === pid);
     if (p) selectPatient(p);
   }
+}
+
+function getSelectedDoctorUnavailableDate() {
+  const doctorId = document.getElementById('doctorSelect').value;
+  const appointmentDate = document.getElementById('apptDate').value;
+  if (!doctorId || !appointmentDate) return false;
+
+  const doctors = JSON.parse(localStorage.getItem('cms_doctors') || '[]');
+  const doctor = doctors.find(item => item.id === doctorId);
+  const unavailableDates = doctor && doctor.availability && Array.isArray(doctor.availability.unavailableDates)
+    ? doctor.availability.unavailableDates
+    : [];
+  return unavailableDates.includes(appointmentDate);
+}
+
+function updateDoctorUnavailableDateMessage() {
+  const message = document.getElementById('doctorUnavailableDateMessage');
+  if (!message) return;
+  const unavailable = getSelectedDoctorUnavailableDate();
+  message.textContent = unavailable
+    ? 'This doctor is marked unavailable on the selected date. Choose another date.'
+    : '';
+  message.style.display = unavailable ? 'block' : 'none';
 }
 
 function searchPatient(q) {
@@ -311,6 +338,11 @@ document.getElementById('bookForm').addEventListener('submit', function(e) {
   e.preventDefault();
   if (!selectedPat) { showBookMsg('Please select a patient first.', 'danger'); return; }
   const doctor = document.getElementById('doctorSelect');
+  if (getSelectedDoctorUnavailableDate()) {
+    updateDoctorUnavailableDateMessage();
+    showBookMsg('This doctor is unavailable on the selected date. Choose another date.', 'danger');
+    return;
+  }
   const appts  = JSON.parse(localStorage.getItem('cms_appointments') || '[]');
   const nextToken = appts.filter(a => a.date === document.getElementById('apptDate').value).length + 1;
   const newAppt = {
@@ -318,6 +350,7 @@ document.getElementById('bookForm').addEventListener('submit', function(e) {
     token: nextToken,
     patientId: selectedPat.id,
     patientName: selectedPat.name,
+    doctorId: doctor.value,
     doctor: doctor.options[doctor.selectedIndex].text,
     time: to12h(document.getElementById('apptTime').value),
     type: document.getElementById('apptType').value,

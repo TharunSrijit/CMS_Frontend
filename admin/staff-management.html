@@ -88,7 +88,7 @@
                                 <label for="staffRole">Staff role</label>
                                 <select class="staff-input" id="staffRole" onchange="updateStaffRoleFields()" required>
                                     <option value="">Select a role</option>
-                                    <!-- <option value="Doctor">Doctor</option> -->
+                                    <option value="Doctor">Doctor</option>
                                     <option value="Receptionist">Receptionist</option>
                                     <option value="Lab Technician">Lab Technician</option>
                                     <option value="Pharmacist">Pharmacist</option>
@@ -167,6 +167,14 @@
             </main>
         </div>
     </div>
+
+    <dialog class="staff-details-dialog" id="staffDetailsDialog" aria-labelledby="staffDetailsTitle">
+        <div class="staff-details-heading">
+            <h2 id="staffDetailsTitle">Staff details</h2>
+            <button class="staff-details-close" type="button" onclick="closeStaffDetails()">Close</button>
+        </div>
+        <dl class="staff-details-list" id="staffDetailsList"></dl>
+    </dialog>
 
     <script src="../js/storage.js"></script>
     <script src="../js/admin.js"></script>

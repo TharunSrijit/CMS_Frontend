@@ -18,13 +18,16 @@ if (!loggedInUser || loggedInUser.role !== 'admin') {
 
 document.addEventListener('DOMContentLoaded', () => {
     renderMedicineExpiryAlerts('adminExpiryAlerts', 'medicine-master.html');
-    const doctors = getDoctors();
     const staff = getStaff();
-    const users = getUsers();
+    const medicines = getMedicines();
 
-    document.getElementById('totalDoctors').textContent = doctors.length;
-    document.getElementById('totalStaff').textContent = staff.length;
-    document.getElementById('totalUsers').textContent = users.length;
-    document.getElementById('activeUsers').textContent = users.filter(user => user.status === 'Active').length;
+    document.getElementById('totalStaff').textContent = staff.filter(person => person.status === 'Active').length;
+    const activeMedicineStock = medicines
+        .filter(medicine => medicine.status === 'Active')
+        .reduce((total, medicine) => {
+            const stock = Number(medicine.stock);
+            return total + (Number.isFinite(stock) ? stock : 0);
+        }, 0);
+    document.getElementById('activeMedicineStock').textContent = activeMedicineStock;
 });
 }

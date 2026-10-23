@@ -78,7 +78,7 @@
                             </div>
                             <div class="user-field">
                                 <label for="userEmail">Email</label>
-                                <input class="user-input" type="email" id="userEmail" data-validate="contact-email" placeholder="name@clinic.com" autocomplete="email" oninput="updateDoctorUserFields()" required>
+                                <input class="user-input" type="email" id="userEmail" data-validate="contact-email" placeholder="name@clinic.com" autocomplete="email" required>
                             </div>
                             <div class="user-field">
                                 <label for="userUsername">Login username</label>
@@ -99,67 +99,13 @@
                                     <option value="Pharmacist">Pharmacist</option>
                                 </select>
                             </div>
-                            <div class="user-field doctor-user-field" id="userDoctorPhoneField" hidden>
-                                <label for="userDoctorPhone">Doctor phone</label>
-                                <input class="user-input" type="tel" id="userDoctorPhone" autocomplete="tel">
-                            </div>
-                            <div class="user-field doctor-user-field" id="userDoctorLicenseField" hidden>
-                                <label for="userDoctorLicense">Medical license / registration number</label>
-                                <input class="user-input" type="text" id="userDoctorLicense" maxlength="80" placeholder="Enter license number">
-                            </div>
-                            <div class="user-field doctor-user-field" id="userDoctorSpecializationField" hidden>
-                                <label for="userDoctorSpecialization">Doctor specialization</label>
-                                <select class="user-input" id="userDoctorSpecialization" onchange="handleSpecializationChange(this)">
-                                    <option value="">Select a specialty</option>
-                                    <option>General</option>
-                                    <option>General Medicine</option>
-                                    <option>Cardiology</option>
-                                    <option>Dermatology</option>
-                                    <option>Endocrinology</option>
-                                    <option>Gastroenterology</option>
-                                    <option>General Surgery</option>
-                                    <option>Gynecology &amp; Obstetrics</option>
-                                    <option>Nephrology</option>
-                                    <option>Neurology</option>
-                                    <option>Neurosurgery</option>
-                                    <option>Oncology</option>
-                                    <option>Ophthalmology</option>
-                                    <option>Orthopaedics</option>
-                                    <option>ENT</option>
-                                    <option>Pediatrics</option>
-                                    <option>Psychiatry</option>
-                                    <option>Pulmonology</option>
-                                    <option>Radiology</option>
-                                    <option>Urology</option>
-                                    <option>Emergency Medicine</option>
-                                    <option>Anesthesiology</option>
-                                    <option>Pathology</option>
-                                    <option value="__add_specialization__">+ Add new specialization…</option>
+                            <div class="user-field linked-user-field" id="userProfileField" hidden>
+                                <label for="userProfile">Staff profile</label>
+                                <select class="user-input" id="userProfile" onchange="updateDoctorUserFields()">
+                                    <option value="">Select an existing staff member</option>
                                 </select>
-                            </div>
-                            <fieldset class="user-field doctor-user-field" id="userDoctorDaysField" hidden>
-                                <legend>Doctor available days (weekly)</legend>
-                                <div class="doctor-availability-days">
-                                    <label><input type="checkbox" name="userDoctorAvailabilityDay" value="1" checked> Mon</label>
-                                    <label><input type="checkbox" name="userDoctorAvailabilityDay" value="2" checked> Tue</label>
-                                    <label><input type="checkbox" name="userDoctorAvailabilityDay" value="3" checked> Wed</label>
-                                    <label><input type="checkbox" name="userDoctorAvailabilityDay" value="4" checked> Thu</label>
-                                    <label><input type="checkbox" name="userDoctorAvailabilityDay" value="5" checked> Fri</label>
-                                    <label><input type="checkbox" name="userDoctorAvailabilityDay" value="6"> Sat</label>
-                                    <label><input type="checkbox" name="userDoctorAvailabilityDay" value="0"> Sun</label>
-                                </div>
-                            </fieldset>
-                            <div class="user-field doctor-user-field" id="userDoctorStartTimeField" hidden>
-                                <label for="userDoctorStartTime">Available from</label>
-                                <input class="user-input" type="time" id="userDoctorStartTime" value="09:00">
-                            </div>
-                            <div class="user-field doctor-user-field" id="userDoctorEndTimeField" hidden>
-                                <label for="userDoctorEndTime">Available until</label>
-                                <input class="user-input" type="time" id="userDoctorEndTime" value="17:00">
-                            </div>
-                            <div class="user-field doctor-user-field" id="userDoctorDefaultTimeField" hidden>
-                                <label for="userDoctorDefaultAppointmentTime">Default appointment time</label>
-                                <input class="user-input" type="time" id="userDoctorDefaultAppointmentTime" value="09:00">
+                                <small id="userProfileHint" hidden></small>
+                                <small id="userProfileDetails" hidden></small>
                             </div>
                         </div>
                         <div class="user-form-actions">
